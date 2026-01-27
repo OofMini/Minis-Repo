@@ -1,0 +1,150 @@
+{
+  "name": "Mini's IPA Repo",
+  "identifier": "com.oofmini.ipa-repo",
+  "apps": [
+    {
+      "name": "EeveeSpotify",
+      "bundleIdentifier": "com.spotify.client",
+      "developerName": "whoeevee",
+      "iconURL": "https://OofMini.github.io/Minis-Repo/apps/EeveeSpotify.png",
+      "versions": [
+        {
+          "version": "9.1.12",
+          "date": "2026-01-25",
+          "downloadURL": "https://github.com/OofMini/eeveespotifyreborn/releases/download/New/EeveeSpotify.ipa",
+          "size": 87975526,
+          "localizedDescription": "Premium unlocked, ads removed, enhanced playback"
+        }
+      ],
+      "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.12, EeveeSpotify 6.5.0."
+    },
+    {
+      "name": "YTLite",
+      "bundleIdentifier": "com.google.ios.youtube",
+      "developerName": "dayanch96",
+      "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubePlus_5.2b3.PNG",
+      "versions": [
+        {
+          "version": "21.04.2",
+          "date": "2026-01-27",
+          "downloadURL": "https://github.com/OofMini/YTLite/releases/download/New/YouTubePlus_5.2b4.ipa",
+          "size": 113351065,
+          "localizedDescription": "Background playback, ads removed, picture-in-picture support"
+        }
+      ],
+      "localizedDescription": "Tweaked YouTube with background playback, no ads, and picture-in-picture. YouTube IPA 21.04.2, YTLite 5.2b4"
+    },
+    {
+      "name": "YTMusicUltimate",
+      "bundleIdentifier": "com.google.ios.youtubemusic",
+      "developerName": "dayanch96",
+      "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubeMusic.png",
+      "versions": [
+        {
+          "version": "8.50.2",
+          "date": "2026-01-25",
+          "downloadURL": "https://github.com/OofMini/YTMusicUltimate/releases/download/New/YTMusicUltimate.ipa",
+          "size": 257425408,
+          "localizedDescription": "Premium unlocked, background playback, no ads"
+        }
+      ],
+      "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 8.50.2, YTMusicUltimate 2.3.1."
+    },
+    {
+      "name": "NeoFreeBird",
+      "bundleIdentifier": "com.atebits.Tweetie2",
+      "developerName": "NeoFreeBird",
+      "iconURL": "https://OofMini.github.io/Minis-Repo/apps/NeoFreeBird.png",
+      "versions": [
+        {
+          "version": "11.60",
+          "date": "2026-01-27",
+          "downloadURL": "https://github.com/OofMini/tweak/releases/download/New/NeoFreeBird-sideloaded.ipa",
+          "size": 142816051,
+          "localizedDescription": "TrollStore/SideStore build 5.2, custom features, performance improvements"
+        }
+      ],
+      "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.60, NeoFreeBird 5.2"
+    },
+    {
+      "name": "SCInsta",
+      "bundleIdentifier": "com.burbn.instagram",
+      "developerName": "SoCuul",
+      "iconURL": "https://OofMini.github.io/Minis-Repo/apps/SCInsta.png",
+      "versions": [
+        {
+          "version": "409.0.0",
+          "date": "2026-01-25",
+          "downloadURL": "https://github.com/OofMini/SCInsta/releases/download/New/SCInsta_0.8.0.ipa",
+          "size": 407400000,
+          "localizedDescription": "Tweaked Instagram"
+        }
+      ],
+      "localizedDescription": "Tweaked Instagram premium, Instagram IPA 409.0.0, SCInsta 0.8.0"
+    },
+    {
+      "name": "InshotPro",
+      "bundleIdentifier": "com.camerasideas.InstaShot",
+      "developerName": "IPAOMTK",
+      "iconURL": "https://OofMini.github.io/Minis-Repo/apps/Inshot.png",
+      "versions": [
+        {
+          "version": "1.93.0",
+          "date": "2026-01-23",
+          "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/New/InShot.ipa",
+          "size": 113665638,
+          "localizedDescription": "All filters unlocked, watermark removed, premium tools enabled"
+        }
+      ],
+      "localizedDescription": "Pro video editor with premium filters, tools, and no watermark. App v1.93.0."
+    },
+    {
+      "name": "iTorrent",
+      "bundleIdentifier": "org.xitrix.iTorrent2",
+      "developerName": "XITRIX",
+      "iconURL": "https://OofMini.github.io/Minis-Repo/apps/itorrent.png",
+      "versions": [
+        {
+          "version": "2.1.0",
+          "date": "2025-10-06",
+          "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Torrent/iTorrent.ipa",
+          "size": 7130316,
+          "localizedDescription": "Lightweight torrent client"
+        }
+      ],
+      "localizedDescription": "Lightweight torrent client for downloading and managing torrent files on-device."
+    },
+    {
+      "name": "LiveContainer",
+      "bundleIdentifier": "com.kdt.livecontainer",
+      "developerName": "hugeBlack",
+      "iconURL": "https://OofMini.github.io/Minis-Repo/apps/livecontainer.png",
+      "versions": [
+        {
+          "version": "3.6.1",
+          "date": "2025-10-06",
+          "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Live/LiveContainer.ipa",
+          "size": 4194304,
+          "localizedDescription": "JIT-less app container"
+        }
+      ],
+      "localizedDescription": "Runs live production containers for streaming apps and runtime isolation."
+    },
+    {
+      "name": "RefacePro (IOS 17+)",
+      "bundleIdentifier": "com.neocortext.doublicatapp",
+      "developerName": "IPAOMTK",
+      "iconURL": "https://OofMini.github.io/Minis-Repo/apps/refacepro.png",
+      "versions": [
+        {
+          "version": "6.0.0",
+          "date": "2026-01-23",
+          "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
+          "size": 106535321,
+          "localizedDescription": "Reface Premium Unlocked."
+        }
+      ],
+      "localizedDescription": "Reface Premium Unlocked."
+    }
+  ]
+}

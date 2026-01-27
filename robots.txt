@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /apps/
+Disallow: /assets/
+Disallow: /.github/
+Sitemap: https://oofmini.github.io/Minis-IPA-Repo/sitemap.xml
+
+# Block AI scrapers to save bandwidth
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /

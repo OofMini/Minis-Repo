@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self'; 
+                   img-src 'self' https://oofmini.github.io https://github.com https://raw.githubusercontent.com https://objects.githubusercontent.com data:; 
+                   script-src 'self'; 
+                   style-src 'self'; 
+                   connect-src 'self' https://github.com https://raw.githubusercontent.com https://api.github.com https://objects.githubusercontent.com https://archive.org;
+                   upgrade-insecure-requests;">
+    
+    <link rel="preconnect" href="https://github.com" crossorigin>
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Mini's IPA Repo - Tweaked iOS Apps">
+    <meta property="og:description" content="Premium tweaked applications for iOS 15+. EeveeSpotify, YTLite, and more.">
+    <meta property="og:image" content="https://OofMini.github.io/Minis-Repo/apps/repo-icon.png">
+    <meta property="og:url" content="https://oofmini.github.io/Minis-IPA-Repo/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Mini's IPA Repo">
+    <meta name="twitter:description" content="Tweaked iOS apps collection">
+    <meta name="twitter:image" content="https://OofMini.github.io/Minis-Repo/apps/repo-icon.png">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mini IPA">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="apps/repo-icon.png">
+    <link rel="apple-touch-startup-image" href="apps/repo-icon.png">
+
+    <title>Mini's IPA Repo - Tweaked iOS Apps</title>
+    <meta name="description" content="Premium tweaked applications for iOS 15+. Featuring Spotify, YouTube, YouTube Music, Instagram and more.">
+    
+    <link rel="preload" as="image" href="https://OofMini.github.io/Minis-Repo/apps/repo-icon.png">
+    <link rel="preload" href="sidestore.json" as="fetch" crossorigin="anonymous">
+    <link rel="preload" href="assets/css/style.css" as="style">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="https://OofMini.github.io/Minis-Repo/apps/repo-icon.png">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header class="hero">
+        <img src="https://OofMini.github.io/Minis-Repo/apps/repo-icon.png" alt="Repository icon" class="repo-icon" width="60" height="60">
+        <h1 class="animated-gradient">Mini's IPA Repo</h1>
+        <p class="hero-subtitle">Premium tweaked iOS applications for iOS 15+</p>
+
+        <div class="badges" role="status" aria-live="polite">
+            <span class="badge" aria-label="Repository status active">✅ Active</span>
+            <span class="badge ios" aria-label="Supports iOS 15 and above">📱 iOS 15+</span>
+        </div>
+
+        <nav class="cta-buttons" aria-label="Add repository to app">
+            <button class="cta-button trollapps" id="btn-trollapps" aria-label="Add to TrollApps">
+                <span role="img" aria-hidden="true">📱</span> Add to TrollApps
+            </button>
+            <button class="cta-button sidestore" id="btn-sidestore" aria-label="Add to SideStore">
+                <span role="img" aria-hidden="true">⚙️</span> Add to SideStore
+            </button>
+        </nav>
+    </header>
+
+    <main class="container" role="main">
+        <section class="search-container fade-in" aria-labelledby="search-title">
+            <h2 id="search-title" class="visually-hidden">Search apps</h2>
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search apps..." 
+                   aria-label="Search apps by name or description" autocomplete="off">
+        </section>
+
+        <section class="app-grid" id="appGrid" role="list" aria-label="Available apps"></section>
+
+        <section class="repo-info fade-in" aria-labelledby="repo-info-title">
+            <h3 id="repo-info-title">📦 Repository Information</h3>
+
+            <div class="repo-link fade-in-left stagger-1">
+                <span role="img" aria-hidden="true">🌐</span>
+                <strong>Official Website:</strong>
+                <a href="https://oofmini.github.io/Minis-IPA-Repo/" target="_blank" rel="noopener noreferrer">oofmini.github.io/Minis-IPA-Repo/</a>
+            </div>
+
+            <div class="repo-link fade-in-left stagger-2">
+                <span role="img" aria-hidden="true">📱</span>
+                <strong>SideStore Manifest:</strong>
+                <code>https://OofMini.github.io/Minis-Repo/sidestore.json</code>
+            </div>
+
+            <div class="repo-link fade-in-left stagger-3">
+                <span role="img" aria-hidden="true">🧌</span>
+                <strong>TrollApps Manifest:</strong>
+                <code>https://OofMini.github.io/Minis-Repo/trollapps.json</code>
+            </div>
+        </section>
+    </main>
+
+    <footer class="container" aria-label="Site footer">
+        <div class="footer-content">
+            <p class="footer-copyright">
+                © 2026 Mini — Tweaked IPAs for iOS 15+. External downloads may be hosted off-site.
+            </p>
+            <div class="footer-links">
+                <a href="https://github.com/OofMini/Minis-IPA-Repo" target="_blank" rel="noopener noreferrer" class="footer-link">
+                    📦 GitHub Repo
+                </a>
+                <span class="footer-separator">•</span>
+                <a href="https://github.com/OofMini/Minis-IPA-Repo/issues" target="_blank" rel="noopener noreferrer" class="footer-link">
+                    🐛 Report Issue
+                </a>
+                <span class="footer-separator">•</span>
+                <button id="btn-reset" class="footer-reset-btn">
+                    🗑️ Clear Cache
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
