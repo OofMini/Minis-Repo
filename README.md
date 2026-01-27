@@ -15,7 +15,7 @@ A curated repository for **SideStore** and **TrollApps**.
 
 ---
 
-## 📦 Repository Sources
+##  Repository Sources
 
 If the buttons above do not work, copy and paste these links directly into your app manager:
 
@@ -27,9 +27,8 @@ If the buttons above do not work, copy and paste these links directly into your 
 
 ---
 
-## 💎 App Collection
+##  App Collection
 
-*All apps are automatically verified for integrity and updated daily.*
 
 | Icon | App Name | Version | Description |
 | :---: | :--- | :--- | :--- |
