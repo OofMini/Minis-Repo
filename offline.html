@@ -1,32 +1,34 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline - Mini's IPA Repo</title>
-    
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="icon" href="apps/repo-icon.png">
-</head>
-<body>
-    <main class="container fullscreen-message">
-        
-        <div class="fade-in visible">
-            <div class="error-emoji">📶</div>
-            <h1 class="animated-gradient" style="font-size: 2.5em; margin-bottom: 10px;">No Connection</h1>
-            <p style="color: var(--text-color); opacity: 0.7; max-width: 400px; margin: 0 auto 30px;">
-                You are currently offline. Please check your internet connection and try again.
-            </p>
-            
-            <button onclick="window.location.reload()" class="download-btn" style="margin-bottom: 15px;">
-                🔄 Try Again
-            </button>
-            <br>
-            <a href="./index.html" class="repo-link" style="background: transparent; border: none; font-size: 0.9em; opacity: 0.8;">
-                Return to Library (Cached)
-            </a>
-        </div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Offline - Mini's IPA Repo</title>
 
-    </main>
-</body>
+        <link rel="stylesheet" href="assets/css/style.css" />
+        <link rel="icon" href="apps/repo-icon.png" />
+    </head>
+    <body>
+        <main class="container fullscreen-message">
+            <div class="fade-in visible">
+                <div class="error-emoji">📶</div>
+                <h1 class="animated-gradient" style="font-size: 2.5em; margin-bottom: 10px">No Connection</h1>
+                <p style="color: var(--text-color); opacity: 0.7; max-width: 400px; margin: 0 auto 30px">
+                    You are currently offline. Please check your internet connection and try again.
+                </p>
+
+                <button onclick="window.location.reload()" class="download-btn" style="margin-bottom: 15px">
+                    🔄 Try Again
+                </button>
+                <br />
+                <a
+                    href="./index.html"
+                    class="repo-link"
+                    style="background: transparent; border: none; font-size: 0.9em; opacity: 0.8"
+                >
+                    Return to Library (Cached)
+                </a>
+            </div>
+        </main>
+    </body>
 </html>

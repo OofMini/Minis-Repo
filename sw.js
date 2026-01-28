@@ -5,7 +5,7 @@
 
 const CACHE_NAMES = {
     SHELL: 'mini-repo-shell-v3.5.7', // BUMPED
-    DATA: 'mini-repo-data-v3',       // BUMPED
+    DATA: 'mini-repo-data-v3', // BUMPED
     IMAGES: 'mini-repo-images-v1'
 };
 
@@ -18,20 +18,20 @@ const SHELL_ASSETS = [
 ];
 
 self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open(CACHE_NAMES.SHELL).then(cache => cache.addAll(SHELL_ASSETS))
-    );
+    event.waitUntil(caches.open(CACHE_NAMES.SHELL).then(cache => cache.addAll(SHELL_ASSETS)));
     self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.keys().then(keys => Promise.all(
-            keys.map(key => {
-                const currentCaches = Object.values(CACHE_NAMES);
-                if (!currentCaches.includes(key)) return caches.delete(key);
-            })
-        ))
+        caches.keys().then(keys =>
+            Promise.all(
+                keys.map(key => {
+                    const currentCaches = Object.values(CACHE_NAMES);
+                    if (!currentCaches.includes(key)) return caches.delete(key);
+                })
+            )
+        )
     );
     self.clients.claim();
 });
@@ -79,34 +79,36 @@ async function computeIntegrity(response) {
 async function handleDataRequest(request) {
     const cache = await caches.open(CACHE_NAMES.DATA);
     const cachedResp = await cache.match(request);
-    
-    // Always fetch network to check for updates (revalidating)
-    const networkPromise = fetch(request).then(async (networkResp) => {
-        if (networkResp.ok) {
-            try {
-                // If we have a cache, compare hashes
-                if (cachedResp) {
-                    const [netHash, cachedHash] = await Promise.all([
-                        computeIntegrity(networkResp),
-                        computeIntegrity(cachedResp)
-                    ]);
 
-                    // Only update cache if content actually changed
-                    if (netHash !== cachedHash) {
+    // Always fetch network to check for updates (revalidating)
+    const networkPromise = fetch(request)
+        .then(async networkResp => {
+            if (networkResp.ok) {
+                try {
+                    // If we have a cache, compare hashes
+                    if (cachedResp) {
+                        const [netHash, cachedHash] = await Promise.all([
+                            computeIntegrity(networkResp),
+                            computeIntegrity(cachedResp)
+                        ]);
+
+                        // Only update cache if content actually changed
+                        if (netHash !== cachedHash) {
+                            cache.put(request, networkResp.clone());
+                        }
+                    } else {
+                        // No cache, just save
                         cache.put(request, networkResp.clone());
                     }
-                } else {
-                    // No cache, just save
-                    cache.put(request, networkResp.clone());
+                } catch (e) {
+                    console.warn('[SW] Integrity check failed:', e);
                 }
-            } catch (e) {
-                console.warn('[SW] Integrity check failed:', e);
             }
-        }
-        return networkResp;
-    }).catch(err => {
-        console.warn('[SW] Network fail:', err);
-    });
+            return networkResp;
+        })
+        .catch(err => {
+            console.warn('[SW] Network fail:', err);
+        });
 
     return cachedResp || networkPromise;
 }
@@ -123,7 +125,9 @@ async function cacheFirstLRU(request, cacheName) {
             limitCacheSize(cacheName, 50);
         }
         return resp;
-    } catch { return new Response('', { status: 404 }); }
+    } catch {
+        return new Response('', { status: 404 });
+    }
 }
 
 async function staleWhileRevalidate(request, cacheName) {
@@ -139,7 +143,7 @@ async function staleWhileRevalidate(request, cacheName) {
 async function limitCacheSize(name, size) {
     const cache = await caches.open(name);
     let keys = await cache.keys();
-    
+
     if (keys.length <= size) return;
     const yieldToMain = () => new Promise(resolve => setTimeout(resolve, 0));
 
