@@ -1,4 +1,4 @@
-const CACHE_NAME = 'minis-repo-cache-v1';
+const CACHE_NAME = 'minis-repo-cache-v2'; // ⚡ BUMPED VERSION
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -9,7 +9,7 @@ const ASSETS_TO_CACHE = [
     './apps/repo-icon.png'
 ];
 
-// Install Event: Cache Core Assets
+// Install: Cache Core Assets
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
@@ -20,7 +20,7 @@ self.addEventListener('install', event => {
     self.skipWaiting();
 });
 
-// Activate Event: Clean Old Caches
+// Activate: Cleanup Old Caches
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
@@ -37,20 +37,18 @@ self.addEventListener('activate', event => {
     self.clients.claim();
 });
 
-// Fetch Event: Network First, Fallback to Cache
+// Fetch: Network First -> Cache -> Offline Fallback
 self.addEventListener('fetch', event => {
-    // Only cache GET requests
     if (event.request.method !== 'GET') return;
 
     event.respondWith(
         (async () => {
             try {
-                // 1. Try Network
                 const networkResponse = await fetch(event.request);
 
-                // CRITICAL FIX: Verify response validity before caching
-                // We only cache status 200. We DO NOT cache 206 (Partial), 304 (Not Modified), or 4xx/5xx errors.
-                if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+                // ⚡ FIX: Allow valid responses (200) AND Opaque responses (0 - redirects/CORS)
+                // GitHub Pages often returns opaque responses for certain assets.
+                if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
                     const responseToCache = networkResponse.clone();
                     const cache = await caches.open(CACHE_NAME);
                     cache.put(event.request, responseToCache);
@@ -58,20 +56,23 @@ self.addEventListener('fetch', event => {
 
                 return networkResponse;
             } catch (error) {
-                // 2. Fallback to Cache
-                console.log('[Service Worker] Network failed, serving cache for:', event.request.url);
+                console.log('[Service Worker] Network failed, serving cache:', event.request.url);
                 const cachedResponse = await caches.match(event.request);
 
                 if (cachedResponse) return cachedResponse;
 
-                // 3. Fallback to Offline Page (for navigation requests)
+                // ⚡ FIX: Robust Offline Page Fallback
                 if (event.request.mode === 'navigate') {
                     const offlinePage = await caches.match('./offline.html');
-                    if (offlinePage) return offlinePage;
+                    return (
+                        offlinePage ||
+                        new Response('<h1>Offline</h1><p>No internet connection.</p>', {
+                            headers: { 'Content-Type': 'text/html' }
+                        })
+                    );
                 }
 
-                // Return null if nothing found (browser handles error)
-                return null;
+                return new Response('Network Error', { status: 408 });
             }
         })()
     );

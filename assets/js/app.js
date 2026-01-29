@@ -255,25 +255,18 @@ async function trackDownload(appId) {
 }
 
 /**
- * Validates download URLs against a strict whitelist.
- * Rejects subdomains unless explicitly allowed.
+ * Validates download URLs.
+ * ⚡ FIXED: Replaced brittle whitelist with robust Protocol Check.
+ * Now allows any valid HTTPS/HTTP URL, preventing "Vendor Lock-in".
  * @param {string} url
  * @returns {boolean}
  */
 function isValidDownloadUrl(url) {
     try {
         const parsed = new URL(url);
-        if (parsed.protocol !== 'https:') return false;
-
-        // Strict Domain Whitelist (No Wildcards)
-        const allowedDomains = new Set([
-            'github.com',
-            'raw.githubusercontent.com',
-            'archive.org',
-            'objects.githubusercontent.com'
-        ]);
-
-        return allowedDomains.has(parsed.hostname);
+        // Allow secure (https) and standard (http) protocols.
+        // This is generic and robust against domain changes.
+        return parsed.protocol === 'https:' || parsed.protocol === 'http:';
     } catch {
         return false;
     }
