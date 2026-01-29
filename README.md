@@ -4,7 +4,7 @@
 
 # Mini's Repo
 
-### Premium IPA Library for iOS
+### IPA Library for iOS
 
 A curated repository for **SideStore** and **TrollApps**.
 
