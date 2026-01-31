@@ -1,4 +1,4 @@
-const CACHE_NAME = 'minis-repo-cache-v2'; // ⚡ BUMPED VERSION
+const CACHE_NAME = 'minis-repo-cache-v3'; // ⚡ BUMPED for final polish
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -12,10 +12,15 @@ const ASSETS_TO_CACHE = [
 // Install: Cache Core Assets
 self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            console.log('[Service Worker] Caching core assets');
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
+        caches
+            .open(CACHE_NAME)
+            .then(cache => {
+                console.log('[Service Worker] Caching core assets');
+                return cache.addAll(ASSETS_TO_CACHE);
+            })
+            .catch(err => {
+                console.error('[Service Worker] Cache installation failed:', err);
+            })
     );
     self.skipWaiting();
 });
@@ -23,16 +28,21 @@ self.addEventListener('install', event => {
 // Activate: Cleanup Old Caches
 self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cache => {
-                    if (cache !== CACHE_NAME) {
-                        console.log('[Service Worker] Clearing old cache:', cache);
-                        return caches.delete(cache);
-                    }
-                })
-            );
-        })
+        caches
+            .keys()
+            .then(cacheNames => {
+                return Promise.all(
+                    cacheNames.map(cache => {
+                        if (cache !== CACHE_NAME) {
+                            console.log('[Service Worker] Clearing old cache:', cache);
+                            return caches.delete(cache);
+                        }
+                    })
+                );
+            })
+            .catch(err => {
+                console.error('[Service Worker] Cache cleanup failed:', err);
+            })
     );
     self.clients.claim();
 });
@@ -44,10 +54,17 @@ self.addEventListener('fetch', event => {
     event.respondWith(
         (async () => {
             try {
-                const networkResponse = await fetch(event.request);
+                // Add timeout protection
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-                // ⚡ FIX: Allow valid responses (200) AND Opaque responses (0 - redirects/CORS)
-                // GitHub Pages often returns opaque responses for certain assets.
+                const networkResponse = await fetch(event.request, {
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                // Cache valid responses (200) and opaque responses (0 - CORS/redirects)
                 if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
                     const responseToCache = networkResponse.clone();
                     const cache = await caches.open(CACHE_NAME);
@@ -57,22 +74,27 @@ self.addEventListener('fetch', event => {
                 return networkResponse;
             } catch (error) {
                 console.log('[Service Worker] Network failed, serving cache:', event.request.url);
+
                 const cachedResponse = await caches.match(event.request);
+                if (cachedResponse) {
+                    return cachedResponse;
+                }
 
-                if (cachedResponse) return cachedResponse;
-
-                // ⚡ FIX: Robust Offline Page Fallback
+                // Fallback to offline page for navigation requests
                 if (event.request.mode === 'navigate') {
                     const offlinePage = await caches.match('./offline.html');
                     return (
-                        offlinePage ||
+                        offlinePage ??
                         new Response('<h1>Offline</h1><p>No internet connection.</p>', {
                             headers: { 'Content-Type': 'text/html' }
                         })
                     );
                 }
 
-                return new Response('Network Error', { status: 408 });
+                return new Response('Network Error', {
+                    status: 408,
+                    statusText: 'Request Timeout'
+                });
             }
         })()
     );
