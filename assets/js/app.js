@@ -1,35 +1,18 @@
-// ========== TYPE DEFINITIONS ==========
-/**
- * @typedef {Object} AppData
- * @property {string} id
- * @property {string} name
- * @property {string} developer
- * @property {string} description
- * @property {string} icon
- * @property {string} version
- * @property {string} downloadUrl
- * @property {string} category
- * @property {string} size
- * @property {string} searchString
- */
-
-// ========== APP CONFIGURATION ==========
+// ========== CONFIGURATION ==========
 const CONFIG = {
     SEARCH_DEBOUNCE: 300,
     TOAST_DURATION: 4000,
     FETCH_TIMEOUT: 10000,
     API_ENDPOINT:
         window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? './sidestore.json'
-            : 'https://OofMini.github.io/Minis-Repo/sidestore.json',
+            ? './mini.json'
+            : 'https://OofMini.github.io/Minis-Repo/mini.json',
     FALLBACK_ICON: './apps/repo-icon.png',
     BATCH_SIZE: 12
 };
 
 const AppState = {
-    /** @type {AppData[]} */
     apps: [],
-    /** @type {AppData[]} */
     filteredApps: [],
     renderedIds: new Set(),
     searchTerm: '',
@@ -69,11 +52,14 @@ document.addEventListener('DOMContentLoaded', async function () {
         AppState.apps = await loadAppData();
         AppState.isLoading = false;
 
-        const appGrid = document.getElementById('appGrid');
-        if (appGrid) appGrid.innerHTML = '';
-        AppState.renderedIds.clear();
-
-        filterApps();
+        if (AppState.apps.length === 0) {
+            showErrorState("No apps available in this repository"); // Issue 14
+        } else {
+            const appGrid = document.getElementById('appGrid');
+            if (appGrid) appGrid.innerHTML = '';
+            AppState.renderedIds.clear();
+            filterApps();
+        }
     } catch (error) {
         console.error('Initialization error:', error);
         handleError(error);
@@ -97,10 +83,16 @@ async function loadAppData() {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        // Issue 10: JSON Parse Safety
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            throw new Error("Data corruption: Unable to parse app manifest.");
+        }
 
         if (!data?.apps || !Array.isArray(data.apps)) {
-            throw new Error('Invalid sidestore.json structure');
+            throw new Error('Invalid manifest structure');
         }
 
         const processedApps = data.apps
@@ -117,13 +109,10 @@ async function loadAppData() {
                     downloadUrl: latestVersion.downloadURL ?? '',
                     category: inferCategory(app.bundleIdentifier ?? ''),
                     size: formatSize(latestVersion.size),
+                    // Issue 11: Pre-computed search token
                     searchString: `${app.name} ${app.localizedDescription} ${app.developerName}`.toLowerCase()
                 };
             });
-
-        if (processedApps.length === 0) {
-            console.warn('sidestore.json loaded but contains 0 valid apps');
-        }
 
         return processedApps;
     } catch (error) {
@@ -148,9 +137,10 @@ function filterApps() {
 
     updateGrid();
 
-    if (infiniteScrollObserver) {
-        const sentinel = document.getElementById('scroll-sentinel');
-        if (sentinel) infiniteScrollObserver.observe(sentinel);
+    // Issue 13: Re-observe sentinel on filter change
+    const sentinel = document.getElementById('scroll-sentinel');
+    if (infiniteScrollObserver && sentinel) {
+        infiniteScrollObserver.observe(sentinel);
     }
 }
 
@@ -195,10 +185,6 @@ function updateGrid() {
     }
 }
 
-/**
- * @param {AppData} app
- * @param {number} index
- */
 function createAppCard(app, index) {
     const cardFragment = document.importNode(AppCardTemplate.content, true);
     const article = cardFragment.querySelector('article');
@@ -211,9 +197,7 @@ function createAppCard(app, index) {
     const img = article.querySelector('.app-icon');
     img.src = app.icon;
     img.alt = `${app.name} Icon`;
-    img.onerror = () => {
-        img.src = CONFIG.FALLBACK_ICON;
-    };
+    img.onerror = () => { img.src = CONFIG.FALLBACK_ICON; };
 
     article.querySelector('.app-status').textContent = `✅ Fully Working • v${app.version}`;
     article.querySelector('h3').textContent = app.name;
@@ -260,13 +244,12 @@ function handleGridClick(e) {
     }
 }
 
-// ========== ACTIONS ==========
 async function trackDownload(appId) {
     const app = AppState.apps.find(a => a.id === appId);
     if (!app) return;
 
     if (!isValidDownloadUrl(app.downloadUrl)) {
-        showToast('Security Block: Invalid Download URL', 'error');
+        showToast('⚠️ Security Block: URL must be HTTPS', 'error');
         return;
     }
 
@@ -274,36 +257,19 @@ async function trackDownload(appId) {
     showToast(`✅ Downloading ${app.name}`, 'success');
 }
 
-/**
- * Validates download URLs with strict protocol checking
- * @param {string} url
- * @returns {boolean}
- */
+// Issue 12: Strict HTTPS Check
 function isValidDownloadUrl(url) {
-    if (!url || typeof url !== 'string') {
-        return false;
-    }
-
+    if (!url || typeof url !== 'string') return false;
     try {
         const parsed = new URL(url);
-
-        // Only allow https and http protocols
-        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-            return false;
-        }
-
-        // Ensure there's a valid hostname
-        if (!parsed.hostname || parsed.hostname.length === 0) {
-            return false;
-        }
-
+        if (parsed.protocol !== 'https:') return false; // Block HTTP
+        if (!parsed.hostname || parsed.hostname.length === 0) return false;
         return true;
     } catch {
         return false;
     }
 }
 
-// ========== UI HELPERS ==========
 function showToast(msg, type = 'info', action = null) {
     const toast = document.getElementById('toast');
     if (!toast) return;
@@ -326,23 +292,18 @@ function showToast(msg, type = 'info', action = null) {
 
 function setupPWA() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker
-            .register('./sw.js')
-            .then(reg => {
-                reg.addEventListener('updatefound', () => {
-                    newWorker = reg.installing;
-                    if (newWorker) {
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                showUpdateNotification();
-                            }
-                        });
-                    }
-                });
-            })
-            .catch(err => {
-                console.error('SW Registration Failed:', err);
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+            reg.addEventListener('updatefound', () => {
+                newWorker = reg.installing;
+                if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showUpdateNotification();
+                        }
+                    });
+                }
             });
+        }).catch(err => console.error('SW Fail:', err));
 
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -362,12 +323,7 @@ function showUpdateNotification() {
 
 function escapeHtml(unsafe) {
     if (!unsafe) return '';
-    return unsafe
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+    return unsafe.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }
 
 function generateId(bundleId) {
@@ -378,7 +334,7 @@ function inferCategory(bundleId) {
     const bid = bundleId.toLowerCase();
     if (bid.includes('spotify') || bid.includes('music')) return 'Music';
     if (bid.includes('youtube') || bid.includes('video')) return 'Video';
-    if (bid.includes('social') || bid.includes('gram') || bid.includes('tweet')) return 'Social';
+    if (bid.includes('social') || bid.includes('tweet')) return 'Social';
     return 'Utilities';
 }
 
@@ -389,11 +345,7 @@ function formatSize(bytes) {
 function showLoadingState() {
     const grid = document.getElementById('appGrid');
     if (!grid) return;
-
-    grid.innerHTML = Array(6)
-        .fill(0)
-        .map(
-            (_, i) => `
+    grid.innerHTML = Array(6).fill(0).map((_, i) => `
         <div class="skeleton-card fade-in stagger-${(i % 3) + 1}">
             <div class="skeleton skeleton-icon"></div>
             <div class="skeleton skeleton-text short"></div>
@@ -401,10 +353,7 @@ function showLoadingState() {
             <div class="skeleton skeleton-text medium"></div>
             <div class="skeleton skeleton-button"></div>
         </div>
-    `
-        )
-        .join('');
-
+    `).join('');
     requestAnimationFrame(() => {
         grid.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
     });
@@ -413,7 +362,6 @@ function showLoadingState() {
 function showErrorState(msg) {
     const grid = document.getElementById('appGrid');
     if (!grid) return;
-
     grid.innerHTML = `
         <div class="error-state fade-in visible">
             <div class="error-emoji">⚠️</div>
@@ -449,7 +397,6 @@ function setupEventListeners() {
                     }
                     window.location.reload();
                 } catch (error) {
-                    console.error('Reset failed:', error);
                     window.location.reload();
                 }
             }
@@ -459,8 +406,7 @@ function setupEventListeners() {
     const trollappsBtn = document.getElementById('btn-trollapps');
     if (trollappsBtn) {
         trollappsBtn.addEventListener('click', () => {
-            const trollappsUrl = CONFIG.API_ENDPOINT.replace('sidestore.json', 'trollapps.json');
-            window.location.href = `trollapps://add-repo?url=${encodeURIComponent(trollappsUrl)}`;
+            window.location.href = `trollapps://add-repo?url=${encodeURIComponent(CONFIG.API_ENDPOINT)}`;
         });
     }
 
@@ -478,13 +424,8 @@ function setupEventListeners() {
 }
 
 function setupGlobalErrorHandling() {
-    window.addEventListener('unhandledrejection', event => {
-        console.warn('Unhandled promise rejection:', event.reason);
-    });
-
-    window.addEventListener('error', event => {
-        console.error('Global error:', event.error);
-    });
+    window.addEventListener('unhandledrejection', event => console.warn('Unhandled rejection:', event.reason));
+    window.addEventListener('error', event => console.error('Global error:', event.error));
 }
 
 function handleError(error) {
@@ -494,32 +435,21 @@ function handleError(error) {
 
 function initializeScrollAnimations() {
     if ('IntersectionObserver' in window) {
-        observer = new IntersectionObserver(
-            entries => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        observer.unobserve(entry.target);
-                    }
-                });
-            },
-            { threshold: 0.1 }
-        );
-
+        observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
         document.querySelectorAll('.fade-in, .fade-in-left').forEach(el => observer.observe(el));
     } else {
         document.querySelectorAll('.fade-in, .fade-in-left').forEach(el => el.classList.add('visible'));
     }
 }
 
-// ========== CLEANUP ON PAGE UNLOAD ==========
 window.addEventListener('beforeunload', () => {
-    if (observer) {
-        observer.disconnect();
-        observer = null;
-    }
-    if (infiniteScrollObserver) {
-        infiniteScrollObserver.disconnect();
-        infiniteScrollObserver = null;
-    }
+    if (observer) observer.disconnect();
+    if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
 });
