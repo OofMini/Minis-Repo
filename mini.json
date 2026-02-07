@@ -1,5 +1,4 @@
 {
-    "schemaVersion": "1.0.0",
     "name": "Mini's IPA Repo",
     "identifier": "com.oofmini.ipa-repo",
     "subtitle": "Tweaked IPA Repo",
@@ -121,7 +120,7 @@
             "name": "InshotPro",
             "bundleIdentifier": "com.camerasideas.InstaShot",
             "developerName": "IPAOMTK",
-            "localizedDescription": "Pro video editor with premium filters, tools, and no watermark. App v1.93.0.",
+            "localizedDescription": "All filters unlocked, watermark removed, premium tools enabled",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/Inshot.png",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/inshot-1.png",
@@ -156,7 +155,7 @@
             "name": "iTorrent",
             "bundleIdentifier": "org.xitrix.iTorrent2",
             "developerName": "XITRIX",
-            "localizedDescription": "Lightweight torrent client for downloading and managing torrent files on-device.",
+            "localizedDescription": "Lightweight torrent client",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/itorrent.png",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/itorrent-1.png",
@@ -190,7 +189,7 @@
             "name": "LiveContainer",
             "bundleIdentifier": "com.kdt.livecontainer",
             "developerName": "hugeBlack",
-            "localizedDescription": "Runs live production containers for streaming apps and runtime isolation.",
+            "localizedDescription": "JIT-less app container",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/livecontainer.png",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/livecontainer-1.png",
