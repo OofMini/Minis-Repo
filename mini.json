@@ -130,6 +130,13 @@
             "versions": [
                 {
                     "version": "1.93.0",
+                    "date": "2026-02-07",
+                    "localizedDescription": "All filters unlocked, watermark removed, premium tools enabled",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/New/InShot.ipa",
+                    "size": 113665638
+                },
+                {
+                    "version": "1.93.0",
                     "date": "2026-01-23",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/New/InShot.ipa",
                     "size": 113665638,
@@ -156,6 +163,13 @@
                 "https://OofMini.github.io/Minis-Repo/apps/itorrent-3.png"
             ],
             "versions": [
+                {
+                    "version": "2.1.1",
+                    "date": "2026-02-07",
+                    "localizedDescription": "Lightweight torrent client",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Torrent/iTorrent.ipa",
+                    "size": 7130316
+                },
                 {
                     "version": "2.1.0",
                     "date": "2025-10-06",
@@ -184,6 +198,13 @@
             ],
             "versions": [
                 {
+                    "version": "3.6.63",
+                    "date": "2026-02-07",
+                    "localizedDescription": "JIT-less app container",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Live/LiveContainer.ipa",
+                    "size": 4194304
+                },
+                {
                     "version": "3.6.1",
                     "date": "2025-10-06",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Live/LiveContainer.ipa",
@@ -210,6 +231,13 @@
                 "https://OofMini.github.io/Minis-Repo/apps/refacepro-3.png"
             ],
             "versions": [
+                {
+                    "version": "6.1.3",
+                    "date": "2026-02-07",
+                    "localizedDescription": "Reface Premium Unlocked.",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
+                    "size": 106535321
+                },
                 {
                     "version": "6.0.0",
                     "date": "2026-01-23",
