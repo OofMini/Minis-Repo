@@ -1,6 +1,6 @@
 {
+    "schemaVersion": "1.0.0",
     "name": "Mini's IPA Repo",
-    "identifier": "com.oofmini.ipa-repo",
     "subtitle": "Tweaked IPA Repo",
     "description": "A collection of popular tweaked apps.",
     "iconURL": "https://OofMini.github.io/Minis-Repo/apps/repo-icon.png",
@@ -120,7 +120,7 @@
             "name": "InshotPro",
             "bundleIdentifier": "com.camerasideas.InstaShot",
             "developerName": "IPAOMTK",
-            "localizedDescription": "All filters unlocked, watermark removed, premium tools enabled",
+            "localizedDescription": "Pro video editor with premium filters, tools, and no watermark. App v1.93.0.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/Inshot.png",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/inshot-1.png",
@@ -128,13 +128,6 @@
                 "https://OofMini.github.io/Minis-Repo/apps/inshot-3.png"
             ],
             "versions": [
-                {
-                    "version": "1.93.0",
-                    "date": "2026-02-07",
-                    "localizedDescription": "All filters unlocked, watermark removed, premium tools enabled",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/New/InShot.ipa",
-                    "size": 113665638
-                },
                 {
                     "version": "1.93.0",
                     "date": "2026-01-23",
@@ -155,7 +148,7 @@
             "name": "iTorrent",
             "bundleIdentifier": "org.xitrix.iTorrent2",
             "developerName": "XITRIX",
-            "localizedDescription": "Lightweight torrent client",
+            "localizedDescription": "Lightweight torrent client for downloading and managing torrent files on-device.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/itorrent.png",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/itorrent-1.png",
@@ -166,13 +159,6 @@
                 {
                     "version": "2.1.1",
                     "date": "2026-02-07",
-                    "localizedDescription": "Lightweight torrent client",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Torrent/iTorrent.ipa",
-                    "size": 7130316
-                },
-                {
-                    "version": "2.1.0",
-                    "date": "2025-10-06",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Torrent/iTorrent.ipa",
                     "size": 7130316,
                     "localizedDescription": "Lightweight torrent client"
@@ -189,7 +175,7 @@
             "name": "LiveContainer",
             "bundleIdentifier": "com.kdt.livecontainer",
             "developerName": "hugeBlack",
-            "localizedDescription": "JIT-less app container",
+            "localizedDescription": "Runs live production containers for streaming apps and runtime isolation.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/livecontainer.png",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/livecontainer-1.png",
@@ -200,13 +186,6 @@
                 {
                     "version": "3.6.63",
                     "date": "2026-02-07",
-                    "localizedDescription": "JIT-less app container",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Live/LiveContainer.ipa",
-                    "size": 4194304
-                },
-                {
-                    "version": "3.6.1",
-                    "date": "2025-10-06",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Live/LiveContainer.ipa",
                     "size": 4194304,
                     "localizedDescription": "JIT-less app container"
@@ -233,14 +212,7 @@
             "versions": [
                 {
                     "version": "6.1.3",
-                    "date": "2026-02-07",
-                    "localizedDescription": "Reface Premium Unlocked.",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
-                    "size": 106535321
-                },
-                {
-                    "version": "6.0.0",
-                    "date": "2026-01-23",
+                    "date": "2026-02-7",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
                     "size": 106535321,
                     "localizedDescription": "Reface Premium Unlocked."
