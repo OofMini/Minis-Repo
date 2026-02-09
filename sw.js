@@ -1,4 +1,4 @@
-const CACHE_NAME = 'minis-repo-cache-393ceed';
+const CACHE_NAME = 'minis-repo-cache-2855805';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
