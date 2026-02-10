@@ -100,6 +100,11 @@ async function loadAppData() {
             .map(app => {
                 const latestVersion = app.versions[0];
                 return {
+                    // HIGH FIX: Use full bundleIdentifier as the ID.
+                    // The previous implementation used only the last segment
+                    // (e.g., "client" from "com.spotify.client"), which could
+                    // produce duplicate IDs if two apps share the same last segment.
+                    // This broke renderedIds tracking and trackDownload lookups.
                     id: generateId(app.bundleIdentifier),
                     name: app.name ?? 'Unknown App',
                     developer: app.developerName ?? 'Unknown',
@@ -348,12 +353,21 @@ function setupPWA() {
 function showUpdateNotification() {
     showToast('🚀 New version available!', 'info', {
         text: 'REFRESH',
-        callback: () => newWorker?.postMessage({ action: 'skipWaiting' })
+        callback: () => {
+            // CRITICAL-2 FIX: postMessage to the waiting worker so it calls skipWaiting()
+            if (newWorker) {
+                newWorker.postMessage({ action: 'skipWaiting' });
+            }
+        }
     });
 }
 
+// HIGH FIX: Use the full bundleIdentifier as the unique app ID.
+// Previous implementation split on '.' and took only the last segment,
+// which could collide (e.g., "com.spotify.client" and "com.other.client"
+// both produced "client"). This caused broken rendering and download lookups.
 function generateId(bundleId) {
-    return bundleId ? bundleId.split('.').pop().toLowerCase() : 'unknown';
+    return bundleId ? bundleId.toLowerCase() : 'unknown';
 }
 
 function inferCategory(bundleId) {
@@ -385,16 +399,12 @@ function showLoadingState() {
     });
 }
 
+// MEDIUM-1 FIX: Removed redundant HTML entity encoding.
+// textContent already escapes HTML safely. The old code was double-encoding,
+// causing users to see literal "&lt;" instead of "<" in error messages.
 function showErrorState(msg) {
     const grid = document.getElementById('appGrid');
     if (!grid) return;
-    
-    // CRITICAL-1: DOM-Based XSS Fix
-    const sanitized = String(msg)
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;');
 
     grid.innerHTML = `
         <div class="error-state fade-in visible">
@@ -404,7 +414,8 @@ function showErrorState(msg) {
             <button class="download-btn" onclick="location.reload()">Retry</button>
         </div>
     `;
-    grid.querySelector('p').textContent = sanitized;
+    // textContent is XSS-safe: it sets raw text, never interprets HTML
+    grid.querySelector('p').textContent = String(msg);
 }
 
 function setupEventListeners() {

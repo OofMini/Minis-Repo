@@ -1,4 +1,4 @@
-const CACHE_NAME = 'minis-repo-cache-a3b2968';
+const CACHE_NAME = 'minis-repo-cache-b1cb41a';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -20,7 +20,17 @@ let lastCleanup = 0;
 
 self.addEventListener('install', event => {
     event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE)));
-    self.skipWaiting();
+    // CRITICAL-2 FIX: Do NOT call self.skipWaiting() here.
+    // The new worker must wait until the user clicks the "REFRESH" button
+    // in the update notification (triggered via postMessage from app.js).
+    // Unconditional skipWaiting was making the entire update notification flow dead code.
+});
+
+// CRITICAL-2 FIX: Listen for skipWaiting message from app.js update notification
+self.addEventListener('message', event => {
+    if (event.data && event.data.action === 'skipWaiting') {
+        self.skipWaiting();
+    }
 });
 
 self.addEventListener('activate', event => {
@@ -82,13 +92,31 @@ self.addEventListener('fetch', event => {
                 if (event.request.mode === 'navigate') {
                     return new Response(
                         `<!DOCTYPE html>
-                        <html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Offline — Mini's IPA Repo</title>
+                            <style>
+                                body {
+                                    background: #000; color: #fff; font-family: -apple-system, sans-serif;
+                                    display: flex; flex-direction: column; align-items: center;
+                                    justify-content: center; min-height: 100vh; margin: 0; text-align: center;
+                                }
+                                h1 { font-size: 2em; margin-bottom: 10px; }
+                                p { opacity: 0.7; margin-bottom: 20px; }
+                                a {
+                                    display: inline-block; padding: 12px 24px; background: #1db954;
+                                    color: #fff; border-radius: 12px; text-decoration: none;
+                                    font-weight: 700;
+                                }
+                            </style>
+                            <meta http-equiv="refresh" content="10">
+                        </head>
                         <body>
-                            <h1>Offline</h1>
-                            <button id="retryBtn">Retry</button>
-                            <script>
-                                document.getElementById('retryBtn').addEventListener('click', () => location.reload());
-                            </script>
+                            <h1>📡 You're Offline</h1>
+                            <p>This page will auto-retry in 10 seconds, or tap below.</p>
+                            <a href="./">Retry Now</a>
                         </body>
                         </html>`,
                         { headers: { 'Content-Type': 'text/html' } }

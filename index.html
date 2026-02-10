@@ -2,7 +2,10 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <!-- MEDIUM-6 FIX: Removed maximum-scale=1.0 and user-scalable=no.
+             These block pinch-to-zoom, violating WCAG 1.4.4 (Resize Text).
+             Users with visual impairments need to zoom for readability. -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
         <meta
             http-equiv="Content-Security-Policy"
@@ -91,7 +94,11 @@
                 />
             </section>
 
-            <section class="app-grid" id="appGrid" role="list" aria-label="Available apps"></section>
+            <!-- MEDIUM-7 FIX: Changed role="list" to role="region".
+                 The app cards use role="article" (set by app.js template), which is NOT
+                 a valid child of role="list" (requires role="listitem"). Using role="region"
+                 is semantically correct for a group of independent article elements. -->
+            <section class="app-grid" id="appGrid" role="region" aria-label="Available apps"></section>
 
             <section class="repo-info fade-in" aria-labelledby="repo-info-title">
                 <h3 id="repo-info-title">📦 Repository Source</h3>
