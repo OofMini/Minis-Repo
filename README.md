@@ -32,7 +32,7 @@ Copy and paste this link directly into your app manager:
 | <img src="apps/YouTubePlus_5.2b3.PNG" width="48" style="border-radius: 22%"> | **YTLite** | v21.04.2 | Lightweight YouTube tweak with background playback, ad-blocking, and PiP.         |
 |   <img src="apps/YouTubeMusic.png" width="48" style="border-radius: 22%">    | **YTMusicUltimate** | v8.50.2  | Unlocked YouTube Music experience with background audio and premium features.     |
 |    <img src="apps/NeoFreeBird.png" width="48" style="border-radius: 22%">    | **NeoFreeBird** | v11.60   | Enhanced X (Twitter) client with ad removal and video downloading capabilities.   |
-|      <img src="apps/Inshot.png" width="48" style="border-radius: 22%">       | **InShot Pro** | v1.93.0  | Professional video editor with all filters, effects, and export options unlocked. |
+|      <img src="apps/Inshot.png" width="48" style="border-radius: 22%">       | **InShot Pro** | v1.94.0  | Professional video editor with all filters, effects, and export options unlocked. |
 |     <img src="apps/refacepro.png" width="48" style="border-radius: 22%">     | **Reface Pro** | v6.1.3   | Advanced AI face-swapping tool with premium templates and features enabled.       |
 |     <img src="apps/itorrent.png" width="48" style="border-radius: 22%">      | **iTorrent** | v2.1.1   | A robust, native BitTorrent client for iOS with background downloading support.   |
 |   <img src="apps/livecontainer.png" width="48" style="border-radius: 22%">   | **LiveContainer** | v3.6.63   | Run JIT-dependent apps without a computer using advanced containerization.        |

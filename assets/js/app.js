@@ -142,6 +142,18 @@ function filterApps() {
 
     updateGrid();
 
+    // MEDIUM-11 FIX: After grid re-render from search, move focus to the grid
+    // region so keyboard users don't lose their position in the page.
+    // Only do this when triggered by search (searchTerm is non-empty or was just cleared).
+    const searchBox = document.getElementById('searchBox');
+    if (searchBox && document.activeElement === searchBox) {
+        // User is typing in search — keep focus on search box
+    } else if (appGrid && AppState.filteredApps.length > 0) {
+        // Focus the grid region so screen readers announce new content
+        appGrid.setAttribute('tabindex', '-1');
+        appGrid.focus({ preventScroll: true });
+    }
+
     const sentinel = document.getElementById('scroll-sentinel');
     if (infiniteScrollObserver && sentinel) {
         infiniteScrollObserver.observe(sentinel);
@@ -279,6 +291,12 @@ function handleGridClick(e) {
             trackDownload(appId);
         }
     }
+    // MEDIUM-9 FIX: Handle retry button click via event delegation.
+    // The retry button is now identified by class instead of inline onclick,
+    // because CSP script-src 'self' blocks inline event handlers.
+    if (e.target.classList.contains('action-retry')) {
+        location.reload();
+    }
 }
 
 async function trackDownload(appId) {
@@ -399,9 +417,10 @@ function showLoadingState() {
     });
 }
 
-// MEDIUM-1 FIX: Removed redundant HTML entity encoding.
-// textContent already escapes HTML safely. The old code was double-encoding,
-// causing users to see literal "&lt;" instead of "<" in error messages.
+// MEDIUM-9 FIX: Replaced inline onclick="location.reload()" with a class-based
+// button that is handled by the delegated click handler in handleGridClick().
+// The previous inline onclick was silently blocked by the Content Security Policy
+// (script-src 'self' without 'unsafe-inline'), making the Retry button non-functional.
 function showErrorState(msg) {
     const grid = document.getElementById('appGrid');
     if (!grid) return;
@@ -411,7 +430,7 @@ function showErrorState(msg) {
             <div class="error-emoji">⚠️</div>
             <h3>Error</h3>
             <p></p>
-            <button class="download-btn" onclick="location.reload()">Retry</button>
+            <button class="download-btn action-retry">Retry</button>
         </div>
     `;
     // textContent is XSS-safe: it sets raw text, never interprets HTML

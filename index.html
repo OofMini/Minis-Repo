@@ -7,6 +7,11 @@
              Users with visual impairments need to zoom for readability. -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+        <!-- MEDIUM-10 FIX: Added missing CSP directives for defense-in-depth:
+             - frame-ancestors 'none': Prevents clickjacking by blocking framing.
+             - base-uri 'self': Prevents <base> tag injection that could redirect relative URLs.
+             - object-src 'none': Blocks Flash/plugin content (no legitimate use case).
+             - form-action 'self': Restricts form submissions to same origin. -->
         <meta
             http-equiv="Content-Security-Policy"
             content="default-src 'self'; 
@@ -14,6 +19,10 @@
                    script-src 'self'; 
                    style-src 'self'; 
                    connect-src 'self' https://github.com https://raw.githubusercontent.com https://api.github.com https://objects.githubusercontent.com;
+                   frame-ancestors 'none';
+                   base-uri 'self';
+                   object-src 'none';
+                   form-action 'self';
                    upgrade-insecure-requests;"
         />
 

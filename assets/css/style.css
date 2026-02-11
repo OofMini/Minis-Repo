@@ -223,11 +223,15 @@ img {
     justify-content: center;
     flex-wrap: wrap;
 }
+/* LOW-10 FIX: Added min-height: 44px to ensure WCAG 2.5.5 minimum touch target
+   size. The previous padding (12px 20px) could produce buttons shorter than 44px
+   depending on font rendering, failing the 44x44px touch target requirement. */
 .cta-button {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
+    min-height: 44px;
     color: white;
     border-radius: 12px;
     font-weight: 600;
@@ -389,11 +393,13 @@ img {
     margin-top: 10px;
 }
 
+/* LOW-10 FIX: Added min-height: 44px for WCAG 2.5.5 touch target compliance. */
 .download-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
+    min-height: 44px;
     border-radius: 12px;
     background: linear-gradient(135deg, var(--success-color), #1ed760);
     color: #fff;
@@ -492,6 +498,7 @@ img {
 .footer-link:hover {
     opacity: 1;
 }
+/* LOW-10 FIX: Added min-height/min-width for WCAG touch target compliance. */
 .footer-reset-btn {
     background: none;
     border: none;
@@ -500,6 +507,8 @@ img {
     font-size: 0.9em;
     cursor: pointer;
     transition: opacity 0.2s;
+    min-height: 44px;
+    min-width: 44px;
 }
 .footer-reset-btn:hover {
     opacity: 1;
