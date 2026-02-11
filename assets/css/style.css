@@ -28,7 +28,16 @@ html {
 }
 
 body {
-    background: var(--bg-color);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(75, 20, 130, 0.45) 0%,
+            rgba(50, 12, 90, 0.25) 220px,
+            rgba(20, 5, 40, 0.1) 420px,
+            transparent 600px
+        )
+        no-repeat,
+        var(--bg-color);
     color: var(--text-color);
     font-family:
         'Inter',
@@ -170,7 +179,7 @@ img {
 
 /* Hero Section */
 .hero {
-    background: var(--bg-color);
+    background: transparent;
     padding: 30px 15px 20px;
     border-bottom: 1px solid var(--card-border);
     text-align: center;
