@@ -31,10 +31,10 @@ body {
     background:
         linear-gradient(
             180deg,
-            rgba(75, 20, 130, 0.45) 0%,
-            rgba(50, 12, 90, 0.25) 220px,
-            rgba(20, 5, 40, 0.1) 420px,
-            transparent 600px
+            rgba(75, 20, 130, 0.35) 0%,
+            rgba(50, 12, 90, 0.18) 280px,
+            rgba(20, 5, 40, 0.06) 480px,
+            transparent 650px
         )
         no-repeat,
         var(--bg-color);
@@ -103,6 +103,10 @@ img {
     }
     html {
         scroll-behavior: auto;
+    }
+    .hero::before {
+        animation: none !important;
+        transform: none !important;
     }
 }
 
@@ -177,13 +181,83 @@ img {
     opacity: 0.7;
 }
 
-/* Hero Section */
+/* ============================================================
+   HERO SECTION
+   - ::before  → Animated purple radial glow (transform-only,
+                  fully GPU-composited, zero layout/paint cost)
+   - ::after   → Soft gradient fade replacing the hard border,
+                  blends hero into the search area seamlessly
+   ============================================================ */
 .hero {
     background: transparent;
     padding: 30px 15px 20px;
-    border-bottom: 1px solid var(--card-border);
     text-align: center;
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
 }
+
+/* Animated purple glow — GPU composited via transform-only keyframes.
+   The element is oversized (200% x 260%) and shifted with translate/scale
+   so the browser promotes it to its own compositor layer. No layout or
+   paint is triggered on each frame — only compositing. */
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    left: -50%;
+    width: 200%;
+    height: 260%;
+    background:
+        radial-gradient(
+            ellipse 80% 50% at 50% 30%,
+            rgba(110, 30, 180, 0.40) 0%,
+            rgba(80, 20, 150, 0.22) 30%,
+            rgba(50, 10, 100, 0.08) 55%,
+            transparent 75%
+        );
+    animation: heroGlow 10s ease-in-out infinite alternate;
+    will-change: transform;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Transform-only keyframes: translate + scale keep the animation
+   entirely on the compositor thread. Zero layout/paint triggers. */
+@keyframes heroGlow {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    33% {
+        transform: translate(3%, -2%) scale(1.04);
+    }
+    66% {
+        transform: translate(-2%, 1%) scale(0.97);
+    }
+    100% {
+        transform: translate(1%, -1%) scale(1.02);
+    }
+}
+
+/* Soft bottom fade — replaces the hard 1px border-bottom.
+   Blends the hero's purple glow smoothly into the black body/search area. */
+.hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.4) 50%,
+        var(--bg-color) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
 .repo-icon {
     width: 64px;
     height: 64px;
@@ -191,17 +265,23 @@ img {
     margin: 0 auto 15px;
     border: 2px solid var(--card-border);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    position: relative;
+    z-index: 2;
 }
 .hero h1 {
     font-size: 2.2em;
     font-weight: 800;
     margin: 0 0 8px;
     letter-spacing: -0.5px;
+    position: relative;
+    z-index: 2;
 }
 .hero-subtitle {
     font-size: 1.1em;
     margin: 0 0 25px;
     opacity: 0.9;
+    position: relative;
+    z-index: 2;
 }
 
 /* Badges */
@@ -211,6 +291,8 @@ img {
     justify-content: center;
     flex-wrap: wrap;
     margin-bottom: 25px;
+    position: relative;
+    z-index: 2;
 }
 .badge {
     background: var(--success-color);
@@ -231,6 +313,8 @@ img {
     gap: 12px;
     justify-content: center;
     flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
 }
 /* LOW-10 FIX: Added min-height: 44px to ensure WCAG 2.5.5 minimum touch target
    size. The previous padding (12px 20px) could produce buttons shorter than 44px
@@ -609,7 +693,14 @@ img {
     transition-delay: 0.3s;
 }
 
-@keyframes gradientShift {
+/* ============================================================
+   TITLE GRADIENT — Richer purple palette, faster cycle
+   6-stop gradient: deep violet → lavender → electric purple
+   Tighter background-size (300%) + faster duration (4s) for
+   a more dynamic shimmer. background-position animation on a
+   single text element is trivially cheap for the compositor.
+   ============================================================ */
+@keyframes titleGradientShift {
     0% {
         background-position: 0% 50%;
     }
@@ -621,12 +712,20 @@ img {
     }
 }
 .animated-gradient {
-    background: linear-gradient(270deg, #8a2be2, #ffffff, #8a2be2);
-    background-size: 400% 400%;
+    background: linear-gradient(
+        270deg,
+        #7c3aed,
+        #c084fc,
+        #e9d5ff,
+        #a855f7,
+        #6d28d9,
+        #7c3aed
+    );
+    background-size: 300% 300%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: gradientShift 6s ease infinite;
+    animation: titleGradientShift 4s ease infinite;
 }
 
 @media (max-width: 768px) {
