@@ -8,7 +8,11 @@ const CONFIG = {
             ? './mini.json'
             : 'https://OofMini.github.io/Minis-Repo/mini.json',
     FALLBACK_ICON: './apps/repo-icon.png',
-    BATCH_SIZE: 12
+    BATCH_SIZE: 12,
+    // MEDIUM-1: Duration (ms) to wait after adding .visible before clearing will-change.
+    // Matches the 600ms CSS transition + 100ms buffer to ensure the animation has
+    // fully completed before removing the compositor layer promotion.
+    WILL_CHANGE_CLEANUP_DELAY: 700
 };
 
 const AppState = {
@@ -392,7 +396,9 @@ function inferCategory(bundleId) {
     const bid = bundleId.toLowerCase();
     if (bid.includes('spotify') || bid.includes('music')) return 'Music';
     if (bid.includes('youtube') || bid.includes('video')) return 'Video';
-    if (bid.includes('social') || bid.includes('tweet')) return 'Social';
+    if (bid.includes('social') || bid.includes('tweet') || bid.includes('twitter')) return 'Social';
+    if (bid.includes('editor') || bid.includes('inshot') || bid.includes('photo') || bid.includes('reface') || bid.includes('doublicatapp')) return 'Creative';
+    if (bid.includes('torrent')) return 'Utilities';
     return 'Utilities';
 }
 
@@ -499,6 +505,14 @@ function handleError(error) {
     showToast(error.message ?? 'An error occurred', 'error');
 }
 
+// MEDIUM-1 FIX: After adding .visible and unobserving, schedule removal of
+// will-change after the CSS transition completes. Each element with will-change
+// is promoted to its own GPU compositor layer — keeping it indefinitely wastes
+// video memory. With 8+ app cards, this saves ~8 unnecessary layers.
+//
+// MEDIUM-4 FIX: Increased threshold from 0.1 to 0.15 for slightly more
+// intentional reveal timing. At 0.1, cards start animating when barely visible,
+// causing many simultaneous animations on fast scroll.
 function initializeScrollAnimations() {
     if ('IntersectionObserver' in window) {
         observer = new IntersectionObserver(entries => {
@@ -506,9 +520,17 @@ function initializeScrollAnimations() {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
                     observer.unobserve(entry.target);
+
+                    // MEDIUM-1 FIX: Clear will-change after the entrance animation
+                    // finishes. The 700ms delay covers the 600ms CSS transition plus
+                    // stagger delays (100-300ms) with buffer. Setting will-change to
+                    // 'auto' lets the browser reclaim the compositor layer.
+                    setTimeout(() => {
+                        entry.target.style.willChange = 'auto';
+                    }, CONFIG.WILL_CHANGE_CLEANUP_DELAY);
                 }
             });
-        }, { threshold: 0.1 });
+        }, { threshold: 0.15 });
         document.querySelectorAll('.fade-in, .fade-in-left').forEach(el => observer.observe(el));
     } else {
         document.querySelectorAll('.fade-in, .fade-in-left').forEach(el => el.classList.add('visible'));
@@ -519,4 +541,10 @@ window.addEventListener('beforeunload', () => {
     if (observer) observer.disconnect();
     if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
     AppState.pendingIdleCallbacks.forEach(id => cancelIdleCallback(id));
+
+    // Clean up debounce timer
+    const searchBox = document.getElementById('searchBox');
+    if (searchBox && searchBox._debounceTimer) {
+        clearTimeout(searchBox._debounceTimer);
+    }
 });

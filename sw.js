@@ -1,11 +1,19 @@
-const CACHE_NAME = 'minis-repo-cache-37d8adc';
+const CACHE_NAME = 'minis-repo-cache-723fe40';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
     './assets/css/style.css',
     './assets/js/app.js',
     './manifest.json',
-    './apps/repo-icon.png'
+    './apps/repo-icon.png',
+    // HIGH-2 FIX: Cache mini.json so the app can display data when offline.
+    // Previously, the PWA cached the app shell (HTML/CSS/JS) but NOT the data
+    // manifest. When offline, the shell loaded but loadAppData() failed with a
+    // network error, showing "Failed to initialize application" — defeating the
+    // purpose of the service worker cache. The fetch handler uses network-first
+    // strategy, so online users always get fresh data; offline users get the
+    // last successfully cached copy.
+    './mini.json'
 ];
 
 const SAFE_ASSET_PATTERNS = [

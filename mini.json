@@ -9,7 +9,7 @@
             "name": "EeveeSpotify",
             "bundleIdentifier": "com.spotify.client",
             "developerName": "whoeevee",
-            "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.12, EeveeSpotify 6.5.0.",
+            "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.22, EeveeSpotify 6.5.3",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/EeveeSpotify.png",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/eeveespotify-1.png",
@@ -18,8 +18,8 @@
             ],
             "versions": [
                 {
-                    "version": "9.1.12",
-                    "date": "2026-01-25",
+                    "version": "9.1.22",
+                    "date": "2026-02-13",
                     "downloadURL": "https://github.com/OofMini/eeveespotifyreborn/releases/download/New/EeveeSpotify.ipa",
                     "size": 87975526,
                     "localizedDescription": "Premium unlocked, ads removed, enhanced playback"
