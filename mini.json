@@ -37,7 +37,7 @@
             "name": "YTLite",
             "bundleIdentifier": "com.google.ios.youtube",
             "developerName": "dayanch96",
-            "localizedDescription": "Tweaked YouTube with background playback, no ads, and picture-in-picture. YouTube IPA 21.04.2, YTLite 5.2b4.",
+            "localizedDescription": "Tweaked YouTube with background playback, no ads, and picture-in-picture. YouTube IPA 21.06.2, YTLite 5.2b4.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubePlus_5.2b3.PNG",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/ytliteplus-1.PNG",
@@ -46,8 +46,8 @@
             ],
             "versions": [
                 {
-                    "version": "21.04.2",
-                    "date": "2026-01-27",
+                    "version": "21.06.2",
+                    "date": "2026-02-14",
                     "downloadURL": "https://github.com/OofMini/YTLite/releases/download/New/YouTubePlus_5.2b4.ipa",
                     "size": 113351065,
                     "localizedDescription": "Background playback, ads removed, picture-in-picture support"
@@ -65,7 +65,7 @@
             "name": "YTMusicUltimate",
             "bundleIdentifier": "com.google.ios.youtubemusic",
             "developerName": "dayanch96",
-            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 8.50.2, YTMusicUltimate 2.3.1.",
+            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.06.4, YTMusicUltimate 2.3.1",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubeMusic.png",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/youtubemusic-1.png",
@@ -74,8 +74,8 @@
             ],
             "versions": [
                 {
-                    "version": "8.50.2",
-                    "date": "2026-01-25",
+                    "version": "9.06.4",
+                    "date": "2026-02-14",
                     "downloadURL": "https://github.com/OofMini/YTMusicUltimate/releases/download/New/YTMusicUltimate.ipa",
                     "size": 257425408,
                     "localizedDescription": "Premium unlocked, background playback, no ads"
@@ -93,7 +93,7 @@
             "name": "NeoFreeBird",
             "bundleIdentifier": "com.atebits.Tweetie2",
             "developerName": "NeoFreeBird",
-            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.60, NeoFreeBird 5.2.",
+            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.65, NeoFreeBird 5.2",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/NeoFreeBird.png",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/x-neofreebird-1.png",
@@ -102,8 +102,8 @@
             ],
             "versions": [
                 {
-                    "version": "11.60",
-                    "date": "2026-01-27",
+                    "version": "11.65",
+                    "date": "2026-02-14",
                     "downloadURL": "https://github.com/OofMini/tweak/releases/download/New/NeoFreeBird-sideloaded.ipa",
                     "size": 142816051,
                     "localizedDescription": "TrollStore/SideStore build 5.2, custom features, performance improvements"
