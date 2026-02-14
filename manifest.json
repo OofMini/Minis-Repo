@@ -1,10 +1,16 @@
 {
     "name": "Mini's IPA Repo",
     "short_name": "MinisRepo",
+    "description": "Tweaked iOS applications for iOS 15+. Featuring EeveeSpotify, YTLite, and more.",
     "start_url": "./",
+    "scope": "./",
+    "id": "minis-ipa-repo",
     "display": "standalone",
+    "display_override": ["standalone", "minimal-ui"],
+    "orientation": "any",
     "background_color": "#000000",
     "theme_color": "#000000",
+    "categories": ["utilities", "entertainment"],
     "icons": [
         {
             "src": "apps/repo-icon.png",
@@ -17,6 +23,12 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any"
+        },
+        {
+            "src": "apps/repo-icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ]
 }

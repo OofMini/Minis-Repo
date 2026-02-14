@@ -9,9 +9,8 @@ const CONFIG = {
             : 'https://OofMini.github.io/Minis-Repo/mini.json',
     FALLBACK_ICON: './apps/repo-icon.png',
     BATCH_SIZE: 12,
-    // MEDIUM-1: Duration (ms) to wait after adding .visible before clearing will-change.
-    // Matches the 600ms CSS transition + 100ms buffer to ensure the animation has
-    // fully completed before removing the compositor layer promotion.
+    // Duration (ms) to wait after adding .visible before clearing will-change.
+    // Matches the 600ms CSS transition + stagger delays + buffer.
     WILL_CHANGE_CLEANUP_DELAY: 700
 };
 
@@ -21,7 +20,7 @@ const AppState = {
     renderedIds: new Set(),
     searchTerm: '',
     isLoading: true,
-    pendingIdleCallbacks: [] 
+    toastTimer: null
 };
 
 const AppCardTemplate = document.createElement('template');
@@ -58,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         AppState.isLoading = false;
 
         if (AppState.apps.length === 0) {
-            showErrorState("No apps available in this repository");
+            showErrorState('No apps available in this repository');
         } else {
             const appGrid = document.getElementById('appGrid');
             if (appGrid) appGrid.innerHTML = '';
@@ -76,6 +75,10 @@ async function loadAppData() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), CONFIG.FETCH_TIMEOUT);
 
+    // CRIT-3 FIX: Set aria-busy during data loading
+    const appGrid = document.getElementById('appGrid');
+    if (appGrid) appGrid.setAttribute('aria-busy', 'true');
+
     try {
         const response = await fetch(CONFIG.API_ENDPOINT, {
             signal: controller.signal,
@@ -92,7 +95,7 @@ async function loadAppData() {
         try {
             data = await response.json();
         } catch (e) {
-            throw new Error("Data corruption: Unable to parse app manifest.");
+            throw new Error('Data corruption: Unable to parse app manifest.');
         }
 
         if (!data?.apps || !Array.isArray(data.apps)) {
@@ -104,11 +107,6 @@ async function loadAppData() {
             .map(app => {
                 const latestVersion = app.versions[0];
                 return {
-                    // HIGH FIX: Use full bundleIdentifier as the ID.
-                    // The previous implementation used only the last segment
-                    // (e.g., "client" from "com.spotify.client"), which could
-                    // produce duplicate IDs if two apps share the same last segment.
-                    // This broke renderedIds tracking and trackDownload lookups.
                     id: generateId(app.bundleIdentifier),
                     name: app.name ?? 'Unknown App',
                     developer: app.developerName ?? 'Unknown',
@@ -125,11 +123,13 @@ async function loadAppData() {
         return processedApps;
     } catch (error) {
         if (error.name === 'AbortError') {
-            throw new Error('Request timeout - please check your connection');
+            throw new Error('Request timeout — please check your connection');
         }
         throw error;
     } finally {
         clearTimeout(timeoutId);
+        // CRIT-3 FIX: Clear aria-busy after loading completes (success or failure)
+        if (appGrid) appGrid.removeAttribute('aria-busy');
     }
 }
 
@@ -140,20 +140,20 @@ function filterApps() {
     });
 
     const appGrid = document.getElementById('appGrid');
-    if (appGrid) appGrid.innerHTML = '';
-    
-    AppState.renderedIds.clear();
+    if (appGrid) {
+        appGrid.innerHTML = '';
+        // CRIT-3 FIX: Set aria-busy during grid rebuild
+        appGrid.setAttribute('aria-busy', 'true');
+    }
 
+    AppState.renderedIds.clear();
     updateGrid();
 
-    // MEDIUM-11 FIX: After grid re-render from search, move focus to the grid
-    // region so keyboard users don't lose their position in the page.
-    // Only do this when triggered by search (searchTerm is non-empty or was just cleared).
+    // After grid re-render from search, manage focus for keyboard users.
     const searchBox = document.getElementById('searchBox');
     if (searchBox && document.activeElement === searchBox) {
         // User is typing in search — keep focus on search box
     } else if (appGrid && AppState.filteredApps.length > 0) {
-        // Focus the grid region so screen readers announce new content
         appGrid.setAttribute('tabindex', '-1');
         appGrid.focus({ preventScroll: true });
     }
@@ -173,14 +173,13 @@ function updateGrid() {
 
     if (nextBatch.length === 0) {
         handleEmptyState(appGrid);
+        // CRIT-3 FIX: Clear aria-busy when grid is fully rendered
+        appGrid.removeAttribute('aria-busy');
         return;
     }
 
     if ('requestIdleCallback' in window) {
-        const id = requestIdleCallback(() => renderBatch(nextBatch, appGrid));
-        if (id !== undefined) {
-            AppState.pendingIdleCallbacks.push(id);
-        }
+        requestIdleCallback(() => renderBatch(nextBatch, appGrid));
     } else {
         setTimeout(() => renderBatch(nextBatch, appGrid), 0);
     }
@@ -213,6 +212,8 @@ function renderBatch(batch, container) {
         if (infiniteScrollObserver) {
             infiniteScrollObserver.disconnect();
         }
+        // CRIT-3 FIX: All items rendered — clear aria-busy
+        container.removeAttribute('aria-busy');
     }
 
     handleEmptyState(container);
@@ -222,6 +223,7 @@ function handleEmptyState(container) {
     const noResultsEl = container.querySelector('.no-results');
     if (AppState.filteredApps.length === 0 && !noResultsEl) {
         container.innerHTML = `<div class="fade-in no-results visible"><h3>No apps found</h3><p>Try different search terms</p></div>`;
+        container.removeAttribute('aria-busy');
     } else if (AppState.filteredApps.length > 0 && noResultsEl) {
         noResultsEl.remove();
     }
@@ -233,30 +235,25 @@ function createAppCard(app, index) {
 
     article.setAttribute('data-app-id', app.id);
     article.setAttribute('aria-label', app.name);
-    article.classList.add('fade-in');
     article.classList.add(`stagger-${(index % 3) + 1}`);
 
     const img = article.querySelector('.app-icon');
     img.src = app.icon;
-    img.alt = `${app.name} Icon`;
+    img.alt = `${app.name} icon`;
     img.onerror = () => { img.src = CONFIG.FALLBACK_ICON; };
 
-    article.querySelector('.app-status').textContent = `✅ Fully Working • v${app.version}`;
+    article.querySelector('.app-status').textContent = `✅ Working • v${app.version}`;
     article.querySelector('h3').textContent = app.name;
     article.querySelector('.app-category-tag').textContent = app.category;
 
     const descEl = article.querySelector('.app-description-text');
-    descEl.textContent = ''; 
-    
     const byText = document.createTextNode('By ');
     const devBold = document.createElement('b');
     devBold.textContent = app.developer;
     descEl.appendChild(byText);
     descEl.appendChild(devBold);
     descEl.appendChild(document.createElement('br'));
-    
-    const descText = document.createTextNode(app.description);
-    descEl.appendChild(descText);
+    descEl.appendChild(document.createTextNode(app.description));
 
     article.querySelector('.app-meta-size').textContent = `Size: ${app.size}`;
 
@@ -295,15 +292,16 @@ function handleGridClick(e) {
             trackDownload(appId);
         }
     }
-    // MEDIUM-9 FIX: Handle retry button click via event delegation.
-    // The retry button is now identified by class instead of inline onclick,
-    // because CSP script-src 'self' blocks inline event handlers.
     if (e.target.classList.contains('action-retry')) {
         location.reload();
     }
 }
 
-async function trackDownload(appId) {
+// HIGH-3 FIX: Use a temporary <a> element instead of window.open to avoid
+// popup blockers. The click() call on an <a> element with target="_blank"
+// is treated as a user-initiated navigation by browsers, even when called
+// from an async path within a click handler.
+function trackDownload(appId) {
     const app = AppState.apps.find(a => a.id === appId);
     if (!app) return;
 
@@ -312,7 +310,15 @@ async function trackDownload(appId) {
         return;
     }
 
-    window.open(app.downloadUrl, '_blank', 'noopener,noreferrer');
+    const link = document.createElement('a');
+    link.href = app.downloadUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
     showToast(`✅ Downloading ${app.name}`, 'success');
 }
 
@@ -328,9 +334,18 @@ function isValidDownloadUrl(url) {
     }
 }
 
+// CRIT-1 FIX: Clear previous toast timer before setting a new one.
+// Without this, rapid showToast calls cause the old timer to fire and
+// dismiss the current toast prematurely.
 function showToast(msg, type = 'info', action = null) {
     const toast = document.getElementById('toast');
     if (!toast) return;
+
+    // Clear any existing dismiss timer
+    if (AppState.toastTimer) {
+        clearTimeout(AppState.toastTimer);
+        AppState.toastTimer = null;
+    }
 
     toast.innerHTML = '';
     const textSpan = document.createElement('span');
@@ -340,12 +355,16 @@ function showToast(msg, type = 'info', action = null) {
     if (action) {
         const actionBtn = document.createElement('button');
         actionBtn.textContent = action.text;
-        actionBtn.onclick = action.callback;
+        actionBtn.addEventListener('click', action.callback);
         toast.appendChild(actionBtn);
     }
 
     toast.className = `toast ${type} show`;
-    setTimeout(() => toast.classList.remove('show'), CONFIG.TOAST_DURATION);
+
+    AppState.toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+        AppState.toastTimer = null;
+    }, CONFIG.TOAST_DURATION);
 }
 
 function setupPWA() {
@@ -361,7 +380,7 @@ function setupPWA() {
                     });
                 }
             });
-        }).catch(err => console.error('SW Fail:', err));
+        }).catch(err => console.error('SW registration failed:', err));
 
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -376,7 +395,6 @@ function showUpdateNotification() {
     showToast('🚀 New version available!', 'info', {
         text: 'REFRESH',
         callback: () => {
-            // CRITICAL-2 FIX: postMessage to the waiting worker so it calls skipWaiting()
             if (newWorker) {
                 newWorker.postMessage({ action: 'skipWaiting' });
             }
@@ -384,10 +402,6 @@ function showUpdateNotification() {
     });
 }
 
-// HIGH FIX: Use the full bundleIdentifier as the unique app ID.
-// Previous implementation split on '.' and took only the last segment,
-// which could collide (e.g., "com.spotify.client" and "com.other.client"
-// both produced "client"). This caused broken rendering and download lookups.
 function generateId(bundleId) {
     return bundleId ? bundleId.toLowerCase() : 'unknown';
 }
@@ -403,14 +417,20 @@ function inferCategory(bundleId) {
 }
 
 function formatSize(bytes) {
-    return bytes ? `${(bytes / (1024 * 1024)).toFixed(0)} MB` : 'Unknown';
+    if (!bytes || typeof bytes !== 'number') return 'Unknown';
+    if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(1)} GB`;
+    return `${(bytes / 1048576).toFixed(0)} MB`;
 }
 
 function showLoadingState() {
     const grid = document.getElementById('appGrid');
     if (!grid) return;
+
+    // CRIT-3 FIX: Signal loading state
+    grid.setAttribute('aria-busy', 'true');
+
     grid.innerHTML = Array(3).fill(0).map((_, i) => `
-        <div class="skeleton-card fade-in stagger-${(i % 3) + 1}">
+        <div class="skeleton-card fade-in visible stagger-${(i % 3) + 1}">
             <div class="skeleton skeleton-icon"></div>
             <div class="skeleton skeleton-text short"></div>
             <div class="skeleton skeleton-text medium"></div>
@@ -418,38 +438,31 @@ function showLoadingState() {
             <div class="skeleton skeleton-button"></div>
         </div>
     `).join('');
-    requestAnimationFrame(() => {
-        grid.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
-    });
 }
 
-// MEDIUM-9 FIX: Replaced inline onclick="location.reload()" with a class-based
-// button that is handled by the delegated click handler in handleGridClick().
-// The previous inline onclick was silently blocked by the Content Security Policy
-// (script-src 'self' without 'unsafe-inline'), making the Retry button non-functional.
 function showErrorState(msg) {
     const grid = document.getElementById('appGrid');
     if (!grid) return;
 
+    grid.removeAttribute('aria-busy');
     grid.innerHTML = `
         <div class="error-state fade-in visible">
             <div class="error-emoji">⚠️</div>
-            <h3>Error</h3>
+            <h3>Something went wrong</h3>
             <p></p>
             <button class="download-btn action-retry">Retry</button>
         </div>
     `;
-    // textContent is XSS-safe: it sets raw text, never interprets HTML
     grid.querySelector('p').textContent = String(msg);
 }
 
 function setupEventListeners() {
     const searchBox = document.getElementById('searchBox');
-    
+
     if (searchBox) {
         searchBox.addEventListener('input', e => {
             if (searchBox._debounceTimer) clearTimeout(searchBox._debounceTimer);
-            
+
             searchBox._debounceTimer = setTimeout(() => {
                 AppState.searchTerm = e.target.value.toLowerCase().trim();
                 filterApps();
@@ -460,7 +473,7 @@ function setupEventListeners() {
     const resetBtn = document.getElementById('btn-reset');
     if (resetBtn) {
         resetBtn.addEventListener('click', async () => {
-            if (confirm('Reset all local data?')) {
+            if (confirm('Reset all local data and cache?')) {
                 try {
                     localStorage.clear();
                     if ('caches' in window) {
@@ -505,14 +518,6 @@ function handleError(error) {
     showToast(error.message ?? 'An error occurred', 'error');
 }
 
-// MEDIUM-1 FIX: After adding .visible and unobserving, schedule removal of
-// will-change after the CSS transition completes. Each element with will-change
-// is promoted to its own GPU compositor layer — keeping it indefinitely wastes
-// video memory. With 8+ app cards, this saves ~8 unnecessary layers.
-//
-// MEDIUM-4 FIX: Increased threshold from 0.1 to 0.15 for slightly more
-// intentional reveal timing. At 0.1, cards start animating when barely visible,
-// causing many simultaneous animations on fast scroll.
 function initializeScrollAnimations() {
     if ('IntersectionObserver' in window) {
         observer = new IntersectionObserver(entries => {
@@ -521,10 +526,8 @@ function initializeScrollAnimations() {
                     entry.target.classList.add('visible');
                     observer.unobserve(entry.target);
 
-                    // MEDIUM-1 FIX: Clear will-change after the entrance animation
-                    // finishes. The 700ms delay covers the 600ms CSS transition plus
-                    // stagger delays (100-300ms) with buffer. Setting will-change to
-                    // 'auto' lets the browser reclaim the compositor layer.
+                    // Clear will-change after entrance animation finishes to reclaim
+                    // the GPU compositor layer.
                     setTimeout(() => {
                         entry.target.style.willChange = 'auto';
                     }, CONFIG.WILL_CHANGE_CLEANUP_DELAY);
@@ -540,9 +543,11 @@ function initializeScrollAnimations() {
 window.addEventListener('beforeunload', () => {
     if (observer) observer.disconnect();
     if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
-    AppState.pendingIdleCallbacks.forEach(id => cancelIdleCallback(id));
 
-    // Clean up debounce timer
+    if (AppState.toastTimer) {
+        clearTimeout(AppState.toastTimer);
+    }
+
     const searchBox = document.getElementById('searchBox');
     if (searchBox && searchBox._debounceTimer) {
         clearTimeout(searchBox._debounceTimer);

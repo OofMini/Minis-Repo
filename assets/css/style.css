@@ -1,30 +1,41 @@
 :root {
     --bg-color: #000000;
     --text-color: #ffffff;
-    --card-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    --card-border: rgba(255, 255, 255, 0.15);
-    --accent-color: #a0a0ff;
+    --card-bg: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.08),
+        rgba(255, 255, 255, 0.03)
+    );
+    --card-border: rgba(255, 255, 255, 0.12);
+    --card-border-hover: rgba(160, 160, 255, 0.35);
+    --accent-color: #a78bfa;
+    --accent-glow: rgba(167, 139, 250, 0.25);
     --success-color: #1db954;
     --info-color: #007aff;
     --warning-color: #ffaa00;
     --error-color: #ff4444;
     --trollapps-color: #8a2be2;
     --sidestore-color: #1db954;
+    --surface-hover: rgba(255, 255, 255, 0.06);
+    --text-muted: #b0b0b0;
+    --text-secondary: #d1d1d1;
 }
 
-/* Global Styles & Reset */
-* {
+/* ============================================================
+   GLOBAL RESET & BASE
+   ============================================================ */
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    transition:
-        background-color 0.3s ease,
-        color 0.3s ease,
-        border-color 0.3s ease;
 }
 
 html {
     scroll-behavior: smooth;
+    /* MED-3 FIX: Dark scrollbar for Firefox */
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
 body {
@@ -41,13 +52,16 @@ body {
     color: var(--text-color);
     font-family:
         'Inter',
-        'Segoe UI',
+        'SF Pro Display',
         -apple-system,
         BlinkMacSystemFont,
+        'Segoe UI',
         sans-serif;
     line-height: 1.6;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 img {
@@ -55,22 +69,42 @@ img {
     max-width: 100%;
 }
 
-/* Accessibility */
-*:focus {
+/* MED-3 FIX: Custom scrollbar for WebKit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+/* MED-4 FIX: Purple selection to match theme */
+::selection {
+    background: rgba(139, 92, 246, 0.4);
+    color: #fff;
+}
+::-moz-selection {
+    background: rgba(139, 92, 246, 0.4);
+    color: #fff;
+}
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+*:focus-visible {
     outline: 2px solid var(--accent-color);
     outline-offset: 2px;
 }
-.search-box:focus,
-.download-btn:focus,
-.cta-button:focus {
-    outline: 2px solid var(--accent-color);
-    outline-offset: 4px;
-}
 
-/* Helpers */
-.hero-subtitle,
-.app-card p {
-    color: #cccccc;
+/* Remove outline for mouse/touch clicks */
+*:focus:not(:focus-visible) {
+    outline: none;
 }
 
 .visually-hidden {
@@ -85,24 +119,17 @@ img {
     white-space: nowrap;
 }
 
-/* Utility for 404/Offline */
-.fullscreen-message {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-
-/* Motion Preferences */
+/* ============================================================
+   MOTION PREFERENCES
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
-    * {
-        transition: none !important;
-        animation: none !important;
-    }
-    html {
-        scroll-behavior: auto;
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
     .hero::before {
         animation: none !important;
@@ -110,19 +137,34 @@ img {
     }
 }
 
-/* Skeleton Loading */
+/* ============================================================
+   HELPERS
+   ============================================================ */
+.hero-subtitle {
+    color: var(--text-secondary);
+}
+
+.app-card p {
+    color: var(--text-color);
+    opacity: 0.85;
+}
+
+/* ============================================================
+   SKELETON LOADING
+   ============================================================ */
 .skeleton {
     background: linear-gradient(
         90deg,
-        rgba(255, 255, 255, 0.05) 25%,
-        rgba(255, 255, 255, 0.15) 50%,
-        rgba(255, 255, 255, 0.05) 75%
+        rgba(255, 255, 255, 0.04) 25%,
+        rgba(255, 255, 255, 0.10) 50%,
+        rgba(255, 255, 255, 0.04) 75%
     );
     background-size: 200% 100%;
-    animation: loading 1.5s infinite linear;
+    animation: shimmer 1.8s ease-in-out infinite;
     border-radius: 8px;
 }
-@keyframes loading {
+
+@keyframes shimmer {
     0% {
         background-position: 200% 0;
     }
@@ -134,73 +176,103 @@ img {
 .skeleton-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 20px;
-    height: 280px;
+    border-radius: 18px;
+    padding: 25px;
+    height: 300px;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+
 .skeleton-icon {
     width: 80px;
     height: 80px;
     border-radius: 20px;
     margin: 0 auto 15px;
 }
+
 .skeleton-text {
-    height: 16px;
-    margin-bottom: 8px;
+    height: 14px;
+    margin-bottom: 10px;
     width: 100%;
+    border-radius: 6px;
 }
 .skeleton-text.short {
-    width: 60%;
+    width: 55%;
     margin-left: auto;
     margin-right: auto;
 }
 .skeleton-text.medium {
-    width: 80%;
+    width: 75%;
     margin-left: auto;
     margin-right: auto;
 }
+
 .skeleton-button {
-    height: 40px;
-    border-radius: 10px;
+    height: 44px;
+    border-radius: 12px;
     margin-top: auto;
     width: 150px;
 }
 
-/* Error State */
+/* ============================================================
+   ERROR / EMPTY STATES
+   ============================================================ */
 .error-state,
 .no-results {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 40px;
+    padding: 60px 30px;
 }
+
+/* HIGH-1 FIX: Style the error emoji that app.js creates */
+.error-emoji {
+    font-size: 3em;
+    margin-bottom: 16px;
+    line-height: 1;
+}
+
+.error-state h3 {
+    font-size: 1.3em;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.error-state p {
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    font-size: 0.95em;
+}
+
 .no-results {
-    color: var(--text-color);
-    opacity: 0.7;
+    color: var(--text-muted);
+    padding: 60px 20px;
+}
+
+.no-results h3 {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.no-results p {
+    opacity: 0.6;
+    font-size: 0.95em;
 }
 
 /* ============================================================
    HERO SECTION
-   - ::before  → Animated purple radial glow (transform-only,
-                  fully GPU-composited, zero layout/paint cost)
-   - ::after   → Soft gradient fade replacing the hard border,
-                  blends hero into the search area seamlessly
    ============================================================ */
 .hero {
     background: transparent;
-    padding: 30px 15px 20px;
+    padding: 36px 15px 24px;
     text-align: center;
     position: relative;
     overflow: hidden;
     z-index: 0;
 }
 
-/* Animated purple glow — GPU composited via transform-only keyframes.
-   The element is oversized (200% x 260%) and shifted with translate/scale
-   so the browser promotes it to its own compositor layer. No layout or
-   paint is triggered on each frame — only compositing. */
+/* Animated purple glow — GPU composited via transform-only keyframes */
 .hero::before {
     content: '';
     position: absolute;
@@ -222,8 +294,6 @@ img {
     z-index: -1;
 }
 
-/* Transform-only keyframes: translate + scale keep the animation
-   entirely on the compositor thread. Zero layout/paint triggers. */
 @keyframes heroGlow {
     0% {
         transform: translate(0, 0) scale(1);
@@ -239,8 +309,7 @@ img {
     }
 }
 
-/* Soft bottom fade — replaces the hard 1px border-bottom.
-   Blends the hero's purple glow smoothly into the black body/search area. */
+/* Soft bottom fade */
 .hero::after {
     content: '';
     position: absolute;
@@ -259,55 +328,101 @@ img {
 }
 
 .repo-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
-    margin: 0 auto 15px;
-    border: 2px solid var(--card-border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+    margin: 0 auto 16px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(110, 30, 180, 0.15);
     position: relative;
     z-index: 2;
 }
+
 .hero h1 {
-    font-size: 2.2em;
+    font-size: 2.3em;
     font-weight: 800;
     margin: 0 0 8px;
     letter-spacing: -0.5px;
     position: relative;
     z-index: 2;
 }
+
 .hero-subtitle {
-    font-size: 1.1em;
-    margin: 0 0 25px;
-    opacity: 0.9;
+    font-size: 1.05em;
+    margin: 0 0 24px;
     position: relative;
     z-index: 2;
+    font-weight: 400;
+    letter-spacing: 0.2px;
 }
 
-/* Badges */
+/* ============================================================
+   TITLE GRADIENT
+   ============================================================ */
+@keyframes titleGradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.animated-gradient {
+    background: linear-gradient(
+        270deg,
+        #7c3aed,
+        #c084fc,
+        #e9d5ff,
+        #a855f7,
+        #6d28d9,
+        #7c3aed
+    );
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: titleGradientShift 4s ease infinite;
+}
+
+/* ============================================================
+   BADGES
+   ============================================================ */
 .badges {
     display: flex;
     gap: 8px;
     justify-content: center;
     flex-wrap: wrap;
-    margin-bottom: 25px;
+    margin-bottom: 24px;
     position: relative;
     z-index: 2;
 }
+
 .badge {
-    background: var(--success-color);
-    padding: 6px 14px;
+    background: rgba(29, 185, 84, 0.15);
+    color: var(--success-color);
+    padding: 5px 14px;
     border-radius: 20px;
-    font-size: 0.85em;
+    font-size: 0.8em;
     font-weight: 600;
     letter-spacing: 0.5px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-.badge.ios {
-    background: var(--accent-color);
+    border: 1px solid rgba(29, 185, 84, 0.25);
 }
 
-/* CTA Buttons */
+.badge.ios {
+    background: rgba(167, 139, 250, 0.15);
+    color: var(--accent-color);
+    border-color: rgba(167, 139, 250, 0.25);
+}
+
+/* ============================================================
+   CTA BUTTONS
+   ============================================================ */
 .cta-buttons {
     display: flex;
     gap: 12px;
@@ -316,47 +431,63 @@ img {
     position: relative;
     z-index: 2;
 }
-/* LOW-10 FIX: Added min-height: 44px to ensure WCAG 2.5.5 minimum touch target
-   size. The previous padding (12px 20px) could produce buttons shorter than 44px
-   depending on font rendering, failing the 44x44px touch target requirement. */
+
 .cta-button {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
+    padding: 12px 22px;
     min-height: 44px;
     color: white;
-    border-radius: 12px;
+    border-radius: 14px;
     font-weight: 600;
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-    border: 1px solid transparent;
     font-size: 0.95em;
+    border: 1px solid transparent;
     cursor: pointer;
     user-select: none;
+    text-decoration: none;
     -webkit-tap-highlight-color: transparent;
-}
-.cta-button.trollapps {
-    background: var(--trollapps-color);
-}
-.cta-button.sidestore {
-    background: var(--sidestore-color);
-}
-.cta-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-}
-.cta-button:active {
-    transform: scale(0.98);
+    transition:
+        transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.25s ease;
 }
 
-/* Layout & Grid */
+.cta-button.trollapps {
+    background: var(--trollapps-color);
+    box-shadow: 0 2px 12px rgba(138, 43, 226, 0.3);
+}
+
+.cta-button.sidestore {
+    background: var(--sidestore-color);
+    box-shadow: 0 2px 12px rgba(29, 185, 84, 0.3);
+}
+
+/* MED-2 FIX: Only apply hover transforms on pointer devices */
+@media (hover: hover) {
+    .cta-button:hover {
+        transform: translateY(-2px);
+    }
+    .cta-button.trollapps:hover {
+        box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4);
+    }
+    .cta-button.sidestore:hover {
+        box-shadow: 0 6px 20px rgba(29, 185, 84, 0.4);
+    }
+}
+
+.cta-button:active {
+    transform: scale(0.97);
+}
+
+/* ============================================================
+   LAYOUT & CONTAINERS
+   ============================================================ */
 .container {
     max-width: 1100px;
     margin: 0 auto;
     padding: 20px 15px;
 }
+
 .search-container {
     max-width: 600px;
     margin: 20px auto;
@@ -368,65 +499,105 @@ img {
     padding: 14px 20px;
     border: 1px solid var(--card-border);
     border-radius: 14px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.06);
     color: var(--text-color);
-    font-size: 1.1em;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    font-size: 1.05em;
+    font-family: inherit;
+    transition:
+        border-color 0.3s ease,
+        background 0.3s ease,
+        box-shadow 0.3s ease;
 }
+
 .search-box:focus {
     outline: none;
     border-color: var(--accent-color);
-    background: rgba(255, 255, 255, 0.12);
-}
-.search-box::placeholder {
-    color: var(--text-color);
-    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.09);
+    box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
+.search-box::placeholder {
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+/* ============================================================
+   APP GRID
+   ============================================================ */
 .app-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 25px;
+    gap: 20px;
     margin: 0 auto;
-    padding: 10px 5px;
+    padding: 10px 0;
 }
 
+/* ============================================================
+   APP CARD
+   ============================================================ */
 .app-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 18px;
-    padding: 25px;
+    padding: 24px;
     text-align: center;
-    transition:
-        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-        border-color 0.3s ease,
-        box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
     overflow: hidden;
+    transition:
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
 }
-.app-card:hover {
-    transform: translateY(-6px);
-    border-color: var(--accent-color);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+/* Subtle top-edge highlight for depth */
+.app-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.12),
+        transparent
+    );
+    pointer-events: none;
+}
+
+@media (hover: hover) {
+    .app-card {
+        transition:
+            transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+            border-color 0.3s ease,
+            box-shadow 0.3s ease;
+    }
+    .app-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--card-border-hover);
+        box-shadow:
+            0 8px 30px rgba(0, 0, 0, 0.3),
+            0 0 40px rgba(139, 92, 246, 0.08);
+    }
 }
 
 .app-icon-container {
-    width: 88px;
-    height: 88px;
-    margin: 0 auto 15px;
+    width: 84px;
+    height: 84px;
+    margin: 0 auto 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.25);
     border-radius: 22px;
     padding: 0;
-    border: 1px solid var(--card-border);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
+
 .app-icon {
     width: 100%;
     height: 100%;
@@ -435,17 +606,19 @@ img {
 }
 
 .app-status {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
     margin-bottom: 12px;
-    font-size: 0.8em;
+    font-size: 0.75em;
     font-weight: 600;
     color: var(--success-color);
     background: rgba(29, 185, 84, 0.1);
-    padding: 4px 10px;
-    border-radius: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(29, 185, 84, 0.15);
+    letter-spacing: 0.2px;
 }
 
 .app-card-content {
@@ -455,66 +628,113 @@ img {
     align-items: center;
     flex-grow: 1;
 }
+
 .app-card h3 {
-    margin: 0 auto 8px;
+    margin: 0 auto 6px;
     color: var(--text-color);
-    font-size: 1.3em;
+    font-size: 1.25em;
     font-weight: 700;
     width: 100%;
-    line-height: 1.2;
-}
-.app-card p {
-    font-size: 0.95em;
-    color: var(--text-color);
-    opacity: 0.8;
-    line-height: 1.5;
-    margin: 0 auto 15px;
-    width: 100%;
-}
-.app-category-tag {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.75em;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.app-meta-size {
-    font-size: 0.85em;
-    opacity: 0.6;
-    margin-top: 10px;
+    line-height: 1.3;
 }
 
-/* LOW-10 FIX: Added min-height: 44px for WCAG 2.5.5 touch target compliance. */
+/* MED-6 FIX: Style the category wrapper <p> to remove default margins */
+.app-category-wrapper {
+    margin: 0 0 10px;
+    line-height: 1;
+}
+
+.app-category-tag {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.07);
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.7em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.app-description-text {
+    font-size: 0.9em;
+    color: var(--text-color);
+    opacity: 0.8;
+    line-height: 1.55;
+    margin: 0 auto 12px;
+    width: 100%;
+}
+
+.app-meta-size {
+    font-size: 0.8em;
+    color: var(--text-muted);
+    margin-top: auto;
+    padding-top: 8px;
+}
+
+/* ============================================================
+   DOWNLOAD BUTTON
+   ============================================================ */
 .download-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 12px 24px;
+    padding: 11px 24px;
     min-height: 44px;
     border-radius: 12px;
     background: linear-gradient(135deg, var(--success-color), #1ed760);
     color: #fff;
-    transition: all 0.2s ease;
     font-weight: 700;
-    font-size: 0.95em;
-    margin-top: 15px;
+    font-size: 0.9em;
+    font-family: inherit;
+    margin-top: 14px;
     border: none;
     cursor: pointer;
     user-select: none;
-    box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+    box-shadow: 0 3px 12px rgba(29, 185, 84, 0.25);
     -webkit-tap-highlight-color: transparent;
-}
-.download-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(29, 185, 84, 0.4);
-}
-.download-btn:active {
-    transform: scale(0.98);
+    transition:
+        box-shadow 0.25s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Repo Info & Footer */
+/* Subtle shine sweep on hover */
+.download-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.15),
+        transparent
+    );
+    transition: left 0.5s ease;
+    pointer-events: none;
+}
+
+@media (hover: hover) {
+    .download-btn:hover {
+        box-shadow: 0 5px 18px rgba(29, 185, 84, 0.35);
+    }
+    .download-btn:hover::after {
+        left: 100%;
+    }
+}
+
+.download-btn:active {
+    transform: scale(0.97);
+}
+
+/* ============================================================
+   REPO INFO SECTION
+   ============================================================ */
 .repo-info {
     margin-top: 60px;
     padding: 30px;
@@ -522,138 +742,218 @@ img {
     border-radius: 20px;
     border: 1px solid var(--card-border);
     text-align: center;
+    position: relative;
 }
+
+/* Top highlight */
+.repo-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15%;
+    right: 15%;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.10),
+        transparent
+    );
+    pointer-events: none;
+}
+
 .repo-info h3 {
-    font-size: 1.4em;
-    margin-bottom: 25px;
+    font-size: 1.3em;
+    margin-bottom: 20px;
     font-weight: 700;
 }
 
 .repo-link {
     margin: 15px 0;
-    font-size: 1.05em;
+    font-size: 1em;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
 }
+
 .repo-link a {
     color: var(--text-color);
     text-decoration: none;
     font-weight: 600;
     border-bottom: 1px solid transparent;
-    transition: all 0.2s ease;
-}
-.repo-link a:hover {
-    color: var(--success-color);
-    border-bottom-color: var(--success-color);
-}
-.repo-link code {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 0.9em;
-    word-break: break-all;
-    border: 1px solid var(--card-border);
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease;
 }
 
-/* Footer */
+@media (hover: hover) {
+    .repo-link a:hover {
+        color: var(--success-color);
+        border-bottom-color: var(--success-color);
+    }
+}
+
+.repo-link code {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Cascadia Code', monospace;
+    font-size: 0.85em;
+    word-break: break-all;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    letter-spacing: 0.2px;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
 .footer-content {
     text-align: center;
-    padding: 40px 0;
-    border-top: 1px solid var(--card-border);
+    padding: 40px 0 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
     margin-top: 40px;
 }
+
 .footer-copyright {
-    opacity: 0.5;
-    font-size: 0.9em;
-    margin-bottom: 15px;
+    color: var(--text-muted);
+    font-size: 0.85em;
+    margin-bottom: 16px;
 }
+
 .footer-links {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 20px;
     flex-wrap: wrap;
 }
+
 .footer-separator {
-    color: var(--card-border);
-    margin: 0 5px;
+    color: rgba(255, 255, 255, 0.15);
+    margin: 0 2px;
 }
+
 .footer-link {
-    color: var(--text-color);
+    color: var(--text-muted);
     text-decoration: none;
-    opacity: 0.6;
-    font-size: 0.9em;
-    transition: opacity 0.2s;
+    font-size: 0.88em;
+    transition: color 0.2s ease;
 }
-.footer-link:hover {
-    opacity: 1;
+
+@media (hover: hover) {
+    .footer-link:hover {
+        color: var(--text-color);
+    }
 }
-/* LOW-10 FIX: Added min-height/min-width for WCAG touch target compliance. */
+
 .footer-reset-btn {
     background: none;
     border: none;
-    color: var(--text-color);
-    opacity: 0.6;
-    font-size: 0.9em;
+    color: var(--text-muted);
+    font-size: 0.88em;
+    font-family: inherit;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: color 0.2s ease;
     min-height: 44px;
     min-width: 44px;
-}
-.footer-reset-btn:hover {
-    opacity: 1;
-    color: var(--error-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Toast */
+@media (hover: hover) {
+    .footer-reset-btn:hover {
+        color: var(--error-color);
+    }
+}
+
+/* ============================================================
+   TOAST NOTIFICATIONS
+   ============================================================ */
 .toast {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 16px 20px;
-    background: rgba(30, 30, 30, 0.95);
+    bottom: 24px;
+    right: 24px;
+    padding: 14px 18px;
+    background: rgba(20, 20, 25, 0.92);
     color: white;
-    border-radius: 12px;
+    border-radius: 14px;
     transform: translateY(120px);
     opacity: 0;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition:
+        transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        opacity 0.3s ease;
     z-index: 2000;
-    font-size: 0.95em;
-    max-width: 350px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--card-border);
-    backdrop-filter: blur(10px);
+    font-size: 0.9em;
+    max-width: 360px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     display: flex;
     align-items: center;
     gap: 10px;
 }
+
 .toast.show {
     transform: translateY(0);
     opacity: 1;
 }
+
 .toast.success {
-    border-left: 4px solid var(--success-color);
+    border-left: 3px solid var(--success-color);
 }
 .toast.error {
-    border-left: 4px solid var(--error-color);
+    border-left: 3px solid var(--error-color);
 }
 .toast.info {
-    border-left: 4px solid var(--info-color);
+    border-left: 3px solid var(--info-color);
 }
 .toast.warning {
-    border-left: 4px solid var(--warning-color);
+    border-left: 3px solid var(--warning-color);
 }
 
-/* Scroll Sentinel */
+/* HIGH-2 FIX: Style the action button inside toast (e.g., REFRESH) */
+.toast button {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-size: 0.8em;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+    min-height: 32px;
+    letter-spacing: 0.5px;
+}
+
+@media (hover: hover) {
+    .toast button:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+}
+
+/* ============================================================
+   SCROLL SENTINEL (Invisible trigger for infinite scroll)
+   ============================================================ */
 #scroll-sentinel {
     opacity: 0;
     pointer-events: none;
 }
 
-/* Animations */
+/* ============================================================
+   SCROLL ANIMATIONS
+   ============================================================ */
 .fade-in,
 .fade-in-left {
     will-change: transform, opacity;
@@ -684,75 +984,76 @@ img {
 }
 
 .stagger-1 {
-    transition-delay: 0.1s;
+    transition-delay: 0.08s;
 }
 .stagger-2 {
-    transition-delay: 0.2s;
+    transition-delay: 0.16s;
 }
 .stagger-3 {
-    transition-delay: 0.3s;
+    transition-delay: 0.24s;
 }
 
 /* ============================================================
-   TITLE GRADIENT — Richer purple palette, faster cycle
-   6-stop gradient: deep violet → lavender → electric purple
-   Tighter background-size (300%) + faster duration (4s) for
-   a more dynamic shimmer. background-position animation on a
-   single text element is trivially cheap for the compositor.
+   RESPONSIVE — MOBILE
    ============================================================ */
-@keyframes titleGradientShift {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}
-.animated-gradient {
-    background: linear-gradient(
-        270deg,
-        #7c3aed,
-        #c084fc,
-        #e9d5ff,
-        #a855f7,
-        #6d28d9,
-        #7c3aed
-    );
-    background-size: 300% 300%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: titleGradientShift 4s ease infinite;
-}
-
 @media (max-width: 768px) {
     .app-grid {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 16px;
     }
+
     .cta-buttons {
         flex-direction: column;
         align-items: stretch;
         padding: 0 20px;
     }
+
     .hero h1 {
-        font-size: 1.8em;
+        font-size: 1.9em;
     }
+
+    .hero-subtitle {
+        font-size: 0.95em;
+    }
+
     .repo-link {
         flex-direction: column;
         gap: 8px;
-        background: rgba(255, 255, 255, 0.03);
+        background: rgba(255, 255, 255, 0.02);
         padding: 15px;
         border-radius: 12px;
     }
+
     .toast {
-        left: 20px;
-        right: 20px;
-        bottom: 20px;
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        max-width: none;
         text-align: center;
         justify-content: center;
+    }
+
+    .repo-info {
+        padding: 24px 18px;
+    }
+
+    .app-card {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 380px) {
+    .hero {
+        padding: 28px 12px 20px;
+    }
+    .hero h1 {
+        font-size: 1.65em;
+    }
+    .badges {
+        gap: 6px;
+    }
+    .badge {
+        font-size: 0.75em;
+        padding: 4px 10px;
     }
 }

@@ -2,16 +2,8 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <!-- MEDIUM-6 FIX: Removed maximum-scale=1.0 and user-scalable=no.
-             These block pinch-to-zoom, violating WCAG 1.4.4 (Resize Text).
-             Users with visual impairments need to zoom for readability. -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <!-- MEDIUM-10 FIX: Added missing CSP directives for defense-in-depth:
-             - frame-ancestors 'none': Prevents clickjacking by blocking framing.
-             - base-uri 'self': Prevents <base> tag injection that could redirect relative URLs.
-             - object-src 'none': Blocks Flash/plugin content (no legitimate use case).
-             - form-action 'self': Restricts form submissions to same origin. -->
         <meta
             http-equiv="Content-Security-Policy"
             content="default-src 'self'; 
@@ -26,10 +18,15 @@
                    upgrade-insecure-requests;"
         />
 
+        <!-- CRIT-2 FIX: Replaced crossorigin preload with a preconnect to the
+             actual production CDN. The old preload with crossorigin="anonymous"
+             never matched the fetch() call (different URL in prod, different CORS
+             mode), causing a wasted preload + double-fetch. -->
+        <link rel="preconnect" href="https://oofmini.github.io" crossorigin />
         <link rel="preconnect" href="https://github.com" crossorigin />
 
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Mini's IPA Repo - Tweaked iOS Apps" />
+        <meta property="og:title" content="Mini's IPA Repo — Tweaked iOS Apps" />
         <meta
             property="og:description"
             content="Tweaked Apps for iOS 15+. EeveeSpotify, YTLite, and more."
@@ -49,14 +46,13 @@
         <link rel="apple-touch-icon" href="apps/repo-icon.png" />
         <link rel="apple-touch-startup-image" href="apps/repo-icon.png" />
 
-        <title>Mini's IPA Repo - Tweaked iOS Apps</title>
+        <title>Mini's IPA Repo — Tweaked iOS Apps</title>
         <meta
             name="description"
             content="Premium tweaked applications for iOS 15+. Featuring Spotify, YouTube, YouTube Music, and more."
         />
 
         <link rel="preload" as="image" href="apps/repo-icon.png" />
-        <link rel="preload" href="mini.json" as="fetch" crossorigin="anonymous" />
         <link rel="preload" href="assets/css/style.css" as="style" />
 
         <link rel="manifest" href="manifest.json" />
@@ -64,13 +60,22 @@
         <link rel="stylesheet" href="assets/css/style.css" />
     </head>
     <body>
+        <!-- MED-1 FIX: Noscript fallback for JS-disabled users -->
+        <noscript>
+            <div style="background:#000;color:#fff;font-family:-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;">
+                <h1 style="font-size:2em;margin-bottom:12px;">Mini's IPA Repo</h1>
+                <p style="opacity:0.7;margin-bottom:20px;">This app requires JavaScript to load. Please enable JavaScript in your browser settings.</p>
+                <p style="opacity:0.5;font-size:0.9em;">Or add this source URL directly to your app manager:<br><code style="background:rgba(255,255,255,0.1);padding:4px 8px;border-radius:6px;margin-top:8px;display:inline-block;">https://OofMini.github.io/Minis-Repo/mini.json</code></p>
+            </div>
+        </noscript>
+
         <header class="hero">
             <img
                 src="apps/repo-icon.png"
-                alt="Repository icon"
+                alt="Mini's Repo icon"
                 class="repo-icon"
-                width="60"
-                height="60"
+                width="68"
+                height="68"
             />
             <h1 class="animated-gradient">Mini's Repo</h1>
             <p class="hero-subtitle">Tweaked iOS applications for iOS 15+</p>
@@ -82,10 +87,10 @@
 
             <nav class="cta-buttons" aria-label="Add repository to app">
                 <button class="cta-button trollapps" id="btn-trollapps" aria-label="Add to TrollApps">
-                    <span role="img" aria-hidden="true">📱</span> Add to TrollApps
+                    <span aria-hidden="true">📱</span> Add to TrollApps
                 </button>
                 <button class="cta-button sidestore" id="btn-sidestore" aria-label="Add to SideStore">
-                    <span role="img" aria-hidden="true">⚙️</span> Add to SideStore
+                    <span aria-hidden="true">⚙️</span> Add to SideStore
                 </button>
             </nav>
         </header>
@@ -94,26 +99,23 @@
             <section class="search-container fade-in" aria-labelledby="search-title">
                 <h2 id="search-title" class="visually-hidden">Search apps</h2>
                 <input
-                    type="text"
+                    type="search"
                     class="search-box"
                     id="searchBox"
                     placeholder="🔍 Search apps..."
                     aria-label="Search apps by name or description"
                     autocomplete="off"
+                    spellcheck="false"
                 />
             </section>
 
-            <!-- MEDIUM-7 FIX: Changed role="list" to role="region".
-                 The app cards use role="article" (set by app.js template), which is NOT
-                 a valid child of role="list" (requires role="listitem"). Using role="region"
-                 is semantically correct for a group of independent article elements. -->
             <section class="app-grid" id="appGrid" role="region" aria-label="Available apps"></section>
 
             <section class="repo-info fade-in" aria-labelledby="repo-info-title">
                 <h3 id="repo-info-title">📦 Repository Source</h3>
 
                 <div class="repo-link fade-in-left stagger-1">
-                    <span role="img" aria-hidden="true">🔗</span>
+                    <span aria-hidden="true">🔗</span>
                     <strong>Manifest URL:</strong>
                     <code>https://OofMini.github.io/Minis-Repo/mini.json</code>
                 </div>
@@ -134,7 +136,7 @@
                     >
                         📦 GitHub Repo
                     </a>
-                    <span class="footer-separator">•</span>
+                    <span class="footer-separator" aria-hidden="true">•</span>
                     <a
                         href="https://github.com/OofMini/Minis-Repo/issues"
                         target="_blank"
@@ -143,7 +145,7 @@
                     >
                         🐛 Report Issue
                     </a>
-                    <span class="footer-separator">•</span>
+                    <span class="footer-separator" aria-hidden="true">•</span>
                     <button id="btn-reset" class="footer-reset-btn">🗑️ Clear Cache</button>
                 </div>
             </div>

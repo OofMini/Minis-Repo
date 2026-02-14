@@ -1,4 +1,4 @@
-const CACHE_NAME = 'minis-repo-cache-f9e0334';
+const CACHE_NAME = 'minis-repo-cache-c12ef47';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -6,13 +6,6 @@ const ASSETS_TO_CACHE = [
     './assets/js/app.js',
     './manifest.json',
     './apps/repo-icon.png',
-    // HIGH-2 FIX: Cache mini.json so the app can display data when offline.
-    // Previously, the PWA cached the app shell (HTML/CSS/JS) but NOT the data
-    // manifest. When offline, the shell loaded but loadAppData() failed with a
-    // network error, showing "Failed to initialize application" — defeating the
-    // purpose of the service worker cache. The fetch handler uses network-first
-    // strategy, so online users always get fresh data; offline users get the
-    // last successfully cached copy.
     './mini.json'
 ];
 
@@ -28,13 +21,8 @@ let lastCleanup = 0;
 
 self.addEventListener('install', event => {
     event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE)));
-    // CRITICAL-2 FIX: Do NOT call self.skipWaiting() here.
-    // The new worker must wait until the user clicks the "REFRESH" button
-    // in the update notification (triggered via postMessage from app.js).
-    // Unconditional skipWaiting was making the entire update notification flow dead code.
 });
 
-// CRITICAL-2 FIX: Listen for skipWaiting message from app.js update notification
 self.addEventListener('message', event => {
     if (event.data && event.data.action === 'skipWaiting') {
         self.skipWaiting();
@@ -60,19 +48,16 @@ self.addEventListener('fetch', event => {
 
             try {
                 const networkResponse = await fetch(event.request, { signal: controller.signal });
-                
+
                 let canCache = false;
                 if (networkResponse.status === 200) {
                     canCache = true;
                 } else if (networkResponse.type === 'opaque') {
                     const url = new URL(event.request.url);
                     if (OPAQUE_ORIGINS.includes(url.hostname)) {
-                        // CRITICAL-2: Fix Service Worker Cache Poisoning
-                        // Remove broken content-type check for opaque responses
-                        // Only cache if URL pattern matches AND request is for image context
                         const isImageContext = event.request.destination === 'image';
                         const matchesPattern = SAFE_ASSET_PATTERNS.some(regex => regex.test(url.href));
-                        
+
                         if (isImageContext && matchesPattern) {
                             canCache = true;
                         }
@@ -83,8 +68,7 @@ self.addEventListener('fetch', event => {
                     const responseToCache = networkResponse.clone();
                     const cache = await caches.open(CACHE_NAME);
                     cache.put(event.request, responseToCache);
-                    
-                    // LOW-2: Reduce throttle to 30 seconds
+
                     const now = Date.now();
                     if (now - lastCleanup > 30000) {
                         limitCacheSize(CACHE_NAME, 50, ASSETS_TO_CACHE);
@@ -97,6 +81,7 @@ self.addEventListener('fetch', event => {
                 const cached = await caches.match(event.request);
                 if (cached) return cached;
 
+                // HIGH-5 FIX: Offline page now matches the dark/purple repo theme
                 if (event.request.mode === 'navigate') {
                     return new Response(
                         `<!DOCTYPE html>
@@ -106,25 +91,41 @@ self.addEventListener('fetch', event => {
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title>Offline — Mini's IPA Repo</title>
                             <style>
-                                body {
-                                    background: #000; color: #fff; font-family: -apple-system, sans-serif;
-                                    display: flex; flex-direction: column; align-items: center;
-                                    justify-content: center; min-height: 100vh; margin: 0; text-align: center;
+                                *{margin:0;padding:0;box-sizing:border-box}
+                                body{
+                                    background:linear-gradient(180deg,rgba(75,20,130,0.35)0%,rgba(50,12,90,0.18)280px,transparent 500px)no-repeat,#000;
+                                    color:#fff;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+                                    display:flex;flex-direction:column;align-items:center;
+                                    justify-content:center;min-height:100vh;text-align:center;
+                                    padding:24px;-webkit-font-smoothing:antialiased;
                                 }
-                                h1 { font-size: 2em; margin-bottom: 10px; }
-                                p { opacity: 0.7; margin-bottom: 20px; }
-                                a {
-                                    display: inline-block; padding: 12px 24px; background: #1db954;
-                                    color: #fff; border-radius: 12px; text-decoration: none;
-                                    font-weight: 700;
+                                h1{font-size:2em;font-weight:800;margin-bottom:8px;
+                                    background:linear-gradient(270deg,#7c3aed,#c084fc,#e9d5ff,#a855f7);
+                                    background-size:300% 300%;-webkit-background-clip:text;
+                                    -webkit-text-fill-color:transparent;background-clip:text;
+                                    animation:g 4s ease infinite}
+                                @keyframes g{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+                                .sub{color:#b0b0b0;margin-bottom:24px;font-size:1em}
+                                .icon{font-size:3em;margin-bottom:16px}
+                                a{
+                                    display:inline-block;padding:12px 28px;
+                                    background:linear-gradient(135deg,#1db954,#1ed760);
+                                    color:#fff;border-radius:14px;text-decoration:none;
+                                    font-weight:700;font-size:0.95em;
+                                    box-shadow:0 3px 12px rgba(29,185,84,0.3);
+                                    transition:transform 0.2s ease,box-shadow 0.2s ease;
                                 }
+                                a:active{transform:scale(0.97)}
+                                .hint{color:#666;font-size:0.8em;margin-top:20px}
                             </style>
                             <meta http-equiv="refresh" content="10">
                         </head>
                         <body>
-                            <h1>📡 You're Offline</h1>
-                            <p>This page will auto-retry in 10 seconds, or tap below.</p>
+                            <div class="icon">📡</div>
+                            <h1>You're Offline</h1>
+                            <p class="sub">Check your connection. This page auto-retries in 10s.</p>
                             <a href="./">Retry Now</a>
+                            <p class="hint">Mini's IPA Repo</p>
                         </body>
                         </html>`,
                         { headers: { 'Content-Type': 'text/html' } }
@@ -140,7 +141,7 @@ self.addEventListener('fetch', event => {
 
 async function limitCacheSize(name, maxSize, exemptAssets = []) {
     if ('locks' in navigator) {
-        await navigator.locks.request('cache-cleanup', async (lock) => {
+        await navigator.locks.request('cache-cleanup', async () => {
             await executeCacheCleanup(name, maxSize, exemptAssets);
         });
     } else {
@@ -150,8 +151,8 @@ async function limitCacheSize(name, maxSize, exemptAssets = []) {
 
 async function executeCacheCleanup(name, maxSize, exemptAssets) {
     const cache = await caches.open(name);
-    let keys = await cache.keys();
-    
+    const keys = await cache.keys();
+
     const evictableKeys = keys.filter(req => {
         const url = new URL(req.url).pathname;
         return !exemptAssets.some(asset => url.endsWith(asset.replace('./', '')));
