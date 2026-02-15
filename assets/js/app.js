@@ -4,13 +4,14 @@ const CONFIG = {
     TOAST_DURATION: 4000,
     FETCH_TIMEOUT: 10000,
     API_ENDPOINT:
-        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname === '0.0.0.0' ||
+        window.location.hostname === '[::1]'
             ? './mini.json'
             : 'https://OofMini.github.io/Minis-Repo/mini.json',
     FALLBACK_ICON: './apps/repo-icon.png',
     BATCH_SIZE: 12,
-    // Duration (ms) to wait after adding .visible before clearing will-change.
-    // Matches the 600ms CSS transition + stagger delays + buffer.
     WILL_CHANGE_CLEANUP_DELAY: 700
 };
 
@@ -34,6 +35,13 @@ AppCardTemplate.innerHTML = `
             <h3></h3>
             <p class="app-category-wrapper"><span class="app-category-tag"></span></p>
             <div class="app-description-text"></div>
+            <button class="changelog-toggle" aria-expanded="false" style="display:none;">
+                <span>What's New</span>
+                <span class="changelog-toggle-arrow" aria-hidden="true">▶</span>
+            </button>
+            <div class="changelog-content">
+                <div class="changelog-text"></div>
+            </div>
             <p class="app-meta-size"></p>
             <button class="download-btn action-download"></button>
         </div>
@@ -75,7 +83,6 @@ async function loadAppData() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), CONFIG.FETCH_TIMEOUT);
 
-    // CRIT-3 FIX: Set aria-busy during data loading
     const appGrid = document.getElementById('appGrid');
     if (appGrid) appGrid.setAttribute('aria-busy', 'true');
 
@@ -116,6 +123,7 @@ async function loadAppData() {
                     downloadUrl: latestVersion.downloadURL ?? '',
                     category: inferCategory(app.bundleIdentifier ?? ''),
                     size: formatSize(latestVersion.size),
+                    changeDescription: latestVersion.changeDescription ?? '',
                     searchString: `${app.name} ${app.localizedDescription} ${app.developerName}`.toLowerCase()
                 };
             });
@@ -128,7 +136,6 @@ async function loadAppData() {
         throw error;
     } finally {
         clearTimeout(timeoutId);
-        // CRIT-3 FIX: Clear aria-busy after loading completes (success or failure)
         if (appGrid) appGrid.removeAttribute('aria-busy');
     }
 }
@@ -142,17 +149,15 @@ function filterApps() {
     const appGrid = document.getElementById('appGrid');
     if (appGrid) {
         appGrid.innerHTML = '';
-        // CRIT-3 FIX: Set aria-busy during grid rebuild
         appGrid.setAttribute('aria-busy', 'true');
     }
 
     AppState.renderedIds.clear();
     updateGrid();
 
-    // After grid re-render from search, manage focus for keyboard users.
     const searchBox = document.getElementById('searchBox');
     if (searchBox && document.activeElement === searchBox) {
-        // User is typing in search — keep focus on search box
+        // User is typing — keep focus on search box
     } else if (appGrid && AppState.filteredApps.length > 0) {
         appGrid.setAttribute('tabindex', '-1');
         appGrid.focus({ preventScroll: true });
@@ -173,7 +178,6 @@ function updateGrid() {
 
     if (nextBatch.length === 0) {
         handleEmptyState(appGrid);
-        // CRIT-3 FIX: Clear aria-busy when grid is fully rendered
         appGrid.removeAttribute('aria-busy');
         return;
     }
@@ -212,7 +216,6 @@ function renderBatch(batch, container) {
         if (infiniteScrollObserver) {
             infiniteScrollObserver.disconnect();
         }
-        // CRIT-3 FIX: All items rendered — clear aria-busy
         container.removeAttribute('aria-busy');
     }
 
@@ -255,6 +258,15 @@ function createAppCard(app, index) {
     descEl.appendChild(document.createElement('br'));
     descEl.appendChild(document.createTextNode(app.description));
 
+    // Changelog toggle — only show if changeDescription exists
+    if (app.changeDescription) {
+        const toggleBtn = article.querySelector('.changelog-toggle');
+        toggleBtn.style.display = '';
+        toggleBtn.setAttribute('data-app-id', app.id);
+
+        article.querySelector('.changelog-text').textContent = app.changeDescription;
+    }
+
     article.querySelector('.app-meta-size').textContent = `Size: ${app.size}`;
 
     const btn = article.querySelector('.download-btn');
@@ -291,16 +303,27 @@ function handleGridClick(e) {
         if (appId) {
             trackDownload(appId);
         }
+        return;
     }
+
     if (e.target.classList.contains('action-retry')) {
         location.reload();
+        return;
+    }
+
+    // Changelog toggle — handle clicks on the button or its children
+    const toggleBtn = e.target.closest('.changelog-toggle');
+    if (toggleBtn) {
+        e.stopPropagation();
+        const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+        toggleBtn.setAttribute('aria-expanded', String(!expanded));
+        const content = toggleBtn.nextElementSibling;
+        if (content && content.classList.contains('changelog-content')) {
+            content.classList.toggle('expanded', !expanded);
+        }
     }
 }
 
-// HIGH-3 FIX: Use a temporary <a> element instead of window.open to avoid
-// popup blockers. The click() call on an <a> element with target="_blank"
-// is treated as a user-initiated navigation by browsers, even when called
-// from an async path within a click handler.
 function trackDownload(appId) {
     const app = AppState.apps.find(a => a.id === appId);
     if (!app) return;
@@ -334,14 +357,10 @@ function isValidDownloadUrl(url) {
     }
 }
 
-// CRIT-1 FIX: Clear previous toast timer before setting a new one.
-// Without this, rapid showToast calls cause the old timer to fire and
-// dismiss the current toast prematurely.
 function showToast(msg, type = 'info', action = null) {
     const toast = document.getElementById('toast');
     if (!toast) return;
 
-    // Clear any existing dismiss timer
     if (AppState.toastTimer) {
         clearTimeout(AppState.toastTimer);
         AppState.toastTimer = null;
@@ -408,6 +427,8 @@ function generateId(bundleId) {
 
 function inferCategory(bundleId) {
     const bid = bundleId.toLowerCase();
+    // Check 'youtubemusic' before 'youtube' to avoid mis-categorization
+    if (bid.includes('youtubemusic')) return 'Music';
     if (bid.includes('spotify') || bid.includes('music')) return 'Music';
     if (bid.includes('youtube') || bid.includes('video')) return 'Video';
     if (bid.includes('social') || bid.includes('tweet') || bid.includes('twitter')) return 'Social';
@@ -426,7 +447,6 @@ function showLoadingState() {
     const grid = document.getElementById('appGrid');
     if (!grid) return;
 
-    // CRIT-3 FIX: Signal loading state
     grid.setAttribute('aria-busy', 'true');
 
     grid.innerHTML = Array(3).fill(0).map((_, i) => `
@@ -526,8 +546,6 @@ function initializeScrollAnimations() {
                     entry.target.classList.add('visible');
                     observer.unobserve(entry.target);
 
-                    // Clear will-change after entrance animation finishes to reclaim
-                    // the GPU compositor layer.
                     setTimeout(() => {
                         entry.target.style.willChange = 'auto';
                     }, CONFIG.WILL_CHANGE_CLEANUP_DELAY);
