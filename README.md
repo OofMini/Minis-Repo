@@ -8,7 +8,8 @@
 
 
 [![](https://img.shields.io/badge/Open_Web_App-007AFF?style=for-the-badge&logo=safari&logoColor=white)](https://OofMini.github.io/Minis-Repo/)
-[![](https://img.shields.io/badge/Add_to_SideStore-A359FF?style=for-the-badge&logo=apple&logoColor=white)](sidestore://add-source?url=https://OofMini.github.io/Minis-Repo/mini.json)
+[![](https://img.shields.io/badge/Add_to_TrollApps-8A2BE2?style=for-the-badge&logo=apple&logoColor=white)](trollapps://add?url=https://OofMini.github.io/Minis-Repo/mini.json)
+[![](https://img.shields.io/badge/Add_to_SideStore-1DB954?style=for-the-badge&logo=apple&logoColor=white)](sidestore://source?url=https://OofMini.github.io/Minis-Repo/mini.json)
 
 </div>
 

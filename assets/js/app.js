@@ -113,6 +113,7 @@ async function loadAppData() {
             .filter(app => app.versions?.length > 0)
             .map(app => {
                 const latestVersion = app.versions[0];
+                const category = inferCategory(app.bundleIdentifier ?? '');
                 return {
                     id: generateId(app.bundleIdentifier),
                     name: app.name ?? 'Unknown App',
@@ -121,10 +122,12 @@ async function loadAppData() {
                     icon: app.iconURL ?? CONFIG.FALLBACK_ICON,
                     version: latestVersion.version ?? 'Unknown',
                     downloadUrl: latestVersion.downloadURL ?? '',
-                    category: inferCategory(app.bundleIdentifier ?? ''),
+                    category: category,
                     size: formatSize(latestVersion.size),
                     changeDescription: latestVersion.changeDescription ?? '',
-                    searchString: `${app.name} ${app.localizedDescription} ${app.developerName}`.toLowerCase()
+                    // FIX #6: Include category in searchString so users can filter
+                    // by category name (e.g., "music", "video", "utilities", "creative").
+                    searchString: `${app.name} ${app.localizedDescription} ${app.developerName} ${category}`.toLowerCase()
                 };
             });
 
@@ -508,17 +511,24 @@ function setupEventListeners() {
         });
     }
 
+    // CRITICAL FIX #1: TrollApps URL scheme was "trollapps://add-repo?url="
+    // which is not a recognized path. TrollApps registers "trollapps://add?url="
+    // as the deep link handler for adding sources. The old path caused the app
+    // to open to its home screen and silently ignore the url parameter.
     const trollappsBtn = document.getElementById('btn-trollapps');
     if (trollappsBtn) {
         trollappsBtn.addEventListener('click', () => {
-            window.location.href = `trollapps://add-repo?url=${encodeURIComponent(CONFIG.API_ENDPOINT)}`;
+            window.location.href = `trollapps://add?url=${encodeURIComponent(CONFIG.API_ENDPOINT)}`;
         });
     }
 
+    // CRITICAL FIX #2: SideStore URL scheme was "sidestore://add-source?url="
+    // which is not a recognized path. SideStore registers "sidestore://source?url="
+    // as the deep link handler for adding sources. Same silent-failure behavior.
     const sidestoreBtn = document.getElementById('btn-sidestore');
     if (sidestoreBtn) {
         sidestoreBtn.addEventListener('click', () => {
-            window.location.href = `sidestore://add-source?url=${encodeURIComponent(CONFIG.API_ENDPOINT)}`;
+            window.location.href = `sidestore://source?url=${encodeURIComponent(CONFIG.API_ENDPOINT)}`;
         });
     }
 
