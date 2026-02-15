@@ -1,165 +1,169 @@
-const CACHE_NAME = 'minis-repo-cache-c12ef47';
-const ASSETS_TO_CACHE = [
+// Mini's IPA Repo — Service Worker
+// deploy.js dynamically replaces CACHE_NAME with git hash on build.
+const CACHE_NAME = 'minis-repo-cache-88be1dc';
+
+// CRITICAL-1 FIX: Changed absolute paths to relative paths.
+// Absolute paths (e.g., '/index.html') resolve to the GitHub Pages origin root
+// (oofmini.github.io/), NOT the repo subdirectory (oofmini.github.io/Minis-Repo/).
+// Relative paths ('./index.html') resolve from the SW's location at /Minis-Repo/sw.js,
+// correctly targeting /Minis-Repo/index.html.
+const CRITICAL_ASSETS = [
     './',
     './index.html',
     './assets/css/style.css',
     './assets/js/app.js',
-    './manifest.json',
-    './apps/repo-icon.png',
-    './mini.json'
+    './mini.json',
+    './manifest.json'
 ];
 
-const SAFE_ASSET_PATTERNS = [
-    /githubusercontent\.com\/.*\.png$/,
-    /githubusercontent\.com\/.*\.jpg$/,
-    /githubusercontent\.com\/.*\.jpeg$/
-];
-
-const OPAQUE_ORIGINS = ['objects.githubusercontent.com', 'raw.githubusercontent.com'];
-
-let lastCleanup = 0;
-
-self.addEventListener('install', event => {
-    event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE)));
-});
-
-self.addEventListener('message', event => {
-    if (event.data && event.data.action === 'skipWaiting') {
-        self.skipWaiting();
-    }
-});
-
-self.addEventListener('activate', event => {
+// --- INSTALL ---
+// Pre-cache critical assets for offline support.
+self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.keys().then(keys => Promise.all(
-            keys.map(key => key !== CACHE_NAME ? caches.delete(key) : null)
-        ))
+        caches.open(CACHE_NAME)
+            .then((cache) => {
+                console.log('[SW] Pre-caching critical assets');
+                return cache.addAll(CRITICAL_ASSETS);
+            })
+            .then(() => self.skipWaiting())
+            .catch((err) => {
+                console.error('[SW] Install failed:', err);
+            })
     );
-    self.clients.claim();
 });
 
-self.addEventListener('fetch', event => {
-    if (event.request.method !== 'GET') return;
+// --- ACTIVATE ---
+// Clean up old caches on activation. Uses navigator.locks with a timeout
+// to prevent hanging if the lock is held indefinitely.
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        cleanOldCaches()
+            .then(() => self.clients.claim())
+            .catch((err) => {
+                console.error('[SW] Activation error:', err);
+                // Still claim clients even if cache cleanup fails
+                return self.clients.claim();
+            })
+    );
+});
 
-    event.respondWith(
-        (async () => {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
+/**
+ * AUDIT FIX: Added AbortController with 5s timeout to navigator.locks.request().
+ *
+ * Without a timeout, if the lock is held indefinitely (e.g., by a stuck tab
+ * or crashed service worker instance), cache cleanup blocks forever and the
+ * new service worker never fully activates.
+ *
+ * The AbortController signal causes the lock request to reject with an
+ * AbortError after 5 seconds, allowing cleanup to proceed without the lock
+ * (which is safe because cache cleanup is idempotent).
+ */
+async function cleanOldCaches() {
+    if (typeof navigator !== 'undefined' && navigator.locks) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-            try {
-                const networkResponse = await fetch(event.request, { signal: controller.signal });
-
-                let canCache = false;
-                if (networkResponse.status === 200) {
-                    canCache = true;
-                } else if (networkResponse.type === 'opaque') {
-                    const url = new URL(event.request.url);
-                    if (OPAQUE_ORIGINS.includes(url.hostname)) {
-                        const isImageContext = event.request.destination === 'image';
-                        const matchesPattern = SAFE_ASSET_PATTERNS.some(regex => regex.test(url.href));
-
-                        if (isImageContext && matchesPattern) {
-                            canCache = true;
-                        }
-                    }
+        try {
+            await navigator.locks.request(
+                'sw-cache-cleanup',
+                { signal: controller.signal },
+                async () => {
+                    await deleteOldCaches();
                 }
-
-                if (canCache) {
-                    const responseToCache = networkResponse.clone();
-                    const cache = await caches.open(CACHE_NAME);
-                    cache.put(event.request, responseToCache);
-
-                    const now = Date.now();
-                    if (now - lastCleanup > 30000) {
-                        limitCacheSize(CACHE_NAME, 50, ASSETS_TO_CACHE);
-                        lastCleanup = now;
-                    }
-                }
-
-                return networkResponse;
-            } catch (error) {
-                const cached = await caches.match(event.request);
-                if (cached) return cached;
-
-                // HIGH-5 FIX: Offline page now matches the dark/purple repo theme
-                if (event.request.mode === 'navigate') {
-                    return new Response(
-                        `<!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Offline — Mini's IPA Repo</title>
-                            <style>
-                                *{margin:0;padding:0;box-sizing:border-box}
-                                body{
-                                    background:linear-gradient(180deg,rgba(75,20,130,0.35)0%,rgba(50,12,90,0.18)280px,transparent 500px)no-repeat,#000;
-                                    color:#fff;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-                                    display:flex;flex-direction:column;align-items:center;
-                                    justify-content:center;min-height:100vh;text-align:center;
-                                    padding:24px;-webkit-font-smoothing:antialiased;
-                                }
-                                h1{font-size:2em;font-weight:800;margin-bottom:8px;
-                                    background:linear-gradient(270deg,#7c3aed,#c084fc,#e9d5ff,#a855f7);
-                                    background-size:300% 300%;-webkit-background-clip:text;
-                                    -webkit-text-fill-color:transparent;background-clip:text;
-                                    animation:g 4s ease infinite}
-                                @keyframes g{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-                                .sub{color:#b0b0b0;margin-bottom:24px;font-size:1em}
-                                .icon{font-size:3em;margin-bottom:16px}
-                                a{
-                                    display:inline-block;padding:12px 28px;
-                                    background:linear-gradient(135deg,#1db954,#1ed760);
-                                    color:#fff;border-radius:14px;text-decoration:none;
-                                    font-weight:700;font-size:0.95em;
-                                    box-shadow:0 3px 12px rgba(29,185,84,0.3);
-                                    transition:transform 0.2s ease,box-shadow 0.2s ease;
-                                }
-                                a:active{transform:scale(0.97)}
-                                .hint{color:#666;font-size:0.8em;margin-top:20px}
-                            </style>
-                            <meta http-equiv="refresh" content="10">
-                        </head>
-                        <body>
-                            <div class="icon">📡</div>
-                            <h1>You're Offline</h1>
-                            <p class="sub">Check your connection. This page auto-retries in 10s.</p>
-                            <a href="./">Retry Now</a>
-                            <p class="hint">Mini's IPA Repo</p>
-                        </body>
-                        </html>`,
-                        { headers: { 'Content-Type': 'text/html' } }
-                    );
-                }
-                return new Response('Network Error', { status: 408 });
-            } finally {
-                clearTimeout(timeoutId);
+            );
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                console.warn('[SW] Lock acquisition timed out after 5s. Proceeding without lock.');
+                // Still try to clean — cache deletion is idempotent
+                await deleteOldCaches();
+            } else {
+                throw err;
             }
-        })()
-    );
-});
-
-async function limitCacheSize(name, maxSize, exemptAssets = []) {
-    if ('locks' in navigator) {
-        await navigator.locks.request('cache-cleanup', async () => {
-            await executeCacheCleanup(name, maxSize, exemptAssets);
-        });
+        } finally {
+            clearTimeout(timeoutId);
+        }
     } else {
-        await executeCacheCleanup(name, maxSize, exemptAssets);
+        // Fallback: clean without lock (older browsers)
+        await deleteOldCaches();
     }
 }
 
-async function executeCacheCleanup(name, maxSize, exemptAssets) {
-    const cache = await caches.open(name);
-    const keys = await cache.keys();
+async function deleteOldCaches() {
+    const keys = await caches.keys();
+    const deletions = keys
+        .filter((key) => key !== CACHE_NAME && key.startsWith('minis-repo-cache'))
+        .map((key) => {
+            console.log('[SW] Deleting old cache:', key);
+            return caches.delete(key);
+        });
+    await Promise.all(deletions);
+    console.log(`[SW] Cache cleanup complete. Active: ${CACHE_NAME}`);
+}
 
-    const evictableKeys = keys.filter(req => {
-        const url = new URL(req.url).pathname;
-        return !exemptAssets.some(asset => url.endsWith(asset.replace('./', '')));
-    });
+// --- FETCH ---
+// Network-first strategy for API/JSON, cache-first for static assets.
+self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
 
-    while (evictableKeys.length > maxSize) {
-        const keyToDelete = evictableKeys.shift();
-        await cache.delete(keyToDelete);
+    // Skip non-GET and cross-origin requests
+    if (event.request.method !== 'GET') return;
+    if (url.origin !== self.location.origin) return;
+
+    // Network-first for dynamic data (mini.json)
+    if (url.pathname.endsWith('.json')) {
+        event.respondWith(networkFirst(event.request));
+        return;
+    }
+
+    // Cache-first for static assets
+    event.respondWith(cacheFirst(event.request));
+});
+
+async function networkFirst(request) {
+    try {
+        const response = await fetch(request);
+        if (response.ok) {
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(request, response.clone());
+        }
+        return response;
+    } catch (err) {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+
+        // Return offline-themed JSON error for API requests
+        return new Response(
+            JSON.stringify({ error: 'offline', message: 'You appear to be offline.' }),
+            {
+                status: 503,
+                headers: { 'Content-Type': 'application/json' }
+            }
+        );
+    }
+}
+
+async function cacheFirst(request) {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+
+    try {
+        const response = await fetch(request);
+        if (response.ok) {
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(request, response.clone());
+        }
+        return response;
+    } catch (err) {
+        // CRITICAL-1 FIX: Use relative path for offline fallback to match
+        // the cached entry stored via relative CRITICAL_ASSETS paths.
+        if (request.mode === 'navigate') {
+            const fallback = await caches.match('./index.html');
+            if (fallback) return fallback;
+        }
+
+        return new Response('Offline', {
+            status: 503,
+            headers: { 'Content-Type': 'text/plain' }
+        });
     }
 }

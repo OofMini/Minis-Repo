@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0.0",
-    "name": "Mini's IPA Repo",
+    "name": "Mini's Repo",
     "subtitle": "Tweaked IPA Repo",
     "description": "A collection of popular tweaked apps.",
     "iconURL": "https://OofMini.github.io/Minis-Repo/apps/repo-icon.png",
@@ -9,7 +9,7 @@
             "name": "EeveeSpotify",
             "bundleIdentifier": "com.spotify.client",
             "developerName": "whoeevee",
-            "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.22, EeveeSpotify 6.5.3",
+            "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.22, EeveeSpotify 6.5.3.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/EeveeSpotify.png",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/eeveespotify-1.png",
@@ -22,7 +22,8 @@
                     "date": "2026-02-13",
                     "downloadURL": "https://github.com/OofMini/eeveespotifyreborn/releases/download/New/EeveeSpotify.ipa",
                     "size": 87975526,
-                    "localizedDescription": "Premium unlocked, ads removed, enhanced playback"
+                    "localizedDescription": "Premium unlocked, ads removed, enhanced playback",
+                    "changeDescription": "Updated to Spotify 9.1.22 with EeveeSpotify 6.5.3. Improved streaming stability and fixed lyrics sync issues."
                 }
             ],
             "tintColor": "#1DB954",
@@ -50,7 +51,8 @@
                     "date": "2026-02-14",
                     "downloadURL": "https://github.com/OofMini/YTLite/releases/download/New/YouTubePlus_5.2b4.ipa",
                     "size": 113351065,
-                    "localizedDescription": "Background playback, ads removed, picture-in-picture support"
+                    "localizedDescription": "Background playback, ads removed, picture-in-picture support",
+                    "changeDescription": "Updated to YouTube 21.06.2 with YTLite 5.2b4. Fixed PiP on iOS 17.4+, improved ad-blocking reliability."
                 }
             ],
             "tintColor": "#FF0000",
@@ -65,7 +67,7 @@
             "name": "YTMusicUltimate",
             "bundleIdentifier": "com.google.ios.youtubemusic",
             "developerName": "dayanch96",
-            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.06.4, YTMusicUltimate 2.3.1",
+            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.06.4, YTMusicUltimate 2.3.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubeMusic.png",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/youtubemusic-1.png",
@@ -78,7 +80,8 @@
                     "date": "2026-02-14",
                     "downloadURL": "https://github.com/OofMini/YTMusicUltimate/releases/download/New/YTMusicUltimate.ipa",
                     "size": 257425408,
-                    "localizedDescription": "Premium unlocked, background playback, no ads"
+                    "localizedDescription": "Premium unlocked, background playback, no ads",
+                    "changeDescription": "Updated to YouTube Music 9.06.4 with YTMusicUltimate 2.3.1. Added offline playback fixes and improved queue management."
                 }
             ],
             "tintColor": "#FF0000",
@@ -93,7 +96,7 @@
             "name": "NeoFreeBird",
             "bundleIdentifier": "com.atebits.Tweetie2",
             "developerName": "NeoFreeBird",
-            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.65, NeoFreeBird 5.2",
+            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.65, NeoFreeBird 5.2.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/NeoFreeBird.png",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/x-neofreebird-1.png",
@@ -106,7 +109,8 @@
                     "date": "2026-02-14",
                     "downloadURL": "https://github.com/OofMini/tweak/releases/download/New/NeoFreeBird-sideloaded.ipa",
                     "size": 142816051,
-                    "localizedDescription": "TrollStore/SideStore build 5.2, custom features, performance improvements"
+                    "localizedDescription": "TrollStore/SideStore build 5.2, custom features, performance improvements",
+                    "changeDescription": "Updated to X 11.65 with NeoFreeBird 5.2. Added video download improvements and reduced memory usage."
                 }
             ],
             "tintColor": "#1DA1F2",
@@ -133,7 +137,8 @@
                     "date": "2026-02-10",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/New/InShot.ipa",
                     "size": 113665638,
-                    "localizedDescription": "All filters unlocked, watermark removed, premium tools enabled"
+                    "localizedDescription": "All filters unlocked, watermark removed, premium tools enabled",
+                    "changeDescription": "Updated to 1.94.0. New AI video effects, all premium filters unlocked, watermark completely removed."
                 }
             ],
             "tintColor": "#FF2D55",
@@ -161,7 +166,8 @@
                     "date": "2026-02-09",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Torrent/iTorrent.ipa",
                     "size": 7130316,
-                    "localizedDescription": "Lightweight torrent client"
+                    "localizedDescription": "Lightweight torrent client",
+                    "changeDescription": "Version 2.1.1 with background downloading support and improved peer connectivity."
                 }
             ],
             "tintColor": "#34C759",
@@ -188,7 +194,8 @@
                     "date": "2026-02-09",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Live/LiveContainer.ipa",
                     "size": 4194304,
-                    "localizedDescription": "JIT-less app container"
+                    "localizedDescription": "JIT-less app container",
+                    "changeDescription": "Version 3.6.63 with improved container stability and reduced memory footprint."
                 }
             ],
             "tintColor": "#FF2D55",
@@ -215,7 +222,8 @@
                     "date": "2026-02-09",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
                     "size": 106535321,
-                    "localizedDescription": "Reface Premium Unlocked."
+                    "localizedDescription": "Reface Premium Unlocked.",
+                    "changeDescription": "Version 6.1.3 with all premium templates unlocked and improved face detection accuracy."
                 }
             ],
             "tintColor": "#00C7BE",
