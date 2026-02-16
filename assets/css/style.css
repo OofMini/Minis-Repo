@@ -18,6 +18,7 @@
     --sidestore-color: #1db954;
     --text-muted: #b0b0b0;
     --text-secondary: #d1d1d1;
+    --modal-bg: rgba(18, 18, 24, 0.97);
 }
 
 /* ============================================================
@@ -34,6 +35,7 @@
 html {
     scroll-behavior: smooth;
     scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    color-scheme: dark;
 }
 
 body {
@@ -60,6 +62,10 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+}
+
+body.modal-open {
+    overflow: hidden;
 }
 
 img {
@@ -126,6 +132,12 @@ img {
         animation: none !important;
         transform: none !important;
     }
+    .modal-overlay {
+        transition: none !important;
+    }
+    .modal-content {
+        transition: none !important;
+    }
 }
 
 /* ============================================================
@@ -181,6 +193,120 @@ img {
     border-radius: 6px;
     margin-top: 8px;
     display: inline-block;
+}
+
+/* ============================================================
+   OFFLINE INDICATOR BAR
+   ============================================================ */
+.offline-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 5000;
+    background: linear-gradient(135deg, #ff6b35, var(--warning-color));
+    color: #000;
+    text-align: center;
+    padding: 8px 16px;
+    font-size: 0.85em;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    transform: translateY(-100%);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.offline-bar.visible {
+    transform: translateY(0);
+}
+
+/* ============================================================
+   INSTALL BANNER
+   ============================================================ */
+.install-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 4500;
+    background: rgba(18, 18, 28, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.install-banner.visible {
+    transform: translateY(0);
+}
+
+.install-banner-text {
+    font-size: 0.92em;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.install-banner-text strong {
+    color: var(--text-color);
+}
+
+.install-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    min-height: 40px;
+    background: linear-gradient(135deg, var(--accent-color), #8b5cf6);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.88em;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3);
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (hover: hover) {
+    .install-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 18px rgba(139, 92, 246, 0.4);
+    }
+}
+
+.install-btn:active {
+    transform: scale(0.97);
+}
+
+.install-dismiss-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.3em;
+    cursor: pointer;
+    padding: 8px;
+    min-height: 40px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.2s ease;
+}
+
+@media (hover: hover) {
+    .install-dismiss-btn:hover {
+        color: var(--text-color);
+    }
 }
 
 /* ============================================================
@@ -578,6 +704,11 @@ img {
     position: relative;
     overflow: hidden;
     cursor: pointer;
+    /* PERFORMANCE: CSS containment for layout stability */
+    contain: layout style;
+    /* PERFORMANCE: Hint browser to skip rendering off-screen cards */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 340px;
     transition:
         border-color 0.3s ease,
         box-shadow 0.3s ease;
@@ -613,6 +744,14 @@ img {
             0 8px 30px rgba(0, 0, 0, 0.3),
             0 0 40px rgba(139, 92, 246, 0.08);
     }
+}
+
+/* Keyboard focus state for cards */
+.app-card:focus-visible {
+    border-color: var(--accent-color);
+    box-shadow:
+        0 0 0 3px var(--accent-glow),
+        0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .app-icon-container {
@@ -791,7 +930,7 @@ img {
     user-select: none;
     box-shadow: 0 3px 12px rgba(29, 185, 84, 0.25);
     -webkit-tap-highlight-color: transparent;
-    transition: box-shadow 0.25s ease;
+    transition: box-shadow 0.25s ease, opacity 0.25s ease;
     position: relative;
     overflow: hidden;
 }
@@ -824,6 +963,267 @@ img {
 
 .download-btn:active {
     transform: scale(0.97);
+}
+
+/* Offline state for download buttons */
+.download-btn.offline-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================================
+   APP DETAIL MODAL
+   ============================================================ */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 6000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    position: relative;
+    background: var(--modal-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        0 0 80px rgba(110, 30, 180, 0.1);
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0) scale(1);
+}
+
+.modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.modal-close {
+    position: sticky;
+    top: 12px;
+    float: right;
+    margin-right: 12px;
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    font-size: 1.3em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+@media (hover: hover) {
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: var(--text-color);
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 28px 24px 0;
+}
+
+.modal-icon-container {
+    flex-shrink: 0;
+}
+
+.modal-icon {
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    object-fit: cover;
+}
+
+.modal-title-block {
+    flex: 1;
+    min-width: 0;
+}
+
+.modal-title {
+    font-size: 1.4em;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+
+.modal-developer {
+    color: var(--accent-color);
+    font-size: 0.9em;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.modal-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.modal-meta-item {
+    font-size: 0.8em;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.modal-meta-sep {
+    color: rgba(255, 255, 255, 0.15);
+    font-size: 0.7em;
+}
+
+/* Modal screenshots — horizontal scroll gallery */
+.modal-screenshots {
+    display: flex;
+    gap: 10px;
+    padding: 20px 24px 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.modal-screenshots::-webkit-scrollbar {
+    height: 4px;
+}
+.modal-screenshots::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.modal-screenshot {
+    flex-shrink: 0;
+    height: 200px;
+    width: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    scroll-snap-align: start;
+    object-fit: cover;
+}
+
+.modal-body {
+    padding: 20px 24px;
+}
+
+.modal-description {
+    font-size: 0.95em;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin-bottom: 16px;
+}
+
+.modal-changelog {
+    background: rgba(167, 139, 250, 0.06);
+    border: 1px solid rgba(167, 139, 250, 0.12);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+}
+
+.modal-changelog strong {
+    color: var(--accent-color);
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9em;
+}
+
+.modal-changelog p {
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.modal-permissions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.modal-permissions-label {
+    font-size: 0.82em;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.modal-perm-tag {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 0.72em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.modal-date {
+    font-size: 0.8em;
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+.modal-footer {
+    padding: 0 24px 24px;
+    text-align: center;
+}
+
+.modal-download-btn {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 1em;
 }
 
 /* ============================================================
@@ -979,7 +1379,7 @@ img {
     transition:
         transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
         opacity 0.3s ease;
-    z-index: 4000;
+    z-index: 7000;
     font-size: 0.9em;
     max-width: 360px;
     box-shadow:
@@ -1126,6 +1526,50 @@ img {
 
     .app-card {
         padding: 20px;
+    }
+
+    /* Modal — full-screen on mobile */
+    .modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        max-height: 92vh;
+        border-radius: 24px 24px 0 0;
+        transform: translateY(100%);
+    }
+
+    .modal-overlay.active .modal-content {
+        transform: translateY(0);
+    }
+
+    .modal-header {
+        padding: 24px 20px 0;
+    }
+
+    .modal-icon {
+        width: 72px;
+        height: 72px;
+    }
+
+    .modal-body {
+        padding: 16px 20px;
+    }
+
+    .modal-footer {
+        padding: 0 20px 20px;
+    }
+
+    .modal-screenshot {
+        height: 160px;
+    }
+
+    /* Install banner — stack vertically on mobile */
+    .install-banner {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 14px 16px;
     }
 }
 

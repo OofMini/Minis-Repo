@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="color-scheme" content="dark" />
 
         <meta
             http-equiv="Content-Security-Policy"
@@ -20,6 +21,8 @@
 
         <link rel="preconnect" href="https://oofmini.github.io" crossorigin />
         <link rel="preconnect" href="https://github.com" crossorigin />
+        <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
+        <link rel="dns-prefetch" href="https://objects.githubusercontent.com" />
 
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Mini's IPA Repo — Tweaked iOS Apps" />
@@ -54,6 +57,29 @@
         <link rel="manifest" href="manifest.json" />
         <link rel="icon" href="apps/repo-icon.png" />
         <link rel="stylesheet" href="assets/css/style.css" />
+
+        <!-- Structured Data (JSON-LD) for SEO -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Mini's IPA Repo",
+            "url": "https://oofmini.github.io/Minis-Repo/",
+            "description": "A curated collection of premium tweaked iOS applications for iOS 15+.",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "iOS 15+",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            },
+            "author": {
+                "@type": "Person",
+                "name": "Mini",
+                "url": "https://github.com/OofMini"
+            }
+        }
+        </script>
     </head>
     <body>
         <noscript>
@@ -63,6 +89,11 @@
                 <p class="noscript-subtle">Or add this source URL directly to your app manager:<br><code>https://OofMini.github.io/Minis-Repo/mini.json</code></p>
             </div>
         </noscript>
+
+        <!-- Offline Status Bar -->
+        <div id="offlineBar" class="offline-bar" role="alert" aria-live="assertive" hidden>
+            📴 You are offline — cached content may be outdated
+        </div>
 
         <header class="hero">
             <img
@@ -145,6 +176,17 @@
                 </div>
             </div>
         </footer>
+
+        <!-- PWA Install Banner -->
+        <div id="installBanner" class="install-banner" role="banner" hidden>
+            <span class="install-banner-text"><strong>Mini's Repo</strong> — Install for quick access</span>
+            <button class="install-btn" id="btn-install" aria-label="Install Mini's Repo as an app">
+                📲 Install
+            </button>
+            <button class="install-dismiss-btn" id="btn-install-dismiss" aria-label="Dismiss install prompt">
+                ✕
+            </button>
+        </div>
 
         <div class="toast" id="toast" aria-live="polite" role="status"></div>
 

@@ -12,7 +12,8 @@ const CONFIG = {
             : 'https://OofMini.github.io/Minis-Repo/mini.json',
     FALLBACK_ICON: './apps/repo-icon.png',
     BATCH_SIZE: 12,
-    WILL_CHANGE_CLEANUP_DELAY: 700
+    WILL_CHANGE_CLEANUP_DELAY: 700,
+    SW_UPDATE_INTERVAL: 30 * 60 * 1000 // 30 minutes
 };
 
 const AppState = {
@@ -21,12 +22,15 @@ const AppState = {
     renderedIds: new Set(),
     searchTerm: '',
     isLoading: true,
-    toastTimer: null
+    toastTimer: null,
+    isOnline: navigator.onLine,
+    deferredInstallPrompt: null,
+    modalOpen: false
 };
 
 const AppCardTemplate = document.createElement('template');
 AppCardTemplate.innerHTML = `
-    <article class="app-card fade-in" role="article">
+    <article class="app-card fade-in" role="article" tabindex="0">
         <div class="app-icon-container">
             <img class="app-icon" loading="lazy" decoding="async" width="80" height="80">
         </div>
@@ -51,12 +55,15 @@ AppCardTemplate.innerHTML = `
 let observer = null;
 let infiniteScrollObserver = null;
 let newWorker = null;
+let swUpdateTimer = null;
 
 document.addEventListener('DOMContentLoaded', async function () {
     try {
         setupEventListeners();
         setupGlobalErrorHandling();
         setupPWA();
+        setupInstallPrompt();
+        setupOnlineOfflineDetection();
         initializeScrollAnimations();
         setupInfiniteScroll();
         showLoadingState();
@@ -111,20 +118,32 @@ async function loadAppData() {
 
         const processedApps = data.apps
             .filter(app => app.versions?.length > 0)
-            .map(app => {
+            .map((app, idx) => {
                 const latestVersion = app.versions[0];
                 const category = inferCategory(app.bundleIdentifier ?? '');
                 return {
-                    id: generateId(app.bundleIdentifier),
+                    // BUG FIX: generateId now uses index fallback to prevent
+                    // duplicate 'unknown' IDs when bundleIdentifier is missing.
+                    id: generateId(app.bundleIdentifier, idx),
                     name: app.name ?? 'Unknown App',
+                    bundleId: app.bundleIdentifier ?? '',
                     developer: app.developerName ?? 'Unknown',
                     description: app.localizedDescription ?? '',
                     icon: app.iconURL ?? CONFIG.FALLBACK_ICON,
                     version: latestVersion.version ?? 'Unknown',
+                    date: latestVersion.date ?? '',
                     downloadUrl: latestVersion.downloadURL ?? '',
                     category: category,
                     size: formatSize(latestVersion.size),
+                    sizeBytes: latestVersion.size ?? 0,
                     changeDescription: latestVersion.changeDescription ?? '',
+                    tintColor: app.tintColor ?? '#1DB954',
+                    subtitle: app.subtitle ?? '',
+                    minimumOS: app.minimumOSVersion ?? '15.0',
+                    permissions: app.permissions ?? [],
+                    // BUG FIX: Screenshots were loaded from mini.json but never
+                    // stored or displayed. Now stored for the detail modal.
+                    screenshots: app.screenshotURLs ?? [],
                     // FIX #6: Include category in searchString so users can filter
                     // by category name (e.g., "music", "video", "utilities", "creative").
                     searchString: `${app.name} ${app.localizedDescription} ${app.developerName} ${category}`.toLowerCase()
@@ -240,7 +259,7 @@ function createAppCard(app, index) {
     const article = cardFragment.querySelector('article');
 
     article.setAttribute('data-app-id', app.id);
-    article.setAttribute('aria-label', app.name);
+    article.setAttribute('aria-label', `${app.name} — tap to view details`);
     article.classList.add(`stagger-${(index % 3) + 1}`);
 
     const img = article.querySelector('.app-icon');
@@ -276,6 +295,11 @@ function createAppCard(app, index) {
     btn.setAttribute('data-id', app.id);
     btn.textContent = '⬇️ Download IPA';
 
+    // Dim download button when offline
+    if (!AppState.isOnline) {
+        btn.classList.add('offline-disabled');
+    }
+
     return cardFragment;
 }
 
@@ -300,6 +324,7 @@ function setupInfiniteScroll() {
     infiniteScrollObserver.observe(sentinel);
 }
 
+// ========== GRID CLICK / KEYBOARD HANDLER ==========
 function handleGridClick(e) {
     if (e.target.classList.contains('action-download')) {
         const appId = e.target.getAttribute('data-id');
@@ -324,12 +349,165 @@ function handleGridClick(e) {
         if (content && content.classList.contains('changelog-content')) {
             content.classList.toggle('expanded', !expanded);
         }
+        return;
+    }
+
+    // Card click — open detail modal (but not for button/link clicks)
+    const card = e.target.closest('.app-card');
+    if (card && !e.target.closest('button') && !e.target.closest('a')) {
+        const appId = card.getAttribute('data-app-id');
+        if (appId) openAppModal(appId);
     }
 }
 
+function handleGridKeydown(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+        const card = e.target.closest('.app-card');
+        if (card && e.target === card) {
+            e.preventDefault();
+            const appId = card.getAttribute('data-app-id');
+            if (appId) openAppModal(appId);
+        }
+    }
+}
+
+// ========== APP DETAIL MODAL ==========
+function openAppModal(appId) {
+    const app = AppState.apps.find(a => a.id === appId);
+    if (!app) return;
+
+    AppState.modalOpen = true;
+
+    const existing = document.getElementById('appModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'appModal';
+    modal.className = 'modal-overlay';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', `${app.name} details`);
+
+    const screenshotsHtml = app.screenshots.length > 0
+        ? `<div class="modal-screenshots" role="region" aria-label="Screenshots">
+               ${app.screenshots.map((url, i) =>
+                   `<img src="${escapeAttr(url)}" alt="${escapeAttr(app.name)} screenshot ${i + 1}" loading="lazy" decoding="async" class="modal-screenshot">`
+               ).join('')}
+           </div>`
+        : '';
+
+    const permissionsHtml = app.permissions.length > 0
+        ? `<div class="modal-permissions">
+               <span class="modal-permissions-label">Permissions:</span>
+               ${app.permissions.map(p => `<span class="modal-perm-tag">${escapeHtml(p)}</span>`).join('')}
+           </div>`
+        : '';
+
+    const changelogHtml = app.changeDescription
+        ? `<div class="modal-changelog">
+               <strong>What's New:</strong>
+               <p>${escapeHtml(app.changeDescription)}</p>
+           </div>`
+        : '';
+
+    modal.innerHTML = `
+        <div class="modal-backdrop"></div>
+        <div class="modal-content" role="document">
+            <button class="modal-close" aria-label="Close dialog">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon-container">
+                    <img src="${escapeAttr(app.icon)}" alt="${escapeAttr(app.name)} icon"
+                         class="modal-icon" width="96" height="96"
+                         onerror="this.src='${CONFIG.FALLBACK_ICON}'">
+                </div>
+                <div class="modal-title-block">
+                    <h2 class="modal-title">${escapeHtml(app.name)}</h2>
+                    <p class="modal-developer">${escapeHtml(app.developer)}</p>
+                    <div class="modal-meta">
+                        <span class="modal-meta-item">v${escapeHtml(app.version)}</span>
+                        <span class="modal-meta-sep">•</span>
+                        <span class="modal-meta-item">${escapeHtml(app.size)}</span>
+                        <span class="modal-meta-sep">•</span>
+                        <span class="modal-meta-item">iOS ${escapeHtml(app.minimumOS)}+</span>
+                    </div>
+                </div>
+            </div>
+            ${screenshotsHtml}
+            <div class="modal-body">
+                <p class="modal-description">${escapeHtml(app.description)}</p>
+                ${changelogHtml}
+                ${permissionsHtml}
+                <p class="modal-date">Last updated: ${escapeHtml(app.date)}</p>
+            </div>
+            <div class="modal-footer">
+                <button class="download-btn modal-download-btn" data-id="${escapeAttr(app.id)}">
+                    ⬇️ Download IPA
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    document.body.classList.add('modal-open');
+
+    // Force reflow then animate in
+    modal.offsetHeight;
+    modal.classList.add('active');
+
+    // Focus trap
+    const closeBtn = modal.querySelector('.modal-close');
+    closeBtn.focus();
+
+    // Close handlers
+    modal.querySelector('.modal-backdrop').addEventListener('click', closeAppModal);
+    closeBtn.addEventListener('click', closeAppModal);
+    modal.querySelector('.modal-download-btn').addEventListener('click', () => {
+        trackDownload(app.id);
+    });
+
+    modal.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            e.stopPropagation();
+            closeAppModal();
+        }
+    });
+}
+
+function closeAppModal() {
+    const modal = document.getElementById('appModal');
+    if (!modal) return;
+
+    AppState.modalOpen = false;
+    modal.classList.remove('active');
+    document.body.classList.remove('modal-open');
+
+    // Wait for animation to complete before removing from DOM
+    setTimeout(() => {
+        if (modal.parentNode) modal.remove();
+    }, 300);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function escapeAttr(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ========== DOWNLOAD HANDLER ==========
 function trackDownload(appId) {
     const app = AppState.apps.find(a => a.id === appId);
     if (!app) return;
+
+    if (!AppState.isOnline) {
+        showToast('📴 You are offline. Downloads require an internet connection.', 'warning');
+        return;
+    }
 
     if (!isValidDownloadUrl(app.downloadUrl)) {
         showToast('⚠️ Security Block: URL must be HTTPS', 'error');
@@ -360,6 +538,7 @@ function isValidDownloadUrl(url) {
     }
 }
 
+// ========== TOAST NOTIFICATIONS ==========
 function showToast(msg, type = 'info', action = null) {
     const toast = document.getElementById('toast');
     if (!toast) return;
@@ -381,6 +560,9 @@ function showToast(msg, type = 'info', action = null) {
         toast.appendChild(actionBtn);
     }
 
+    // ACCESSIBILITY FIX: Use assertive for errors/warnings so screen
+    // readers announce them immediately, polite for info/success.
+    toast.setAttribute('aria-live', (type === 'error' || type === 'warning') ? 'assertive' : 'polite');
     toast.className = `toast ${type} show`;
 
     AppState.toastTimer = setTimeout(() => {
@@ -389,6 +571,7 @@ function showToast(msg, type = 'info', action = null) {
     }, CONFIG.TOAST_DURATION);
 }
 
+// ========== PWA SERVICE WORKER ==========
 function setupPWA() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').then(reg => {
@@ -402,6 +585,11 @@ function setupPWA() {
                     });
                 }
             });
+
+            // Periodic SW update check for long-lived PWA sessions
+            swUpdateTimer = setInterval(() => {
+                reg.update().catch(() => {});
+            }, CONFIG.SW_UPDATE_INTERVAL);
         }).catch(err => console.error('SW registration failed:', err));
 
         let refreshing = false;
@@ -424,8 +612,93 @@ function showUpdateNotification() {
     });
 }
 
-function generateId(bundleId) {
-    return bundleId ? bundleId.toLowerCase() : 'unknown';
+// ========== PWA INSTALL PROMPT ==========
+function setupInstallPrompt() {
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        AppState.deferredInstallPrompt = e;
+        showInstallBanner();
+    });
+
+    window.addEventListener('appinstalled', () => {
+        AppState.deferredInstallPrompt = null;
+        hideInstallBanner();
+        showToast('✅ App installed successfully!', 'success');
+    });
+}
+
+function showInstallBanner() {
+    const banner = document.getElementById('installBanner');
+    if (banner) {
+        banner.classList.add('visible');
+        banner.removeAttribute('hidden');
+    }
+}
+
+function hideInstallBanner() {
+    const banner = document.getElementById('installBanner');
+    if (banner) {
+        banner.classList.remove('visible');
+        banner.setAttribute('hidden', '');
+    }
+}
+
+async function handleInstallClick() {
+    const prompt = AppState.deferredInstallPrompt;
+    if (!prompt) return;
+
+    prompt.prompt();
+    const result = await prompt.userChoice;
+
+    if (result.outcome === 'accepted') {
+        console.log('PWA install accepted');
+    }
+    AppState.deferredInstallPrompt = null;
+    hideInstallBanner();
+}
+
+// ========== ONLINE / OFFLINE DETECTION ==========
+function setupOnlineOfflineDetection() {
+    const offlineBar = document.getElementById('offlineBar');
+
+    function updateOnlineStatus() {
+        AppState.isOnline = navigator.onLine;
+
+        if (offlineBar) {
+            if (AppState.isOnline) {
+                offlineBar.classList.remove('visible');
+                offlineBar.setAttribute('hidden', '');
+            } else {
+                offlineBar.classList.add('visible');
+                offlineBar.removeAttribute('hidden');
+            }
+        }
+
+        // Toggle download button states
+        document.querySelectorAll('.action-download').forEach(btn => {
+            btn.classList.toggle('offline-disabled', !AppState.isOnline);
+        });
+    }
+
+    window.addEventListener('online', () => {
+        updateOnlineStatus();
+        showToast('✅ Back online', 'success');
+    }, { passive: true });
+
+    window.addEventListener('offline', () => {
+        updateOnlineStatus();
+        showToast('📴 You are offline', 'warning');
+    }, { passive: true });
+
+    // Set initial state
+    updateOnlineStatus();
+}
+
+// ========== UTILITIES ==========
+function generateId(bundleId, index) {
+    if (bundleId) return bundleId.toLowerCase();
+    // BUG FIX: Use index as fallback to prevent duplicate 'unknown' IDs
+    return `unknown-${index}`;
 }
 
 function inferCategory(bundleId) {
@@ -446,6 +719,7 @@ function formatSize(bytes) {
     return `${(bytes / 1048576).toFixed(0)} MB`;
 }
 
+// ========== LOADING / ERROR STATES ==========
 function showLoadingState() {
     const grid = document.getElementById('appGrid');
     if (!grid) return;
@@ -479,6 +753,7 @@ function showErrorState(msg) {
     grid.querySelector('p').textContent = String(msg);
 }
 
+// ========== EVENT LISTENERS ==========
 function setupEventListeners() {
     const searchBox = document.getElementById('searchBox');
 
@@ -511,10 +786,7 @@ function setupEventListeners() {
         });
     }
 
-    // CRITICAL FIX #1: TrollApps URL scheme was "trollapps://add-repo?url="
-    // which is not a recognized path. TrollApps registers "trollapps://add?url="
-    // as the deep link handler for adding sources. The old path caused the app
-    // to open to its home screen and silently ignore the url parameter.
+    // CRITICAL FIX #1: TrollApps URL scheme — "trollapps://add?url="
     const trollappsBtn = document.getElementById('btn-trollapps');
     if (trollappsBtn) {
         trollappsBtn.addEventListener('click', () => {
@@ -522,9 +794,7 @@ function setupEventListeners() {
         });
     }
 
-    // CRITICAL FIX #2: SideStore URL scheme was "sidestore://add-source?url="
-    // which is not a recognized path. SideStore registers "sidestore://source?url="
-    // as the deep link handler for adding sources. Same silent-failure behavior.
+    // CRITICAL FIX #2: SideStore URL scheme — "sidestore://source?url="
     const sidestoreBtn = document.getElementById('btn-sidestore');
     if (sidestoreBtn) {
         sidestoreBtn.addEventListener('click', () => {
@@ -532,10 +802,31 @@ function setupEventListeners() {
         });
     }
 
+    // Install button
+    const installBtn = document.getElementById('btn-install');
+    if (installBtn) {
+        installBtn.addEventListener('click', handleInstallClick);
+    }
+
+    const installDismiss = document.getElementById('btn-install-dismiss');
+    if (installDismiss) {
+        installDismiss.addEventListener('click', hideInstallBanner);
+    }
+
     const appGrid = document.getElementById('appGrid');
     if (appGrid) {
         appGrid.addEventListener('click', handleGridClick);
+        // ACCESSIBILITY FIX: Cards are now keyboard-navigable with
+        // tabindex="0" and Enter/Space opens the detail modal.
+        appGrid.addEventListener('keydown', handleGridKeydown);
     }
+
+    // Close modal on Escape (document-level fallback)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && AppState.modalOpen) {
+            closeAppModal();
+        }
+    });
 }
 
 function setupGlobalErrorHandling() {
@@ -568,9 +859,11 @@ function initializeScrollAnimations() {
     }
 }
 
+// ========== CLEANUP ==========
 window.addEventListener('beforeunload', () => {
     if (observer) observer.disconnect();
     if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
+    if (swUpdateTimer) clearInterval(swUpdateTimer);
 
     if (AppState.toastTimer) {
         clearTimeout(AppState.toastTimer);

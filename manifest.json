@@ -11,6 +11,7 @@
     "background_color": "#000000",
     "theme_color": "#000000",
     "categories": ["utilities", "entertainment"],
+    "prefer_related_applications": false,
     "icons": [
         {
             "src": "apps/repo-icon.png",
@@ -29,6 +30,21 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Browse Apps",
+            "short_name": "Apps",
+            "description": "View all available tweaked apps",
+            "url": "./?source=shortcut",
+            "icons": [
+                {
+                    "src": "apps/repo-icon.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
         }
     ]
 }
