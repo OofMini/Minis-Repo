@@ -1,6 +1,6 @@
 // ========== CONFIGURATION ==========
 const CONFIG = {
-    SEARCH_DEBOUNCE: 300,
+    SEARCH_DEBOUNCE: 250,
     TOAST_DURATION: 4000,
     FETCH_TIMEOUT: 10000,
     API_ENDPOINT:
@@ -13,7 +13,8 @@ const CONFIG = {
     FALLBACK_ICON: './apps/repo-icon.png',
     BATCH_SIZE: 12,
     WILL_CHANGE_CLEANUP_DELAY: 700,
-    SW_UPDATE_INTERVAL: 30 * 60 * 1000 // 30 minutes
+    SW_UPDATE_INTERVAL: 30 * 60 * 1000,
+    FEATURED_BUNDLE_ID: 'com.spotify.client'
 };
 
 const AppState = {
@@ -21,18 +22,21 @@ const AppState = {
     filteredApps: [],
     renderedIds: new Set(),
     searchTerm: '',
+    activeCategory: 'all',
+    sortMode: 'recent',
     isLoading: true,
     toastTimer: null,
     isOnline: navigator.onLine,
     deferredInstallPrompt: null,
-    modalOpen: false
+    modalOpen: false,
+    modalScrollY: 0
 };
 
 const AppCardTemplate = document.createElement('template');
 AppCardTemplate.innerHTML = `
     <article class="app-card fade-in" role="article" tabindex="0">
         <div class="app-icon-container">
-            <img class="app-icon" loading="lazy" decoding="async" width="80" height="80">
+            <img class="app-icon" loading="lazy" decoding="async" width="72" height="72">
         </div>
         <div class="app-status"></div>
         <div class="app-card-content">
@@ -52,14 +56,11 @@ AppCardTemplate.innerHTML = `
     </article>
 `;
 
-// CRIT-3 FIX: Cache a single reusable DOM element for escapeHtml instead
-// of creating and discarding a new <div> on every call. During batch
-// rendering of 12 cards with ~6 escapeHtml calls each, this eliminates
-// 72 throwaway DOM allocations per batch.
 const _escapeDiv = document.createElement('div');
 
 let observer = null;
 let infiniteScrollObserver = null;
+let scrollTopObserver = null;
 let newWorker = null;
 let swUpdateTimer = null;
 
@@ -71,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         setupInstallPrompt();
         setupOnlineOfflineDetection();
         initializeScrollAnimations();
-        setupInfiniteScroll();
+        setupScrollToTop();
         showLoadingState();
 
         AppState.apps = await loadAppData();
@@ -80,10 +81,16 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (AppState.apps.length === 0) {
             showErrorState('No apps available in this repository');
         } else {
+            updateAppCount(AppState.apps.length);
+            setupFeaturedApp();
             const appGrid = document.getElementById('appGrid');
             if (appGrid) appGrid.innerHTML = '';
             AppState.renderedIds.clear();
-            filterApps();
+            filterAndSortApps();
+            setupInfiniteScroll();
+
+            // Hash routing: auto-open modal if URL has #app-bundleId
+            handleHashRoute();
         }
     } catch (error) {
         console.error('Initialization error:', error);
@@ -92,6 +99,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 });
 
+// ========== DATA LOADING ==========
 async function loadAppData() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), CONFIG.FETCH_TIMEOUT);
@@ -141,7 +149,7 @@ async function loadAppData() {
                     size: formatSize(latestVersion.size),
                     sizeBytes: latestVersion.size ?? 0,
                     changeDescription: latestVersion.changeDescription ?? '',
-                    tintColor: app.tintColor ?? '#1DB954',
+                    tintColor: app.tintColor ?? '#a78bfa',
                     subtitle: app.subtitle ?? '',
                     minimumOS: app.minimumOSVersion ?? '15.0',
                     permissions: app.permissions ?? [],
@@ -162,11 +170,79 @@ async function loadAppData() {
     }
 }
 
-function filterApps() {
-    AppState.filteredApps = AppState.apps.filter(app => {
-        if (!AppState.searchTerm) return true;
-        return app.searchString.includes(AppState.searchTerm);
+// ========== APP COUNT ==========
+function updateAppCount(count) {
+    const el = document.getElementById('appCountText');
+    if (el) el.textContent = `${count} Apps`;
+}
+
+// ========== FEATURED APP ==========
+function setupFeaturedApp() {
+    const app = AppState.apps.find(a => a.bundleId === CONFIG.FEATURED_BUNDLE_ID);
+    if (!app) return;
+
+    const section = document.getElementById('featuredSection');
+    const card = document.getElementById('featuredCard');
+    const icon = document.getElementById('featuredIcon');
+    const name = document.getElementById('featuredName');
+    const dev = document.getElementById('featuredDev');
+    const desc = document.getElementById('featuredDesc');
+    const btn = document.getElementById('featuredDownloadBtn');
+
+    if (!section || !card) return;
+
+    icon.src = app.icon;
+    icon.alt = `${app.name} icon`;
+    icon.onerror = () => { icon.src = CONFIG.FALLBACK_ICON; };
+    name.textContent = app.name;
+    dev.textContent = app.developer;
+    desc.textContent = app.description;
+    btn.setAttribute('data-id', app.id);
+    card.setAttribute('data-app-id', app.id);
+    card.setAttribute('aria-label', `${app.name} — featured app, tap to view details`);
+
+    section.removeAttribute('hidden');
+    section.classList.add('visible');
+
+    // Featured card click opens modal
+    card.addEventListener('click', (e) => {
+        if (!e.target.closest('button')) {
+            openAppModal(app.id);
+        }
     });
+    card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openAppModal(app.id);
+        }
+    });
+
+    // Featured download button
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        trackDownload(app.id);
+    });
+}
+
+// ========== FILTERING & SORTING ==========
+function filterAndSortApps() {
+    AppState.filteredApps = AppState.apps.filter(app => {
+        const matchesSearch = !AppState.searchTerm || app.searchString.includes(AppState.searchTerm);
+        const matchesCategory = AppState.activeCategory === 'all' || app.category === AppState.activeCategory;
+        return matchesSearch && matchesCategory;
+    });
+
+    // Sort
+    if (AppState.sortMode === 'alpha') {
+        AppState.filteredApps.sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+        // 'recent' — sort by date descending
+        AppState.filteredApps.sort((a, b) => {
+            if (b.date > a.date) return 1;
+            if (b.date < a.date) return -1;
+            return 0;
+        });
+    }
 
     const appGrid = document.getElementById('appGrid');
     if (appGrid) {
@@ -176,17 +252,7 @@ function filterApps() {
 
     AppState.renderedIds.clear();
     updateGrid();
-
-    // HIGH-2 FIX: Announce search results count to screen readers
     announceResultsCount();
-
-    const searchBox = document.getElementById('searchBox');
-    if (searchBox && document.activeElement === searchBox) {
-        // User is typing — keep focus on search box
-    } else if (appGrid && AppState.filteredApps.length > 0) {
-        appGrid.setAttribute('tabindex', '-1');
-        appGrid.focus({ preventScroll: true });
-    }
 
     const sentinel = document.getElementById('scroll-sentinel');
     if (infiniteScrollObserver && sentinel) {
@@ -194,14 +260,12 @@ function filterApps() {
     }
 }
 
-// HIGH-2 FIX: Updates the visually-hidden live region with the current
-// search results count so screen readers announce filter changes.
 function announceResultsCount() {
     const countEl = document.getElementById('searchResultsCount');
     if (!countEl) return;
 
     const total = AppState.filteredApps.length;
-    if (!AppState.searchTerm) {
+    if (!AppState.searchTerm && AppState.activeCategory === 'all') {
         countEl.textContent = `Showing all ${total} apps`;
     } else if (total === 0) {
         countEl.textContent = 'No apps found';
@@ -254,9 +318,7 @@ function renderBatch(batch, container) {
     }
 
     if (AppState.renderedIds.size >= AppState.filteredApps.length) {
-        if (infiniteScrollObserver) {
-            infiniteScrollObserver.disconnect();
-        }
+        if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
         container.removeAttribute('aria-busy');
     }
 
@@ -266,13 +328,14 @@ function renderBatch(batch, container) {
 function handleEmptyState(container) {
     const noResultsEl = container.querySelector('.no-results');
     if (AppState.filteredApps.length === 0 && !noResultsEl) {
-        container.innerHTML = `<div class="fade-in no-results visible"><h3>No apps found</h3><p>Try different search terms</p></div>`;
+        container.innerHTML = `<div class="fade-in no-results visible"><h3>No apps found</h3><p>Try a different search or category</p></div>`;
         container.removeAttribute('aria-busy');
     } else if (AppState.filteredApps.length > 0 && noResultsEl) {
         noResultsEl.remove();
     }
 }
 
+// ========== CARD CREATION ==========
 function createAppCard(app, index) {
     const cardFragment = document.importNode(AppCardTemplate.content, true);
     const article = cardFragment.querySelector('article');
@@ -281,12 +344,18 @@ function createAppCard(app, index) {
     article.setAttribute('aria-label', `${app.name} — tap to view details`);
     article.classList.add(`stagger-${(index % 3) + 1}`);
 
+    // Apply tint color as CSS custom properties
+    const tint = app.tintColor;
+    article.style.setProperty('--tint', tint);
+    article.style.setProperty('--tint-surface', hexToRgba(tint, 0.06));
+    article.style.setProperty('--tint-border', hexToRgba(tint, 0.15));
+
     const img = article.querySelector('.app-icon');
     img.src = app.icon;
     img.alt = `${app.name} icon`;
     img.onerror = () => { img.src = CONFIG.FALLBACK_ICON; };
 
-    article.querySelector('.app-status').textContent = `✅ Working • v${app.version}`;
+    article.querySelector('.app-status').textContent = `✅ Working · v${app.version}`;
     article.querySelector('h3').textContent = app.name;
     article.querySelector('.app-category-tag').textContent = app.category;
 
@@ -299,12 +368,10 @@ function createAppCard(app, index) {
     descEl.appendChild(document.createElement('br'));
     descEl.appendChild(document.createTextNode(app.description));
 
-    // Changelog toggle — only show if changeDescription exists
     if (app.changeDescription) {
         const toggleBtn = article.querySelector('.changelog-toggle');
         toggleBtn.style.display = '';
         toggleBtn.setAttribute('data-app-id', app.id);
-
         article.querySelector('.changelog-text').textContent = app.changeDescription;
     }
 
@@ -314,7 +381,6 @@ function createAppCard(app, index) {
     btn.setAttribute('data-id', app.id);
     btn.textContent = '⬇️ Download IPA';
 
-    // Dim download button when offline
     if (!AppState.isOnline) {
         btn.classList.add('offline-disabled');
     }
@@ -322,20 +388,14 @@ function createAppCard(app, index) {
     return cardFragment;
 }
 
+// ========== INFINITE SCROLL ==========
 function setupInfiniteScroll() {
-    const main = document.querySelector('main');
-    if (!main) return;
-
-    const sentinel = document.createElement('div');
-    sentinel.id = 'scroll-sentinel';
-    sentinel.style.cssText = 'height: 20px; width: 100%;';
-    main.appendChild(sentinel);
+    const sentinel = document.getElementById('scroll-sentinel');
+    if (!sentinel) return;
 
     infiniteScrollObserver = new IntersectionObserver(
         entries => {
-            if (entries[0].isIntersecting) {
-                updateGrid();
-            }
+            if (entries[0].isIntersecting) updateGrid();
         },
         { rootMargin: '200px' }
     );
@@ -343,13 +403,70 @@ function setupInfiniteScroll() {
     infiniteScrollObserver.observe(sentinel);
 }
 
+// ========== SCROLL-TO-TOP ==========
+function setupScrollToTop() {
+    const btn = document.getElementById('scrollTopBtn');
+    if (!btn) return;
+
+    // Use the hero element as sentinel — when hero is not visible, show button
+    const heroEl = document.querySelector('.hero');
+    if (!heroEl) return;
+
+    scrollTopObserver = new IntersectionObserver(
+        entries => {
+            const isVisible = entries[0].isIntersecting;
+            btn.classList.toggle('visible', !isVisible);
+            if (isVisible) {
+                btn.setAttribute('hidden', '');
+            } else {
+                btn.removeAttribute('hidden');
+            }
+        },
+        { threshold: 0 }
+    );
+
+    scrollTopObserver.observe(heroEl);
+
+    btn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+// ========== HASH ROUTING ==========
+function handleHashRoute() {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#app-')) {
+        const bundleId = decodeURIComponent(hash.substring(5));
+        const app = AppState.apps.find(a => a.bundleId === bundleId || a.id === bundleId);
+        if (app) {
+            // Small delay to ensure DOM is ready
+            setTimeout(() => openAppModal(app.id), 100);
+        }
+    }
+}
+
+function updateHash(bundleId) {
+    if (bundleId) {
+        history.replaceState(null, '', `#app-${encodeURIComponent(bundleId)}`);
+    } else {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+}
+
+// Listen for popstate (back/forward)
+window.addEventListener('popstate', () => {
+    if (!window.location.hash && AppState.modalOpen) {
+        closeAppModal();
+    } else if (window.location.hash) {
+        handleHashRoute();
+    }
+});
+
 // ========== GRID CLICK / KEYBOARD HANDLER ==========
 function handleGridClick(e) {
     if (e.target.classList.contains('action-download')) {
         const appId = e.target.getAttribute('data-id');
-        if (appId) {
-            trackDownload(appId);
-        }
+        if (appId) trackDownload(appId);
         return;
     }
 
@@ -358,7 +475,6 @@ function handleGridClick(e) {
         return;
     }
 
-    // Changelog toggle — handle clicks on the button or its children
     const toggleBtn = e.target.closest('.changelog-toggle');
     if (toggleBtn) {
         e.stopPropagation();
@@ -371,7 +487,6 @@ function handleGridClick(e) {
         return;
     }
 
-    // Card click — open detail modal (but not for button/link clicks)
     const card = e.target.closest('.app-card');
     if (card && !e.target.closest('button') && !e.target.closest('a')) {
         const appId = card.getAttribute('data-app-id');
@@ -380,13 +495,32 @@ function handleGridClick(e) {
 }
 
 function handleGridKeydown(e) {
+    const card = e.target.closest('.app-card');
+
     if (e.key === 'Enter' || e.key === ' ') {
-        const card = e.target.closest('.app-card');
         if (card && e.target === card) {
             e.preventDefault();
             const appId = card.getAttribute('data-app-id');
             if (appId) openAppModal(appId);
         }
+        return;
+    }
+
+    // Arrow key navigation between cards
+    if (card && (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+        e.preventDefault();
+        const cards = Array.from(document.querySelectorAll('.app-card'));
+        const idx = cards.indexOf(card);
+        if (idx === -1) return;
+
+        let nextIdx = idx;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            nextIdx = Math.min(idx + 1, cards.length - 1);
+        } else {
+            nextIdx = Math.max(idx - 1, 0);
+        }
+
+        cards[nextIdx].focus();
     }
 }
 
@@ -396,9 +530,13 @@ function openAppModal(appId) {
     if (!app) return;
 
     AppState.modalOpen = true;
+    AppState.modalScrollY = window.scrollY;
 
     const existing = document.getElementById('appModal');
     if (existing) existing.remove();
+
+    // Update hash for deep-linking
+    updateHash(app.bundleId);
 
     const modal = document.createElement('div');
     modal.id = 'appModal';
@@ -406,6 +544,8 @@ function openAppModal(appId) {
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-label', `${app.name} details`);
+
+    const tintGlow = `background: linear-gradient(180deg, ${hexToRgba(app.tintColor, 0.12)} 0%, transparent 100%);`;
 
     const screenshotsHtml = app.screenshots.length > 0
         ? `<div class="modal-screenshots" role="region" aria-label="Screenshots">
@@ -424,7 +564,7 @@ function openAppModal(appId) {
 
     const changelogHtml = app.changeDescription
         ? `<div class="modal-changelog">
-               <strong>What's New:</strong>
+               <strong>What's New</strong>
                <p>${escapeHtml(app.changeDescription)}</p>
            </div>`
         : '';
@@ -432,12 +572,12 @@ function openAppModal(appId) {
     modal.innerHTML = `
         <div class="modal-backdrop"></div>
         <div class="modal-content" role="document">
+            <div class="modal-tint-glow" style="${tintGlow}" aria-hidden="true"></div>
             <button class="modal-close" aria-label="Close dialog">&times;</button>
             <div class="modal-header">
                 <div class="modal-icon-container">
                     <img src="${escapeAttr(app.icon)}" alt="${escapeAttr(app.name)} icon"
-                         class="modal-icon" width="96" height="96"
-                         onerror="this.src='${CONFIG.FALLBACK_ICON}'">
+                         class="modal-icon" width="88" height="88">
                 </div>
                 <div class="modal-title-block">
                     <h2 class="modal-title">${escapeHtml(app.name)}</h2>
@@ -469,27 +609,28 @@ function openAppModal(appId) {
     document.body.appendChild(modal);
     document.body.classList.add('modal-open');
 
-    // Force reflow then animate in
+    // Programmatic fallback for modal icon (inline onerror blocked by CSP)
+    const modalIcon = modal.querySelector('.modal-icon');
+    if (modalIcon) {
+        modalIcon.addEventListener('error', () => { modalIcon.src = CONFIG.FALLBACK_ICON; }, { once: true });
+    }
+
+    // Force reflow then animate
     modal.offsetHeight;
     modal.classList.add('active');
 
-    // Focus trap setup
     const closeBtn = modal.querySelector('.modal-close');
     closeBtn.focus();
 
-    // Close handlers
     modal.querySelector('.modal-backdrop').addEventListener('click', closeAppModal);
     closeBtn.addEventListener('click', closeAppModal);
 
-    // MED-4 FIX: Close modal after initiating download
     modal.querySelector('.modal-download-btn').addEventListener('click', () => {
         trackDownload(app.id);
         closeAppModal();
     });
 
-    // CRIT-2 FIX: Full focus trap for WCAG 2.1 compliance.
-    // Tab/Shift+Tab cycle between the first and last focusable elements
-    // inside the modal, preventing focus from escaping to background content.
+    // Focus trap
     modal.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             e.stopPropagation();
@@ -529,22 +670,24 @@ function closeAppModal() {
     modal.classList.remove('active');
     document.body.classList.remove('modal-open');
 
-    // Return focus to the card that opened the modal
+    // Clear hash
+    updateHash(null);
+
+    // Restore scroll position
+    window.scrollTo(0, AppState.modalScrollY);
+
     const lastFocusedCard = document.querySelector('.app-card:focus, .app-card[data-app-id]');
 
-    // Wait for animation to complete before removing from DOM
     setTimeout(() => {
         if (modal.parentNode) modal.remove();
-    }, 300);
+    }, 350);
 
-    // Restore focus to the triggering card for keyboard users
     if (lastFocusedCard) {
         lastFocusedCard.focus({ preventScroll: true });
     }
 }
 
-// CRIT-3 FIX: Reuse a single cached <div> element instead of creating
-// a new one per call. The element is defined at module scope as _escapeDiv.
+// ========== HTML ESCAPING ==========
 function escapeHtml(str) {
     if (!str) return '';
     _escapeDiv.textContent = str;
@@ -554,6 +697,16 @@ function escapeHtml(str) {
 function escapeAttr(str) {
     if (!str) return '';
     return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ========== COLOR UTILITIES ==========
+function hexToRgba(hex, alpha) {
+    if (!hex || hex.length < 7) return `rgba(167, 139, 250, ${alpha})`;
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return `rgba(167, 139, 250, ${alpha})`;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 // ========== DOWNLOAD HANDLER ==========
@@ -626,7 +779,7 @@ function showToast(msg, type = 'info', action = null) {
     }, CONFIG.TOAST_DURATION);
 }
 
-// ========== PWA SERVICE WORKER ==========
+// ========== PWA ==========
 function setupPWA() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').then(reg => {
@@ -641,7 +794,6 @@ function setupPWA() {
                 }
             });
 
-            // Periodic SW update check for long-lived PWA sessions
             swUpdateTimer = setInterval(() => {
                 reg.update().catch(() => {});
             }, CONFIG.SW_UPDATE_INTERVAL);
@@ -660,9 +812,7 @@ function showUpdateNotification() {
     showToast('🚀 New version available!', 'info', {
         text: 'REFRESH',
         callback: () => {
-            if (newWorker) {
-                newWorker.postMessage({ action: 'skipWaiting' });
-            }
+            if (newWorker) newWorker.postMessage({ action: 'skipWaiting' });
         }
     });
 }
@@ -682,13 +832,6 @@ function setupInstallPrompt() {
     });
 }
 
-// HIGH-1 FIX: Use requestAnimationFrame to stagger the `hidden` removal
-// and `.visible` class addition. The HTML `hidden` attribute sets
-// `display: none`, which prevents CSS transform transitions from firing.
-// Removing `hidden` and adding `.visible` in the same synchronous block
-// allows the browser to batch both changes, skipping the entry animation.
-// By deferring the class add to the next frame, the browser computes
-// the initial (off-screen) layout first, then animates to the final state.
 function showInstallBanner() {
     const banner = document.getElementById('installBanner');
     if (banner) {
@@ -705,10 +848,7 @@ function hideInstallBanner() {
     const banner = document.getElementById('installBanner');
     if (banner) {
         banner.classList.remove('visible');
-        // Wait for transition to complete before hiding
-        setTimeout(() => {
-            banner.setAttribute('hidden', '');
-        }, 400);
+        setTimeout(() => { banner.setAttribute('hidden', ''); }, 400);
     }
 }
 
@@ -726,7 +866,7 @@ async function handleInstallClick() {
     hideInstallBanner();
 }
 
-// ========== ONLINE / OFFLINE DETECTION ==========
+// ========== ONLINE / OFFLINE ==========
 function setupOnlineOfflineDetection() {
     const offlineBar = document.getElementById('offlineBar');
 
@@ -736,10 +876,7 @@ function setupOnlineOfflineDetection() {
         if (offlineBar) {
             if (AppState.isOnline) {
                 offlineBar.classList.remove('visible');
-                // Delay hidden attribute so transition can play
-                setTimeout(() => {
-                    offlineBar.setAttribute('hidden', '');
-                }, 350);
+                setTimeout(() => { offlineBar.setAttribute('hidden', ''); }, 350);
             } else {
                 offlineBar.removeAttribute('hidden');
                 requestAnimationFrame(() => {
@@ -750,7 +887,6 @@ function setupOnlineOfflineDetection() {
             }
         }
 
-        // Toggle download button states
         document.querySelectorAll('.action-download').forEach(btn => {
             btn.classList.toggle('offline-disabled', !AppState.isOnline);
         });
@@ -766,31 +902,27 @@ function setupOnlineOfflineDetection() {
         showToast('📴 You are offline', 'warning');
     }, { passive: true });
 
-    // Set initial state
     updateOnlineStatus();
 }
 
-// ========== COPY TO CLIPBOARD (HIGH-3 FIX) ==========
+// ========== COPY TO CLIPBOARD ==========
 async function handleCopyUrl() {
     const urlText = 'https://OofMini.github.io/Minis-Repo/mini.json';
     const btn = document.getElementById('btn-copy-url');
+    const label = document.getElementById('copyUrlLabel');
 
     try {
         await navigator.clipboard.writeText(urlText);
-        showToast('✅ Manifest URL copied to clipboard', 'success');
-
-        // Visual feedback on button
-        if (btn) {
-            const original = btn.textContent;
-            btn.textContent = '✅ Copied!';
+        showToast('✅ Manifest URL copied', 'success');
+        if (btn && label) {
+            label.textContent = '✅ Copied!';
             btn.classList.add('copied');
             setTimeout(() => {
-                btn.textContent = original;
+                label.textContent = '📋 Copy URL';
                 btn.classList.remove('copied');
             }, 2000);
         }
     } catch {
-        // Fallback for older browsers / non-HTTPS contexts
         try {
             const textarea = document.createElement('textarea');
             textarea.value = urlText;
@@ -800,7 +932,7 @@ async function handleCopyUrl() {
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            showToast('✅ Manifest URL copied to clipboard', 'success');
+            showToast('✅ Manifest URL copied', 'success');
         } catch {
             showToast('⚠️ Could not copy — please select and copy manually', 'warning');
         }
@@ -815,7 +947,6 @@ function generateId(bundleId, index) {
 
 function inferCategory(bundleId) {
     const bid = bundleId.toLowerCase();
-    // Check 'youtubemusic' before 'youtube' to avoid mis-categorization
     if (bid.includes('youtubemusic')) return 'Music';
     if (bid.includes('spotify') || bid.includes('music')) return 'Music';
     if (bid.includes('youtube') || bid.includes('video')) return 'Video';
@@ -837,8 +968,7 @@ function showLoadingState() {
     if (!grid) return;
 
     grid.setAttribute('aria-busy', 'true');
-
-    grid.innerHTML = Array(3).fill(0).map((_, i) => `
+    grid.innerHTML = Array(6).fill(0).map((_, i) => `
         <div class="skeleton-card fade-in visible stagger-${(i % 3) + 1}">
             <div class="skeleton skeleton-icon"></div>
             <div class="skeleton skeleton-text short"></div>
@@ -872,17 +1002,14 @@ function setupEventListeners() {
     if (searchBox) {
         searchBox.addEventListener('input', e => {
             if (searchBox._debounceTimer) clearTimeout(searchBox._debounceTimer);
-
             searchBox._debounceTimer = setTimeout(() => {
                 AppState.searchTerm = e.target.value.toLowerCase().trim();
-                filterApps();
+                filterAndSortApps();
             }, CONFIG.SEARCH_DEBOUNCE);
         });
     }
 
-    // MED-1 FIX: Keyboard shortcut — press "/" to focus the search box.
-    // Standard convention used by GitHub, YouTube, Google, etc.
-    // Only activates when no input/textarea/contenteditable is focused.
+    // Keyboard shortcut: "/" to focus search
     document.addEventListener('keydown', (e) => {
         if (e.key === '/' && searchBox) {
             const active = document.activeElement;
@@ -898,6 +1025,69 @@ function setupEventListeners() {
         }
     });
 
+    // Category filter pills
+    const categoryFilters = document.getElementById('categoryFilters');
+    if (categoryFilters) {
+        categoryFilters.addEventListener('click', (e) => {
+            const pill = e.target.closest('.category-pill');
+            if (!pill) return;
+
+            const category = pill.getAttribute('data-category');
+
+            // If clicking the active category, deselect (show all)
+            if (category === AppState.activeCategory && category !== 'all') {
+                AppState.activeCategory = 'all';
+            } else {
+                AppState.activeCategory = category;
+            }
+
+            // Update pill states
+            categoryFilters.querySelectorAll('.category-pill').forEach(p => {
+                const isActive = p.getAttribute('data-category') === AppState.activeCategory;
+                p.classList.toggle('active', isActive);
+                p.setAttribute('aria-selected', String(isActive));
+                p.setAttribute('tabindex', isActive ? '0' : '-1');
+            });
+
+            filterAndSortApps();
+        });
+
+        // Arrow key navigation for pills
+        categoryFilters.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                const pills = Array.from(categoryFilters.querySelectorAll('.category-pill'));
+                const current = pills.indexOf(document.activeElement);
+                if (current === -1) return;
+
+                let next = e.key === 'ArrowRight' ? current + 1 : current - 1;
+                next = Math.max(0, Math.min(next, pills.length - 1));
+                pills[next].focus();
+            }
+        });
+    }
+
+    // Sort buttons
+    const sortRecent = document.getElementById('sortRecent');
+    const sortAlpha = document.getElementById('sortAlpha');
+
+    function activateSort(mode) {
+        AppState.sortMode = mode;
+        if (sortRecent) {
+            sortRecent.classList.toggle('active', mode === 'recent');
+            sortRecent.setAttribute('aria-pressed', String(mode === 'recent'));
+        }
+        if (sortAlpha) {
+            sortAlpha.classList.toggle('active', mode === 'alpha');
+            sortAlpha.setAttribute('aria-pressed', String(mode === 'alpha'));
+        }
+        filterAndSortApps();
+    }
+
+    if (sortRecent) sortRecent.addEventListener('click', () => activateSort('recent'));
+    if (sortAlpha) sortAlpha.addEventListener('click', () => activateSort('alpha'));
+
+    // Reset button
     const resetBtn = document.getElementById('btn-reset');
     if (resetBtn) {
         resetBtn.addEventListener('click', async () => {
@@ -916,6 +1106,7 @@ function setupEventListeners() {
         });
     }
 
+    // CTA buttons
     const trollappsBtn = document.getElementById('btn-trollapps');
     if (trollappsBtn) {
         trollappsBtn.addEventListener('click', () => {
@@ -932,28 +1123,23 @@ function setupEventListeners() {
 
     // Install button
     const installBtn = document.getElementById('btn-install');
-    if (installBtn) {
-        installBtn.addEventListener('click', handleInstallClick);
-    }
+    if (installBtn) installBtn.addEventListener('click', handleInstallClick);
 
     const installDismiss = document.getElementById('btn-install-dismiss');
-    if (installDismiss) {
-        installDismiss.addEventListener('click', hideInstallBanner);
-    }
+    if (installDismiss) installDismiss.addEventListener('click', hideInstallBanner);
 
-    // HIGH-3 FIX: Copy-to-clipboard button for manifest URL
+    // Copy URL
     const copyUrlBtn = document.getElementById('btn-copy-url');
-    if (copyUrlBtn) {
-        copyUrlBtn.addEventListener('click', handleCopyUrl);
-    }
+    if (copyUrlBtn) copyUrlBtn.addEventListener('click', handleCopyUrl);
 
+    // Grid events
     const appGrid = document.getElementById('appGrid');
     if (appGrid) {
         appGrid.addEventListener('click', handleGridClick);
         appGrid.addEventListener('keydown', handleGridKeydown);
     }
 
-    // Close modal on Escape (document-level fallback)
+    // Escape to close modal
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && AppState.modalOpen) {
             closeAppModal();
@@ -978,16 +1164,15 @@ function initializeScrollAnimations() {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
                     observer.unobserve(entry.target);
-
                     setTimeout(() => {
                         entry.target.style.willChange = 'auto';
                     }, CONFIG.WILL_CHANGE_CLEANUP_DELAY);
                 }
             });
-        }, { threshold: 0.15 });
-        document.querySelectorAll('.fade-in, .fade-in-left').forEach(el => observer.observe(el));
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
     } else {
-        document.querySelectorAll('.fade-in, .fade-in-left').forEach(el => el.classList.add('visible'));
+        document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
     }
 }
 
@@ -995,14 +1180,10 @@ function initializeScrollAnimations() {
 window.addEventListener('beforeunload', () => {
     if (observer) observer.disconnect();
     if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
+    if (scrollTopObserver) scrollTopObserver.disconnect();
     if (swUpdateTimer) clearInterval(swUpdateTimer);
-
-    if (AppState.toastTimer) {
-        clearTimeout(AppState.toastTimer);
-    }
+    if (AppState.toastTimer) clearTimeout(AppState.toastTimer);
 
     const searchBox = document.getElementById('searchBox');
-    if (searchBox && searchBox._debounceTimer) {
-        clearTimeout(searchBox._debounceTimer);
-    }
+    if (searchBox && searchBox._debounceTimer) clearTimeout(searchBox._debounceTimer);
 });

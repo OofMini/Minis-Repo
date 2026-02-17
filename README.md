@@ -4,12 +4,11 @@
 
 # Mini's Repo
 
-### IPA Library
-
+### Premium Tweaked IPA Library for iOS 15+
 
 [![](https://img.shields.io/badge/Open_Web_App-007AFF?style=for-the-badge&logo=safari&logoColor=white)](https://OofMini.github.io/Minis-Repo/)
 [![](https://img.shields.io/badge/Add_to_TrollApps-8A2BE2?style=for-the-badge&logo=apple&logoColor=white)](trollapps://add?url=https://OofMini.github.io/Minis-Repo/mini.json)
-[![](https://img.shields.io/badge/Add_to_SideStore-1DB954?style=for-the-badge&logo=apple&logoColor=white)](sidestore://source?url=https://OofMini.github.io/Minis-Repo/mini.json)
+[![](https://img.shields.io/badge/Add_to_SideStore-32D74B?style=for-the-badge&logo=apple&logoColor=white)](sidestore://source?url=https://OofMini.github.io/Minis-Repo/mini.json)
 
 </div>
 
@@ -36,8 +35,10 @@ Copy and paste this link directly into your app manager:
 |      <img src="apps/Inshot.png" width="48" style="border-radius: 22%">       | **InShot Pro** | v1.94.0  | Professional video editor with all filters, effects, and export options unlocked. |
 |     <img src="apps/refacepro.png" width="48" style="border-radius: 22%">     | **Reface Pro** | v6.1.3   | Advanced AI face-swapping tool with premium templates and features enabled.       |
 |     <img src="apps/itorrent.png" width="48" style="border-radius: 22%">      | **iTorrent** | v2.1.1   | A robust, native BitTorrent client for iOS with background downloading support.   |
-|   <img src="apps/livecontainer.png" width="48" style="border-radius: 22%">   | **LiveContainer** | v3.6.63   | Run JIT-dependent apps without a computer using advanced containerization.        |
+|   <img src="apps/livecontainer.png" width="48" style="border-radius: 22%">   | **LiveContainer** | v3.6.63  | Run JIT-dependent apps without a computer using advanced containerization.        |
+
+---
 
 <div align="center">
-  <sub>Maintained by <a href="https://github.com/OofMini">OofMini</a> • Powered by Node.js & GitHub Actions</sub>
+  <sub>Maintained by <a href="https://github.com/OofMini">OofMini</a> · Powered by Node.js & GitHub Actions</sub>
 </div>

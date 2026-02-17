@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
         <meta
             http-equiv="Content-Security-Policy"
@@ -22,17 +22,20 @@
         <link rel="preconnect" href="https://github.com" crossorigin />
 
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Mini's IPA Repo — Tweaked iOS Apps" />
+        <meta property="og:title" content="Mini's IPA Repo — Premium Tweaked iOS Apps" />
         <meta
             property="og:description"
-            content="Tweaked Apps for iOS 15+. EeveeSpotify, YTLite, and more."
+            content="Curated collection of premium tweaked apps for iOS 15+. EeveeSpotify, YTLite, YouTube Music Ultimate, and more — all free."
         />
-        <meta property="og:image" content="apps/repo-icon.png" />
+        <meta property="og:image" content="https://oofmini.github.io/Minis-Repo/apps/repo-icon.png" />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
         <meta property="og:url" content="https://oofmini.github.io/Minis-Repo/" />
+        <meta property="og:site_name" content="Mini's IPA Repo" />
         <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Mini's IPA Repo" />
-        <meta name="twitter:description" content="Tweaked iOS apps collection" />
-        <meta name="twitter:image" content="apps/repo-icon.png" />
+        <meta name="twitter:title" content="Mini's IPA Repo — Premium Tweaked iOS Apps" />
+        <meta name="twitter:description" content="Curated tweaked iOS apps — Spotify, YouTube, and more." />
+        <meta name="twitter:image" content="https://oofmini.github.io/Minis-Repo/apps/repo-icon.png" />
 
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -42,10 +45,10 @@
         <link rel="apple-touch-icon" href="apps/repo-icon.png" />
         <link rel="apple-touch-startup-image" href="apps/repo-icon.png" />
 
-        <title>Mini's IPA Repo — Tweaked iOS Apps</title>
+        <title>Mini's IPA Repo — Premium Tweaked iOS Apps</title>
         <meta
             name="description"
-            content="Premium tweaked applications for iOS 15+. Featuring Spotify, YouTube, YouTube Music, and more."
+            content="Curated collection of premium tweaked applications for iOS 15+. Featuring Spotify, YouTube, YouTube Music, and more — sideload via SideStore, TrollApps, or AltStore."
         />
 
         <link rel="preload" as="image" href="apps/repo-icon.png" />
@@ -64,12 +67,10 @@
             </div>
         </noscript>
 
-        <!-- CRIT-1 FIX: Offline indicator bar — was referenced by app.js but missing from DOM -->
         <div class="offline-bar" id="offlineBar" role="alert" hidden>
             📴 You are currently offline — downloads unavailable
         </div>
 
-        <!-- CRIT-1 FIX: PWA install banner — was referenced by app.js but missing from DOM -->
         <div class="install-banner" id="installBanner" role="complementary" aria-label="Install app" hidden>
             <span class="install-banner-text"><strong>Mini's Repo</strong> — Install as app</span>
             <button class="install-btn" id="btn-install" aria-label="Install Mini's Repo as an app">
@@ -80,23 +81,34 @@
             </button>
         </div>
 
-        <header class="hero">
+        <header class="hero" role="banner">
+            <div class="hero-glow" aria-hidden="true"></div>
             <img
                 src="apps/repo-icon.png"
                 alt="Mini's Repo icon"
                 class="repo-icon"
-                width="68"
-                height="68"
+                width="72"
+                height="72"
             />
             <h1 class="animated-gradient">Mini's Repo</h1>
-            <p class="hero-subtitle">Tweaked iOS applications for iOS 15+</p>
+            <p class="hero-subtitle">Premium tweaked apps for iOS 15+</p>
 
-            <div class="badges" role="status" aria-live="polite">
-                <span class="badge" aria-label="Repository status active">✅ Active</span>
-                <span class="badge ios" aria-label="Supports iOS 15 and above">📱 iOS 15+</span>
+            <div class="hero-stats" role="status" aria-live="polite">
+                <span class="stat-badge app-count-badge" id="appCountBadge" aria-label="App count">
+                    <span class="stat-badge-icon" aria-hidden="true">📦</span>
+                    <span id="appCountText">— Apps</span>
+                </span>
+                <span class="stat-badge active-badge" aria-label="Repository status active">
+                    <span class="stat-badge-icon" aria-hidden="true">✅</span>
+                    Active
+                </span>
+                <span class="stat-badge ios-badge" aria-label="Supports iOS 15 and above">
+                    <span class="stat-badge-icon" aria-hidden="true">📱</span>
+                    iOS 15+
+                </span>
             </div>
 
-            <nav class="cta-buttons" aria-label="Add repository to app">
+            <nav class="cta-buttons" aria-label="Add repository to app manager">
                 <button class="cta-button trollapps" id="btn-trollapps" aria-label="Add to TrollApps">
                     <span aria-hidden="true">📱</span> Add to TrollApps
                 </button>
@@ -106,70 +118,150 @@
             </nav>
         </header>
 
-        <!-- MED-3 FIX: Removed redundant role="main" — <main> has implicit main role per HTML spec -->
         <main class="container">
-            <section class="search-container fade-in" aria-labelledby="search-title">
-                <h2 id="search-title" class="visually-hidden">Search apps</h2>
-                <input
-                    type="search"
-                    class="search-box"
-                    id="searchBox"
-                    placeholder="🔍 Search apps... (press / to focus)"
-                    aria-label="Search apps by name or description"
-                    autocomplete="off"
-                    spellcheck="false"
-                />
-                <!-- HIGH-2 FIX: Live region for search results count announcements -->
-                <p id="searchResultsCount" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
+            <!-- Featured App Section -->
+            <section class="featured-section fade-in" id="featuredSection" aria-labelledby="featured-title" hidden>
+                <h2 id="featured-title" class="visually-hidden">Featured App</h2>
+                <div class="featured-card" id="featuredCard" role="button" tabindex="0" aria-label="Featured app — tap to view details">
+                    <div class="featured-badge" aria-hidden="true">⭐ Featured</div>
+                    <div class="featured-content">
+                        <div class="featured-icon-container">
+                            <img class="featured-icon" id="featuredIcon" src="apps/repo-icon.png" alt="" width="72" height="72" loading="eager" />
+                        </div>
+                        <div class="featured-info">
+                            <h3 class="featured-name" id="featuredName"></h3>
+                            <p class="featured-developer" id="featuredDev"></p>
+                            <p class="featured-desc" id="featuredDesc"></p>
+                        </div>
+                    </div>
+                    <div class="featured-actions">
+                        <button class="download-btn featured-download-btn" id="featuredDownloadBtn" aria-label="Download featured app">
+                            ⬇️ Download IPA
+                        </button>
+                    </div>
+                </div>
             </section>
 
+            <!-- Search & Filters -->
+            <section class="search-filter-section fade-in" aria-labelledby="search-title">
+                <h2 id="search-title" class="visually-hidden">Search and filter apps</h2>
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon" aria-hidden="true">🔍</span>
+                        <input
+                            type="search"
+                            class="search-box"
+                            id="searchBox"
+                            placeholder="Search apps..."
+                            aria-label="Search apps by name or description — press slash to focus"
+                            autocomplete="off"
+                            spellcheck="false"
+                        />
+                        <kbd class="search-shortcut" aria-hidden="true">/</kbd>
+                    </div>
+                    <p id="searchResultsCount" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
+                </div>
+
+                <!-- Category Filter Pills -->
+                <div class="category-filters" id="categoryFilters" role="tablist" aria-label="Filter apps by category">
+                    <button class="category-pill active" role="tab" aria-selected="true" data-category="all" tabindex="0">
+                        All
+                    </button>
+                    <button class="category-pill" role="tab" aria-selected="false" data-category="Music" tabindex="-1">
+                        🎵 Music
+                    </button>
+                    <button class="category-pill" role="tab" aria-selected="false" data-category="Video" tabindex="-1">
+                        🎬 Video
+                    </button>
+                    <button class="category-pill" role="tab" aria-selected="false" data-category="Social" tabindex="-1">
+                        💬 Social
+                    </button>
+                    <button class="category-pill" role="tab" aria-selected="false" data-category="Creative" tabindex="-1">
+                        🎨 Creative
+                    </button>
+                    <button class="category-pill" role="tab" aria-selected="false" data-category="Utilities" tabindex="-1">
+                        🔧 Utilities
+                    </button>
+                </div>
+
+                <!-- Sort Toggle -->
+                <div class="sort-controls" aria-label="Sort options">
+                    <button class="sort-btn active" id="sortRecent" data-sort="recent" aria-pressed="true">
+                        🕐 Recent
+                    </button>
+                    <button class="sort-btn" id="sortAlpha" data-sort="alpha" aria-pressed="false">
+                        🔤 A–Z
+                    </button>
+                </div>
+            </section>
+
+            <!-- App Grid -->
             <section class="app-grid" id="appGrid" role="region" aria-label="Available apps"></section>
 
+            <!-- Repo Info -->
             <section class="repo-info fade-in" aria-labelledby="repo-info-title">
-                <h3 id="repo-info-title">📦 Repository Source</h3>
-
-                <div class="repo-link fade-in-left stagger-1">
-                    <span aria-hidden="true">🔗</span>
-                    <strong>Manifest URL:</strong>
-                    <code id="repoUrlText">https://OofMini.github.io/Minis-Repo/mini.json</code>
-                    <!-- HIGH-3 FIX: Copy-to-clipboard button for manifest URL -->
+                <div class="repo-info-header">
+                    <span class="repo-info-icon" aria-hidden="true">📦</span>
+                    <h3 id="repo-info-title">Add This Repository</h3>
+                </div>
+                <p class="repo-info-desc">Copy the URL below and paste it into your preferred sideloading app manager.</p>
+                <div class="repo-url-card">
+                    <code class="repo-url-text" id="repoUrlText">https://OofMini.github.io/Minis-Repo/mini.json</code>
                     <button class="copy-url-btn" id="btn-copy-url" aria-label="Copy manifest URL to clipboard">
-                        📋 Copy
+                        <span class="copy-url-label" id="copyUrlLabel">📋 Copy URL</span>
                     </button>
+                </div>
+                <div class="repo-info-badges">
+                    <span class="repo-compat-badge">SideStore</span>
+                    <span class="repo-compat-badge">TrollApps</span>
+                    <span class="repo-compat-badge">AltStore</span>
                 </div>
             </section>
         </main>
 
-        <footer class="container" aria-label="Site footer">
-            <div class="footer-content">
-                <p class="footer-copyright">
-                    © 2026 Mini — Tweaked IPAs for iOS 15+. External downloads may be hosted off-site.
-                </p>
-                <div class="footer-links">
-                    <a
-                        href="https://github.com/OofMini/Minis-Repo"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="footer-link"
-                    >
-                        📦 GitHub Repo
-                    </a>
-                    <span class="footer-separator" aria-hidden="true">•</span>
-                    <a
-                        href="https://github.com/OofMini/Minis-Repo/issues"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="footer-link"
-                    >
-                        🐛 Report Issue
-                    </a>
-                    <span class="footer-separator" aria-hidden="true">•</span>
-                    <button id="btn-reset" class="footer-reset-btn">🗑️ Clear Cache</button>
+        <footer class="site-footer" aria-label="Site footer">
+            <div class="container">
+                <div class="footer-content">
+                    <p class="footer-copyright">
+                        © 2026 Mini — Tweaked IPAs for iOS 15+
+                    </p>
+                    <div class="footer-links">
+                        <a
+                            href="https://github.com/OofMini/Minis-Repo"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="footer-link"
+                        >
+                            📦 GitHub
+                        </a>
+                        <span class="footer-separator" aria-hidden="true">·</span>
+                        <a
+                            href="https://github.com/OofMini/Minis-Repo/issues"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="footer-link"
+                        >
+                            🐛 Issues
+                        </a>
+                        <span class="footer-separator" aria-hidden="true">·</span>
+                        <button id="btn-reset" class="footer-reset-btn" aria-label="Clear local cache and data">
+                            🗑️ Clear Cache
+                        </button>
+                    </div>
                 </div>
             </div>
         </footer>
 
+        <!-- Scroll-to-top button -->
+        <button class="scroll-top-btn" id="scrollTopBtn" aria-label="Scroll to top" hidden>
+            <span aria-hidden="true">↑</span>
+        </button>
+
+        <!-- Toast notification -->
         <div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+        <!-- Scroll sentinel for IntersectionObserver -->
+        <div id="scroll-sentinel" aria-hidden="true"></div>
 
         <script src="assets/js/app.js"></script>
     </body>

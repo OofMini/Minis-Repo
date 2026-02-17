@@ -1,6 +1,6 @@
 // Mini's IPA Repo — Service Worker
 // deploy.js dynamically replaces CACHE_NAME with git hash on build.
-const CACHE_NAME = 'minis-repo-cache-9989bfe';
+const CACHE_NAME = 'minis-repo-cache-6944ce8';
 
 const CRITICAL_ASSETS = [
     './',
@@ -15,7 +15,7 @@ const CRITICAL_ASSETS = [
 // Assets that should use stale-while-revalidate strategy
 // (serve cached immediately, update cache in background)
 const SWR_PATTERNS = [
-    /\/apps\/.*\.(png|jpg|jpeg|webp|gif)$/i
+    /\/apps\/.*\.(png|jpg|jpeg|webp|gif|PNG)$/i
 ];
 
 // How often to check for SW updates (in milliseconds)
@@ -40,11 +40,6 @@ self.addEventListener('install', (event) => {
 });
 
 // --- ACTIVATE ---
-// MED-2 FIX: Consolidated two separate activate listeners into one.
-// Previously, there was a second listener at the bottom that only called
-// startPeriodicUpdateCheck(). Having two listeners for the same event
-// is valid but confusing and fragile — the second could be accidentally
-// removed during refactoring, silently breaking periodic updates.
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         Promise.all([
@@ -136,9 +131,6 @@ async function deleteOldCaches() {
 }
 
 // --- PERIODIC UPDATE CHECK ---
-// Runs a self.registration.update() check on a timer so long-lived
-// PWA instances (e.g., pinned to home screen) eventually discover new
-// service worker versions without requiring the user to close/reopen.
 let updateCheckTimer = null;
 
 function startPeriodicUpdateCheck() {
@@ -187,30 +179,25 @@ self.addEventListener('fetch', (event) => {
 });
 
 // --- NAVIGATION HANDLER ---
-// Uses navigation preload response if available, falls back to network-first.
 async function handleNavigation(event) {
     try {
-        // Try navigation preload response first (faster in Chromium)
         const preloadResponse = event.preloadResponse ? await event.preloadResponse : null;
         if (preloadResponse) {
-            // Cache the preloaded response for offline use
             const cache = await caches.open(CACHE_NAME);
             cache.put(event.request, preloadResponse.clone());
             return preloadResponse;
         }
 
-        // Fall back to standard network-first
         return await networkFirst(event.request);
     } catch (err) {
-        // Offline fallback
         const cached = await caches.match('./index.html');
         if (cached) return cached;
 
         return new Response(
-            '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Offline</title></head>' +
-            '<body style="background:#000;color:#fff;font-family:system-ui;display:flex;' +
+            '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Offline</title></head>' +
+            '<body style="background:#000;color:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;display:flex;' +
             'align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center">' +
-            '<div><h1>📴 Offline</h1><p>You appear to be offline. Please check your connection.</p></div>' +
+            '<div><h1 style="font-size:2em;margin-bottom:8px">📴 Offline</h1><p style="opacity:0.6">Please check your connection and try again.</p></div>' +
             '</body></html>',
             {
                 status: 503,
@@ -244,14 +231,10 @@ async function networkFirst(request) {
 }
 
 // --- STALE-WHILE-REVALIDATE ---
-// Returns cached response immediately (if available) while fetching a fresh
-// copy in the background. Perfect for app icons that change infrequently
-// but should eventually update without a full cache bust.
 async function staleWhileRevalidate(request) {
     const cache = await caches.open(CACHE_NAME);
     const cached = await cache.match(request);
 
-    // Fire-and-forget background revalidation
     const fetchPromise = fetch(request)
         .then((response) => {
             if (response.ok) {
@@ -261,15 +244,11 @@ async function staleWhileRevalidate(request) {
         })
         .catch(() => null);
 
-    // Return cached immediately if available, otherwise wait for network
-    if (cached) {
-        return cached;
-    }
+    if (cached) return cached;
 
     const networkResponse = await fetchPromise;
     if (networkResponse) return networkResponse;
 
-    // Both cache and network failed
     return new Response('', { status: 404 });
 }
 
