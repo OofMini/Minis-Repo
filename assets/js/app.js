@@ -52,6 +52,12 @@ AppCardTemplate.innerHTML = `
     </article>
 `;
 
+// CRIT-3 FIX: Cache a single reusable DOM element for escapeHtml instead
+// of creating and discarding a new <div> on every call. During batch
+// rendering of 12 cards with ~6 escapeHtml calls each, this eliminates
+// 72 throwaway DOM allocations per batch.
+const _escapeDiv = document.createElement('div');
+
 let observer = null;
 let infiniteScrollObserver = null;
 let newWorker = null;
@@ -122,8 +128,6 @@ async function loadAppData() {
                 const latestVersion = app.versions[0];
                 const category = inferCategory(app.bundleIdentifier ?? '');
                 return {
-                    // BUG FIX: generateId now uses index fallback to prevent
-                    // duplicate 'unknown' IDs when bundleIdentifier is missing.
                     id: generateId(app.bundleIdentifier, idx),
                     name: app.name ?? 'Unknown App',
                     bundleId: app.bundleIdentifier ?? '',
@@ -141,11 +145,7 @@ async function loadAppData() {
                     subtitle: app.subtitle ?? '',
                     minimumOS: app.minimumOSVersion ?? '15.0',
                     permissions: app.permissions ?? [],
-                    // BUG FIX: Screenshots were loaded from mini.json but never
-                    // stored or displayed. Now stored for the detail modal.
                     screenshots: app.screenshotURLs ?? [],
-                    // FIX #6: Include category in searchString so users can filter
-                    // by category name (e.g., "music", "video", "utilities", "creative").
                     searchString: `${app.name} ${app.localizedDescription} ${app.developerName} ${category}`.toLowerCase()
                 };
             });
@@ -177,6 +177,9 @@ function filterApps() {
     AppState.renderedIds.clear();
     updateGrid();
 
+    // HIGH-2 FIX: Announce search results count to screen readers
+    announceResultsCount();
+
     const searchBox = document.getElementById('searchBox');
     if (searchBox && document.activeElement === searchBox) {
         // User is typing — keep focus on search box
@@ -188,6 +191,22 @@ function filterApps() {
     const sentinel = document.getElementById('scroll-sentinel');
     if (infiniteScrollObserver && sentinel) {
         infiniteScrollObserver.observe(sentinel);
+    }
+}
+
+// HIGH-2 FIX: Updates the visually-hidden live region with the current
+// search results count so screen readers announce filter changes.
+function announceResultsCount() {
+    const countEl = document.getElementById('searchResultsCount');
+    if (!countEl) return;
+
+    const total = AppState.filteredApps.length;
+    if (!AppState.searchTerm) {
+        countEl.textContent = `Showing all ${total} apps`;
+    } else if (total === 0) {
+        countEl.textContent = 'No apps found';
+    } else {
+        countEl.textContent = `Found ${total} app${total !== 1 ? 's' : ''}`;
     }
 }
 
@@ -454,21 +473,50 @@ function openAppModal(appId) {
     modal.offsetHeight;
     modal.classList.add('active');
 
-    // Focus trap
+    // Focus trap setup
     const closeBtn = modal.querySelector('.modal-close');
     closeBtn.focus();
 
     // Close handlers
     modal.querySelector('.modal-backdrop').addEventListener('click', closeAppModal);
     closeBtn.addEventListener('click', closeAppModal);
+
+    // MED-4 FIX: Close modal after initiating download
     modal.querySelector('.modal-download-btn').addEventListener('click', () => {
         trackDownload(app.id);
+        closeAppModal();
     });
 
+    // CRIT-2 FIX: Full focus trap for WCAG 2.1 compliance.
+    // Tab/Shift+Tab cycle between the first and last focusable elements
+    // inside the modal, preventing focus from escaping to background content.
     modal.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             e.stopPropagation();
             closeAppModal();
+            return;
+        }
+
+        if (e.key === 'Tab') {
+            const focusable = modal.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusable.length === 0) return;
+
+            const firstEl = focusable[0];
+            const lastEl = focusable[focusable.length - 1];
+
+            if (e.shiftKey) {
+                if (document.activeElement === firstEl) {
+                    e.preventDefault();
+                    lastEl.focus();
+                }
+            } else {
+                if (document.activeElement === lastEl) {
+                    e.preventDefault();
+                    firstEl.focus();
+                }
+            }
         }
     });
 }
@@ -481,17 +529,26 @@ function closeAppModal() {
     modal.classList.remove('active');
     document.body.classList.remove('modal-open');
 
+    // Return focus to the card that opened the modal
+    const lastFocusedCard = document.querySelector('.app-card:focus, .app-card[data-app-id]');
+
     // Wait for animation to complete before removing from DOM
     setTimeout(() => {
         if (modal.parentNode) modal.remove();
     }, 300);
+
+    // Restore focus to the triggering card for keyboard users
+    if (lastFocusedCard) {
+        lastFocusedCard.focus({ preventScroll: true });
+    }
 }
 
+// CRIT-3 FIX: Reuse a single cached <div> element instead of creating
+// a new one per call. The element is defined at module scope as _escapeDiv.
 function escapeHtml(str) {
     if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    _escapeDiv.textContent = str;
+    return _escapeDiv.innerHTML;
 }
 
 function escapeAttr(str) {
@@ -560,8 +617,6 @@ function showToast(msg, type = 'info', action = null) {
         toast.appendChild(actionBtn);
     }
 
-    // ACCESSIBILITY FIX: Use assertive for errors/warnings so screen
-    // readers announce them immediately, polite for info/success.
     toast.setAttribute('aria-live', (type === 'error' || type === 'warning') ? 'assertive' : 'polite');
     toast.className = `toast ${type} show`;
 
@@ -627,11 +682,22 @@ function setupInstallPrompt() {
     });
 }
 
+// HIGH-1 FIX: Use requestAnimationFrame to stagger the `hidden` removal
+// and `.visible` class addition. The HTML `hidden` attribute sets
+// `display: none`, which prevents CSS transform transitions from firing.
+// Removing `hidden` and adding `.visible` in the same synchronous block
+// allows the browser to batch both changes, skipping the entry animation.
+// By deferring the class add to the next frame, the browser computes
+// the initial (off-screen) layout first, then animates to the final state.
 function showInstallBanner() {
     const banner = document.getElementById('installBanner');
     if (banner) {
-        banner.classList.add('visible');
         banner.removeAttribute('hidden');
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                banner.classList.add('visible');
+            });
+        });
     }
 }
 
@@ -639,7 +705,10 @@ function hideInstallBanner() {
     const banner = document.getElementById('installBanner');
     if (banner) {
         banner.classList.remove('visible');
-        banner.setAttribute('hidden', '');
+        // Wait for transition to complete before hiding
+        setTimeout(() => {
+            banner.setAttribute('hidden', '');
+        }, 400);
     }
 }
 
@@ -667,10 +736,17 @@ function setupOnlineOfflineDetection() {
         if (offlineBar) {
             if (AppState.isOnline) {
                 offlineBar.classList.remove('visible');
-                offlineBar.setAttribute('hidden', '');
+                // Delay hidden attribute so transition can play
+                setTimeout(() => {
+                    offlineBar.setAttribute('hidden', '');
+                }, 350);
             } else {
-                offlineBar.classList.add('visible');
                 offlineBar.removeAttribute('hidden');
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        offlineBar.classList.add('visible');
+                    });
+                });
             }
         }
 
@@ -694,10 +770,46 @@ function setupOnlineOfflineDetection() {
     updateOnlineStatus();
 }
 
+// ========== COPY TO CLIPBOARD (HIGH-3 FIX) ==========
+async function handleCopyUrl() {
+    const urlText = 'https://OofMini.github.io/Minis-Repo/mini.json';
+    const btn = document.getElementById('btn-copy-url');
+
+    try {
+        await navigator.clipboard.writeText(urlText);
+        showToast('✅ Manifest URL copied to clipboard', 'success');
+
+        // Visual feedback on button
+        if (btn) {
+            const original = btn.textContent;
+            btn.textContent = '✅ Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = original;
+                btn.classList.remove('copied');
+            }, 2000);
+        }
+    } catch {
+        // Fallback for older browsers / non-HTTPS contexts
+        try {
+            const textarea = document.createElement('textarea');
+            textarea.value = urlText;
+            textarea.setAttribute('readonly', '');
+            textarea.style.cssText = 'position:fixed;left:-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('✅ Manifest URL copied to clipboard', 'success');
+        } catch {
+            showToast('⚠️ Could not copy — please select and copy manually', 'warning');
+        }
+    }
+}
+
 // ========== UTILITIES ==========
 function generateId(bundleId, index) {
     if (bundleId) return bundleId.toLowerCase();
-    // BUG FIX: Use index as fallback to prevent duplicate 'unknown' IDs
     return `unknown-${index}`;
 }
 
@@ -768,6 +880,24 @@ function setupEventListeners() {
         });
     }
 
+    // MED-1 FIX: Keyboard shortcut — press "/" to focus the search box.
+    // Standard convention used by GitHub, YouTube, Google, etc.
+    // Only activates when no input/textarea/contenteditable is focused.
+    document.addEventListener('keydown', (e) => {
+        if (e.key === '/' && searchBox) {
+            const active = document.activeElement;
+            const isInput = active && (
+                active.tagName === 'INPUT' ||
+                active.tagName === 'TEXTAREA' ||
+                active.isContentEditable
+            );
+            if (!isInput && !AppState.modalOpen) {
+                e.preventDefault();
+                searchBox.focus();
+            }
+        }
+    });
+
     const resetBtn = document.getElementById('btn-reset');
     if (resetBtn) {
         resetBtn.addEventListener('click', async () => {
@@ -786,7 +916,6 @@ function setupEventListeners() {
         });
     }
 
-    // CRITICAL FIX #1: TrollApps URL scheme — "trollapps://add?url="
     const trollappsBtn = document.getElementById('btn-trollapps');
     if (trollappsBtn) {
         trollappsBtn.addEventListener('click', () => {
@@ -794,7 +923,6 @@ function setupEventListeners() {
         });
     }
 
-    // CRITICAL FIX #2: SideStore URL scheme — "sidestore://source?url="
     const sidestoreBtn = document.getElementById('btn-sidestore');
     if (sidestoreBtn) {
         sidestoreBtn.addEventListener('click', () => {
@@ -813,11 +941,15 @@ function setupEventListeners() {
         installDismiss.addEventListener('click', hideInstallBanner);
     }
 
+    // HIGH-3 FIX: Copy-to-clipboard button for manifest URL
+    const copyUrlBtn = document.getElementById('btn-copy-url');
+    if (copyUrlBtn) {
+        copyUrlBtn.addEventListener('click', handleCopyUrl);
+    }
+
     const appGrid = document.getElementById('appGrid');
     if (appGrid) {
         appGrid.addEventListener('click', handleGridClick);
-        // ACCESSIBILITY FIX: Cards are now keyboard-navigable with
-        // tabindex="0" and Enter/Space opens the detail modal.
         appGrid.addEventListener('keydown', handleGridKeydown);
     }
 

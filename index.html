@@ -64,6 +64,22 @@
             </div>
         </noscript>
 
+        <!-- CRIT-1 FIX: Offline indicator bar — was referenced by app.js but missing from DOM -->
+        <div class="offline-bar" id="offlineBar" role="alert" hidden>
+            📴 You are currently offline — downloads unavailable
+        </div>
+
+        <!-- CRIT-1 FIX: PWA install banner — was referenced by app.js but missing from DOM -->
+        <div class="install-banner" id="installBanner" role="complementary" aria-label="Install app" hidden>
+            <span class="install-banner-text"><strong>Mini's Repo</strong> — Install as app</span>
+            <button class="install-btn" id="btn-install" aria-label="Install Mini's Repo as an app">
+                ⬇️ Install
+            </button>
+            <button class="install-dismiss-btn" id="btn-install-dismiss" aria-label="Dismiss install banner">
+                ✕
+            </button>
+        </div>
+
         <header class="hero">
             <img
                 src="apps/repo-icon.png"
@@ -90,18 +106,21 @@
             </nav>
         </header>
 
-        <main class="container" role="main">
+        <!-- MED-3 FIX: Removed redundant role="main" — <main> has implicit main role per HTML spec -->
+        <main class="container">
             <section class="search-container fade-in" aria-labelledby="search-title">
                 <h2 id="search-title" class="visually-hidden">Search apps</h2>
                 <input
                     type="search"
                     class="search-box"
                     id="searchBox"
-                    placeholder="🔍 Search apps..."
+                    placeholder="🔍 Search apps... (press / to focus)"
                     aria-label="Search apps by name or description"
                     autocomplete="off"
                     spellcheck="false"
                 />
+                <!-- HIGH-2 FIX: Live region for search results count announcements -->
+                <p id="searchResultsCount" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
             </section>
 
             <section class="app-grid" id="appGrid" role="region" aria-label="Available apps"></section>
@@ -112,7 +131,11 @@
                 <div class="repo-link fade-in-left stagger-1">
                     <span aria-hidden="true">🔗</span>
                     <strong>Manifest URL:</strong>
-                    <code>https://OofMini.github.io/Minis-Repo/mini.json</code>
+                    <code id="repoUrlText">https://OofMini.github.io/Minis-Repo/mini.json</code>
+                    <!-- HIGH-3 FIX: Copy-to-clipboard button for manifest URL -->
+                    <button class="copy-url-btn" id="btn-copy-url" aria-label="Copy manifest URL to clipboard">
+                        📋 Copy
+                    </button>
                 </div>
             </section>
         </main>

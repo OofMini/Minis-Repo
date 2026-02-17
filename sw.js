@@ -1,6 +1,6 @@
 // Mini's IPA Repo — Service Worker
 // deploy.js dynamically replaces CACHE_NAME with git hash on build.
-const CACHE_NAME = 'minis-repo-cache-8bfa450';
+const CACHE_NAME = 'minis-repo-cache-9989bfe';
 
 const CRITICAL_ASSETS = [
     './',
@@ -40,16 +40,24 @@ self.addEventListener('install', (event) => {
 });
 
 // --- ACTIVATE ---
-// Clean up old caches and enable navigation preload if supported.
+// MED-2 FIX: Consolidated two separate activate listeners into one.
+// Previously, there was a second listener at the bottom that only called
+// startPeriodicUpdateCheck(). Having two listeners for the same event
+// is valid but confusing and fragile — the second could be accidentally
+// removed during refactoring, silently breaking periodic updates.
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         Promise.all([
             cleanOldCaches(),
             enableNavigationPreload()
         ])
-            .then(() => self.clients.claim())
+            .then(() => {
+                startPeriodicUpdateCheck();
+                return self.clients.claim();
+            })
             .catch((err) => {
                 console.error('[SW] Activation error:', err);
+                startPeriodicUpdateCheck();
                 return self.clients.claim();
             })
     );
@@ -141,11 +149,6 @@ function startPeriodicUpdateCheck() {
         });
     }, UPDATE_CHECK_INTERVAL);
 }
-
-// Start the timer once any client is active
-self.addEventListener('activate', () => {
-    startPeriodicUpdateCheck();
-});
 
 // --- FETCH ---
 // Strategy selection:
