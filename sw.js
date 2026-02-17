@@ -1,6 +1,6 @@
 // Mini's IPA Repo — Service Worker
 // deploy.js dynamically replaces CACHE_NAME with git hash on build.
-const CACHE_NAME = 'minis-repo-cache-9f7f80a';
+const CACHE_NAME = 'minis-repo-cache-759e67d';
 
 const CRITICAL_ASSETS = [
     './',
