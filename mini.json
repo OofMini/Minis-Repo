@@ -190,12 +190,12 @@
             ],
             "versions": [
                 {
-                    "version": "3.6.65",
-                    "date": "2026-02-17",
+                    "version": "3.7.0",
+                    "date": "2026-02-19",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Live/LiveContainer.ipa",
                     "size": 4194304,
                     "localizedDescription": "JIT-less app container",
-                    "changeDescription": "Updated to v3.6.65."
+                    "changeDescription": "Updated to v3.7.0."
                 }
             ],
             "tintColor": "#FF2D55",
