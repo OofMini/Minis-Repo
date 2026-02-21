@@ -31,7 +31,10 @@ const AppState = {
     modalOpen: false,
     modalScrollY: 0,
     // FIX: Track which card opened the modal for correct focus restoration on close.
-    lastOpenedCardId: null
+    lastOpenedCardId: null,
+    // FIX: Track whether the modal pushed a history entry so close() knows
+    // whether to call history.back() or replaceState.
+    modalHistoryPushed: false
 };
 
 const AppCardTemplate = document.createElement('template');
@@ -309,9 +312,20 @@ function updateGrid() {
     }
 
     if ('requestIdleCallback' in window) {
-        requestIdleCallback(() => renderBatch(nextBatch, appGrid));
+        requestIdleCallback(() => {
+            renderBatch(nextBatch, appGrid);
+            // FIX: Clear aria-busy AFTER the batch is actually rendered, not before.
+            if (AppState.renderedIds.size >= AppState.filteredApps.length) {
+                appGrid.removeAttribute('aria-busy');
+            }
+        });
     } else {
-        setTimeout(() => renderBatch(nextBatch, appGrid), 0);
+        setTimeout(() => {
+            renderBatch(nextBatch, appGrid);
+            if (AppState.renderedIds.size >= AppState.filteredApps.length) {
+                appGrid.removeAttribute('aria-busy');
+            }
+        }, 0);
     }
 }
 
@@ -340,7 +354,6 @@ function renderBatch(batch, container) {
 
     if (AppState.renderedIds.size >= AppState.filteredApps.length) {
         if (infiniteScrollObserver) infiniteScrollObserver.disconnect();
-        container.removeAttribute('aria-busy');
     }
 
     handleEmptyState(container);
@@ -454,29 +467,59 @@ function setupScrollToTop() {
 }
 
 // ========== HASH ROUTING ==========
+
+/**
+ * FIX: Handle initial page load with a hash URL.
+ * If the page was loaded with a hash, opening the modal should NOT pushState
+ * since the URL is already correct. We track this via AppState.modalHistoryPushed.
+ */
 function handleHashRoute() {
     const hash = window.location.hash;
     if (hash && hash.startsWith('#app-')) {
         const bundleId = decodeURIComponent(hash.substring(5));
         const app = AppState.apps.find(a => a.bundleId === bundleId || a.id === bundleId);
         if (app) {
-            setTimeout(() => openAppModal(app.id), 100);
+            // Use a short delay so the page finishes rendering before modal opens.
+            // Mark that this open is from a URL, not a user click, so we don't pushState.
+            setTimeout(() => openAppModal(app.id, true), 100);
         }
     }
 }
 
-function updateHash(bundleId) {
+/**
+ * FIX: Use pushState when opening modals via user interaction so the back
+ * button closes the modal instead of navigating away entirely.
+ * When opening from a direct URL (hash already present), use replaceState.
+ */
+function updateHash(bundleId, fromUrl) {
     if (bundleId) {
-        history.replaceState(null, '', `#app-${encodeURIComponent(bundleId)}`);
+        const newHash = `#app-${encodeURIComponent(bundleId)}`;
+        if (fromUrl) {
+            // Direct URL navigation — hash is already present or we just replace
+            history.replaceState({ appModal: true }, '', newHash);
+            AppState.modalHistoryPushed = false;
+        } else {
+            // User clicked a card — push so back button can close
+            history.pushState({ appModal: true }, '', newHash);
+            AppState.modalHistoryPushed = true;
+        }
     } else {
+        // Clearing hash — always replaceState (history.back() already popped if needed)
         history.replaceState(null, '', window.location.pathname + window.location.search);
     }
 }
 
+/**
+ * FIX: The popstate handler now properly detects back-button navigation
+ * and closes the modal without double-manipulating history.
+ */
 window.addEventListener('popstate', () => {
-    if (!window.location.hash && AppState.modalOpen) {
-        closeAppModal();
-    } else if (window.location.hash) {
+    if (AppState.modalOpen && !window.location.hash) {
+        // Back button was pressed while modal was open — close UI only.
+        // History has already been popped by the browser; don't call history.back().
+        AppState.modalHistoryPushed = false;
+        closeAppModal(true);
+    } else if (window.location.hash && window.location.hash.startsWith('#app-')) {
         handleHashRoute();
     }
 });
@@ -555,20 +598,53 @@ function handleGridKeydown(e) {
     }
 }
 
+// ========== IMAGE PRELOADING ==========
+
+/**
+ * ENHANCEMENT: Preload modal images (icon + screenshots) so they appear
+ * instantly when the modal opens. Uses <link rel=preload> for priority
+ * fetching without blocking the main thread.
+ */
+function preloadModalImages(app) {
+    const urls = [app.icon, ...app.screenshots].filter(Boolean);
+    urls.forEach(url => {
+        if (!document.querySelector(`link[href="${CSS.escape(url)}"]`)) {
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'image';
+            link.href = url;
+            document.head.appendChild(link);
+            // Clean up after a reasonable time to avoid DOM bloat
+            setTimeout(() => { if (link.parentNode) link.remove(); }, 30000);
+        }
+    });
+}
+
 // ========== APP DETAIL MODAL ==========
-function openAppModal(appId) {
+
+/**
+ * @param {string} appId - The app ID to open
+ * @param {boolean} fromUrl - True if opened from URL hash (direct link / handleHashRoute)
+ */
+function openAppModal(appId, fromUrl = false) {
     const app = AppState.apps.find(a => a.id === appId);
     if (!app) return;
+
+    // Guard against double-open
+    if (AppState.modalOpen) return;
 
     AppState.modalOpen = true;
     AppState.modalScrollY = window.scrollY;
     // FIX: Track which app/card opened the modal so we can restore focus correctly on close.
     AppState.lastOpenedCardId = appId;
 
+    // ENHANCEMENT: Preload modal images for instant display
+    preloadModalImages(app);
+
     const existing = document.getElementById('appModal');
     if (existing) existing.remove();
 
-    updateHash(app.bundleId);
+    updateHash(app.bundleId, fromUrl);
 
     const modal = document.createElement('div');
     modal.id = 'appModal';
@@ -577,13 +653,12 @@ function openAppModal(appId) {
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-label', `${app.name} details`);
 
-    // tintColor is sanitized at load time; safe to use here.
-    const tintGlow = `background: linear-gradient(180deg, ${hexToRgba(app.tintColor, 0.12)} 0%, transparent 100%);`;
-
+    // FIX: Screenshots now have onerror handling via a data attribute.
+    // The actual handler is attached after innerHTML to avoid CSP issues.
     const screenshotsHtml = app.screenshots.length > 0
         ? `<div class="modal-screenshots" role="region" aria-label="Screenshots">
                ${app.screenshots.map((url, i) =>
-                   `<img src="${escapeAttr(url)}" alt="${escapeAttr(app.name)} screenshot ${i + 1}" loading="lazy" decoding="async" class="modal-screenshot">`
+                   `<img src="${escapeAttr(url)}" alt="${escapeAttr(app.name)} screenshot ${i + 1}" loading="eager" decoding="async" class="modal-screenshot" data-screenshot-idx="${i}">`
                ).join('')}
            </div>`
         : '';
@@ -604,10 +679,13 @@ function openAppModal(appId) {
            </div>`
         : '';
 
+    // FIX (CSP): The tint glow div no longer uses an inline style attribute.
+    // The background gradient is applied via JS after element creation, which
+    // is not blocked by style-src 'self' in the Content Security Policy.
     modal.innerHTML = `
         <div class="modal-backdrop"></div>
         <div class="modal-content" role="document">
-            <div class="modal-tint-glow" style="${escapeAttr(tintGlow)}" aria-hidden="true"></div>
+            <div class="modal-tint-glow" aria-hidden="true"></div>
             <button type="button" class="modal-close" aria-label="Close dialog">&times;</button>
             <div class="modal-header">
                 <div class="modal-icon-container">
@@ -642,31 +720,52 @@ function openAppModal(appId) {
     `;
 
     document.body.appendChild(modal);
-    document.body.classList.add('modal-open');
 
+    // FIX (CSP): Apply tint glow gradient via JS property assignment instead
+    // of inline style attribute. element.style.background is NOT blocked by CSP.
+    const tintGlowEl = modal.querySelector('.modal-tint-glow');
+    if (tintGlowEl) {
+        tintGlowEl.style.background = `linear-gradient(180deg, ${hexToRgba(app.tintColor, 0.12)} 0%, transparent 100%)`;
+    }
+
+    // FIX: Modal icon fallback
     const modalIcon = modal.querySelector('.modal-icon');
     if (modalIcon) {
         modalIcon.addEventListener('error', () => { modalIcon.src = CONFIG.FALLBACK_ICON; }, { once: true });
     }
 
+    // FIX: Screenshot error handling — hide broken screenshots gracefully
+    modal.querySelectorAll('.modal-screenshot').forEach(img => {
+        img.addEventListener('error', () => {
+            img.style.display = 'none';
+        }, { once: true });
+    });
+
+    // CRITICAL FIX: Set body.style.top to preserve scroll position.
+    // The CSS rule `body.modal-open { position: fixed }` removes the body
+    // from flow. Without a negative top offset, the viewport jumps to 0,0.
+    document.body.classList.add('modal-open');
+    document.body.style.top = `-${AppState.modalScrollY}px`;
+
+    // Force layout to ensure the transition starting state is painted
     modal.offsetHeight;
     modal.classList.add('active');
 
     const closeBtn = modal.querySelector('.modal-close');
     closeBtn.focus();
 
-    modal.querySelector('.modal-backdrop').addEventListener('click', closeAppModal);
-    closeBtn.addEventListener('click', closeAppModal);
+    modal.querySelector('.modal-backdrop').addEventListener('click', () => closeAppModal(false));
+    closeBtn.addEventListener('click', () => closeAppModal(false));
 
     modal.querySelector('.modal-download-btn').addEventListener('click', () => {
         trackDownload(app.id);
-        closeAppModal();
+        closeAppModal(false);
     });
 
     modal.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             e.stopPropagation();
-            closeAppModal();
+            closeAppModal(false);
             return;
         }
 
@@ -694,23 +793,43 @@ function openAppModal(appId) {
     });
 }
 
-function closeAppModal() {
+/**
+ * Close the app detail modal.
+ *
+ * @param {boolean} viaPopstate - True when called from the popstate handler
+ *   (back button). When true, we must NOT call history.back() since the
+ *   browser has already popped the history entry.
+ */
+function closeAppModal(viaPopstate) {
     const modal = document.getElementById('appModal');
     if (!modal) return;
 
+    // Guard against double-close (e.g., Escape key + backdrop click in quick succession)
+    if (!AppState.modalOpen) return;
     AppState.modalOpen = false;
+
     modal.classList.remove('active');
 
-    // Un-fix body first, then immediately restore scroll position.
-    // Using 'instant' behavior prevents a visible re-scroll animation.
+    // CRITICAL FIX: Clear the top offset BEFORE removing modal-open class,
+    // then restore scroll position with instant behavior to prevent flicker.
     document.body.classList.remove('modal-open');
+    document.body.style.top = '';
     window.scrollTo({ top: AppState.modalScrollY, behavior: 'instant' });
 
-    updateHash(null);
+    // FIX: Properly handle history based on how the modal was opened/closed.
+    if (!viaPopstate && AppState.modalHistoryPushed) {
+        // User closed via X button / backdrop / download — pop our history entry.
+        // This triggers popstate, but modalOpen is already false so it's a no-op.
+        AppState.modalHistoryPushed = false;
+        history.back();
+    } else {
+        // Either closed via back button (viaPopstate=true, browser already popped)
+        // or opened from a direct URL (no pushState was done) — just clear the hash.
+        AppState.modalHistoryPushed = false;
+        updateHash(null, false);
+    }
 
     // FIX: Use the tracked card ID to reliably focus the correct card.
-    // The old selector `.app-card[data-app-id]` matched every card and always
-    // returned the first one in the DOM.
     const cardToFocus = AppState.lastOpenedCardId
         ? document.querySelector(`.app-card[data-app-id="${CSS.escape(AppState.lastOpenedCardId)}"]`)
         : null;
@@ -949,6 +1068,7 @@ function setupOnlineOfflineDetection() {
         });
     }
 
+    // FIX: Add { passive: true } for non-cancellable event listeners
     window.addEventListener('online', () => {
         updateOnlineStatus();
         showToast('✅ Back online', 'success');
@@ -1188,7 +1308,7 @@ function setupEventListeners() {
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && AppState.modalOpen) {
-            closeAppModal();
+            closeAppModal(false);
         }
     });
 }

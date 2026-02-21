@@ -1,6 +1,6 @@
 // Mini's IPA Repo — Service Worker
 // deploy.js dynamically replaces CACHE_NAME with git hash on build.
-const CACHE_NAME = 'minis-repo-cache-ef5062a';
+const CACHE_NAME = 'minis-repo-cache-e2b9778';
 
 const CRITICAL_ASSETS = [
     './',
@@ -17,6 +17,12 @@ const CRITICAL_ASSETS = [
 const SWR_PATTERNS = [
     /\/apps\/.*\.(png|jpg|jpeg|webp|gif|PNG)$/i
 ];
+
+// ENHANCEMENT: Maximum number of entries allowed in the cache.
+// Prevents unbounded growth on devices with limited storage.
+// Critical assets (7) + app icons (~8) + screenshots (~24) + misc = ~50 typical.
+// 150 provides generous headroom without risking storage pressure.
+const MAX_CACHE_ITEMS = 150;
 
 // How often to check for SW updates (in milliseconds)
 // 30 minutes — balances freshness with API courtesy
@@ -135,6 +141,68 @@ async function deleteOldCaches() {
     console.log(`[SW] Cache cleanup complete. Active: ${CACHE_NAME}`);
 }
 
+// --- CACHE SIZE MANAGEMENT ---
+
+/**
+ * ENHANCEMENT: Trim the cache to MAX_CACHE_ITEMS entries.
+ *
+ * When the cache exceeds the limit, the oldest non-critical entries are
+ * evicted. Critical assets (HTML, CSS, JS, manifest) are never evicted.
+ *
+ * Uses a simple FIFO strategy: Cache API doesn't expose timestamps, but
+ * the order of cache.keys() reflects insertion order. We evict from the
+ * front (oldest) and skip critical assets.
+ */
+async function trimCache() {
+    try {
+        const cache = await caches.open(CACHE_NAME);
+        const keys = await cache.keys();
+
+        if (keys.length <= MAX_CACHE_ITEMS) return;
+
+        const excess = keys.length - MAX_CACHE_ITEMS;
+        let evicted = 0;
+
+        // Build a Set of critical asset URLs for fast lookup
+        const criticalUrls = new Set(
+            CRITICAL_ASSETS.map(asset => new URL(asset, self.location.origin).href)
+        );
+
+        for (const request of keys) {
+            if (evicted >= excess) break;
+
+            // Never evict critical assets
+            if (criticalUrls.has(request.url)) continue;
+
+            await cache.delete(request);
+            evicted++;
+        }
+
+        if (evicted > 0) {
+            console.log(`[SW] Cache trimmed: evicted ${evicted} entries (${keys.length} → ${keys.length - evicted})`);
+        }
+    } catch (err) {
+        // Non-fatal — cache will be cleaned up on next activation
+        console.warn('[SW] Cache trim failed:', err.message);
+    }
+}
+
+/**
+ * Helper: Put a response in the cache and trim if needed.
+ * Wraps cache.put with post-trim to enforce size limits.
+ */
+async function cachePutAndTrim(request, response) {
+    try {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(request, response);
+        // Trim asynchronously — don't block the response
+        trimCache().catch(() => {});
+    } catch (err) {
+        // Non-fatal: cache storage might be full
+        console.warn('[SW] Cache put failed:', err.message);
+    }
+}
+
 // --- PERIODIC UPDATE CHECK ---
 let updateCheckTimer = null;
 
@@ -188,8 +256,8 @@ async function handleNavigation(event) {
     try {
         const preloadResponse = event.preloadResponse ? await event.preloadResponse : null;
         if (preloadResponse) {
-            const cache = await caches.open(CACHE_NAME);
-            cache.put(event.request, preloadResponse.clone()).catch(() => {});
+            // Cache in the background with size management
+            cachePutAndTrim(event.request, preloadResponse.clone()).catch(() => {});
             return preloadResponse;
         }
 
@@ -207,8 +275,8 @@ async function networkFirst(request) {
     try {
         const response = await fetch(request);
         if (response.ok) {
-            const cache = await caches.open(CACHE_NAME);
-            cache.put(request, response.clone()).catch(() => {});
+            // ENHANCEMENT: Use cachePutAndTrim for size-managed caching
+            cachePutAndTrim(request, response.clone()).catch(() => {});
         }
         return response;
     } catch (err) {
@@ -241,7 +309,8 @@ async function staleWhileRevalidate(request) {
     const fetchPromise = fetch(request)
         .then((response) => {
             if (response.ok) {
-                cache.put(request, response.clone()).catch(() => {});
+                // ENHANCEMENT: Use cachePutAndTrim for size-managed caching
+                cachePutAndTrim(request, response.clone()).catch(() => {});
             }
             return response;
         })
@@ -251,6 +320,28 @@ async function staleWhileRevalidate(request) {
 
     const networkResponse = await fetchPromise;
     if (networkResponse) return networkResponse;
+
+    // FIX: Return a transparent 1x1 PNG for failed image requests instead of
+    // an empty 404. This prevents broken-image icons in the UI when both
+    // cache and network fail (e.g., new app icon on first offline visit).
+    if (/\.(png|jpg|jpeg|webp|gif)$/i.test(request.url)) {
+        // 1x1 transparent PNG (67 bytes)
+        const transparentPng = new Uint8Array([
+            0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A,0x00,0x00,0x00,0x0D,
+            0x49,0x48,0x44,0x52,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,
+            0x08,0x06,0x00,0x00,0x00,0x1F,0x15,0xC4,0x89,0x00,0x00,0x00,
+            0x0A,0x49,0x44,0x41,0x54,0x78,0x9C,0x62,0x00,0x00,0x00,0x02,
+            0x00,0x01,0xE5,0x27,0xDE,0xFC,0x00,0x00,0x00,0x00,0x49,0x45,
+            0x4E,0x44,0xAE,0x42,0x60,0x82
+        ]);
+        return new Response(transparentPng.buffer, {
+            status: 200,
+            headers: {
+                'Content-Type': 'image/png',
+                'Cache-Control': 'no-store'
+            }
+        });
+    }
 
     return new Response('', { status: 404 });
 }
@@ -263,8 +354,8 @@ async function cacheFirst(request) {
     try {
         const response = await fetch(request);
         if (response.ok) {
-            const cache = await caches.open(CACHE_NAME);
-            cache.put(request, response.clone()).catch(() => {});
+            // ENHANCEMENT: Use cachePutAndTrim for size-managed caching
+            cachePutAndTrim(request, response.clone()).catch(() => {});
         }
         return response;
     } catch (err) {
