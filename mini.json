@@ -1,5 +1,8 @@
 {
+    "schemaVersion": "1.0.0",
     "name": "Mini's Repo",
+    "subtitle": "Tweaked IPA Repo",
+    "description": "A collection of popular tweaked apps.",
     "identifier": "com.oofmini.repo",
     "sourceURL": "https://OofMini.github.io/Minis-Repo/mini.json",
     "iconURL": "https://OofMini.github.io/Minis-Repo/apps/repo-icon.png",
