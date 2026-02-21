@@ -29,7 +29,9 @@ const AppState = {
     isOnline: navigator.onLine,
     deferredInstallPrompt: null,
     modalOpen: false,
-    modalScrollY: 0
+    modalScrollY: 0,
+    // FIX: Track which card opened the modal for correct focus restoration on close.
+    lastOpenedCardId: null
 };
 
 const AppCardTemplate = document.createElement('template');
@@ -43,7 +45,7 @@ AppCardTemplate.innerHTML = `
             <h3></h3>
             <p class="app-category-wrapper"><span class="app-category-tag"></span></p>
             <div class="app-description-text"></div>
-            <button class="changelog-toggle" aria-expanded="false" style="display:none;">
+            <button type="button" class="changelog-toggle" aria-expanded="false" style="display:none;">
                 <span>What's New</span>
                 <span class="changelog-toggle-arrow" aria-hidden="true">▶</span>
             </button>
@@ -51,7 +53,7 @@ AppCardTemplate.innerHTML = `
                 <div class="changelog-text"></div>
             </div>
             <p class="app-meta-size"></p>
-            <button class="download-btn action-download"></button>
+            <button type="button" class="download-btn action-download"></button>
         </div>
     </article>
 `;
@@ -135,16 +137,8 @@ async function loadAppData() {
                 const latestVersion = app.versions[0];
                 const category = inferCategory(app.bundleIdentifier ?? '');
 
-                // SideStore schema: minOSVersion lives on the version entry, not the app.
-                // Fall back to a sensible default if absent.
                 const minimumOS = latestVersion.minOSVersion ?? '15.0';
-
-                // SideStore schema: version.localizedDescription is the changelog text.
-                // There is no "changeDescription" field in the schema.
                 const changelog = latestVersion.localizedDescription ?? '';
-
-                // SideStore schema: permissions is [{type, usageDescription}] objects.
-                // Normalise to always be an array of objects so rendering is consistent.
                 const permissions = normalizePermissions(app.permissions ?? []);
 
                 return {
@@ -161,7 +155,8 @@ async function loadAppData() {
                     size: formatSize(latestVersion.size),
                     sizeBytes: latestVersion.size ?? 0,
                     changelog: changelog,
-                    tintColor: app.tintColor ?? '#a78bfa',
+                    // FIX: Sanitize tintColor at load time so it's always a valid hex value.
+                    tintColor: sanitizeTintColor(app.tintColor),
                     subtitle: app.subtitle ?? '',
                     minimumOS: minimumOS,
                     permissions: permissions,
@@ -190,7 +185,6 @@ function normalizePermissions(perms) {
     if (!Array.isArray(perms)) return [];
     return perms.map(p => {
         if (typeof p === 'string') {
-            // Legacy plain-string format — wrap into object
             return { type: p, usageDescription: '' };
         }
         if (typeof p === 'object' && p !== null && p.type) {
@@ -228,6 +222,7 @@ function setupFeaturedApp() {
     dev.textContent = app.developer;
     desc.textContent = app.description;
     btn.setAttribute('data-id', app.id);
+    btn.setAttribute('aria-label', `Download ${app.name} IPA`);
     card.setAttribute('data-app-id', app.id);
     card.setAttribute('aria-label', `${app.name} — featured app, tap to view details`);
 
@@ -370,6 +365,7 @@ function createAppCard(app, index) {
     article.setAttribute('aria-label', `${app.name} — tap to view details`);
     article.classList.add(`stagger-${(index % 3) + 1}`);
 
+    // tintColor is already sanitized at load time via sanitizeTintColor().
     const tint = app.tintColor;
     article.style.setProperty('--tint', tint);
     article.style.setProperty('--tint-surface', hexToRgba(tint, 0.06));
@@ -393,8 +389,6 @@ function createAppCard(app, index) {
     descEl.appendChild(document.createElement('br'));
     descEl.appendChild(document.createTextNode(app.description));
 
-    // SideStore schema: version.localizedDescription is the changelog.
-    // Stored as app.changelog in our processed data.
     if (app.changelog) {
         const toggleBtn = article.querySelector('.changelog-toggle');
         toggleBtn.style.display = '';
@@ -406,6 +400,7 @@ function createAppCard(app, index) {
 
     const btn = article.querySelector('.download-btn');
     btn.setAttribute('data-id', app.id);
+    btn.setAttribute('aria-label', `Download ${app.name} IPA`);
     btn.textContent = '⬇️ Download IPA';
 
     if (!AppState.isOnline) {
@@ -536,11 +531,24 @@ function handleGridKeydown(e) {
         const idx = cards.indexOf(card);
         if (idx === -1) return;
 
+        // FIX: Compute the number of grid columns dynamically so that
+        // ArrowUp/ArrowDown jump a full row rather than just one card.
+        const gridEl = document.getElementById('appGrid');
+        let cols = 1;
+        if (gridEl) {
+            const style = window.getComputedStyle(gridEl);
+            const templateCols = style.gridTemplateColumns;
+            if (templateCols && templateCols !== 'none') {
+                cols = templateCols.trim().split(/\s+/).length;
+            }
+        }
+
         let nextIdx = idx;
-        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-            nextIdx = Math.min(idx + 1, cards.length - 1);
-        } else {
-            nextIdx = Math.max(idx - 1, 0);
+        switch (e.key) {
+            case 'ArrowRight': nextIdx = Math.min(idx + 1, cards.length - 1); break;
+            case 'ArrowLeft':  nextIdx = Math.max(idx - 1, 0); break;
+            case 'ArrowDown':  nextIdx = Math.min(idx + cols, cards.length - 1); break;
+            case 'ArrowUp':    nextIdx = Math.max(idx - cols, 0); break;
         }
 
         cards[nextIdx].focus();
@@ -554,6 +562,8 @@ function openAppModal(appId) {
 
     AppState.modalOpen = true;
     AppState.modalScrollY = window.scrollY;
+    // FIX: Track which app/card opened the modal so we can restore focus correctly on close.
+    AppState.lastOpenedCardId = appId;
 
     const existing = document.getElementById('appModal');
     if (existing) existing.remove();
@@ -567,6 +577,7 @@ function openAppModal(appId) {
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-label', `${app.name} details`);
 
+    // tintColor is sanitized at load time; safe to use here.
     const tintGlow = `background: linear-gradient(180deg, ${hexToRgba(app.tintColor, 0.12)} 0%, transparent 100%);`;
 
     const screenshotsHtml = app.screenshots.length > 0
@@ -577,8 +588,6 @@ function openAppModal(appId) {
            </div>`
         : '';
 
-    // SideStore schema: permissions are {type, usageDescription} objects.
-    // Display type as the tag and usageDescription as tooltip/detail.
     const permissionsHtml = app.permissions.length > 0
         ? `<div class="modal-permissions">
                <span class="modal-permissions-label">Permissions:</span>
@@ -588,7 +597,6 @@ function openAppModal(appId) {
            </div>`
         : '';
 
-    // SideStore schema: version.localizedDescription is the changelog.
     const changelogHtml = app.changelog
         ? `<div class="modal-changelog">
                <strong>What's New</strong>
@@ -599,8 +607,8 @@ function openAppModal(appId) {
     modal.innerHTML = `
         <div class="modal-backdrop"></div>
         <div class="modal-content" role="document">
-            <div class="modal-tint-glow" style="${tintGlow}" aria-hidden="true"></div>
-            <button class="modal-close" aria-label="Close dialog">&times;</button>
+            <div class="modal-tint-glow" style="${escapeAttr(tintGlow)}" aria-hidden="true"></div>
+            <button type="button" class="modal-close" aria-label="Close dialog">&times;</button>
             <div class="modal-header">
                 <div class="modal-icon-container">
                     <img src="${escapeAttr(app.icon)}" alt="${escapeAttr(app.name)} icon"
@@ -626,7 +634,7 @@ function openAppModal(appId) {
                 <p class="modal-date">Last updated: ${escapeHtml(app.date)}</p>
             </div>
             <div class="modal-footer">
-                <button class="download-btn modal-download-btn" data-id="${escapeAttr(app.id)}">
+                <button type="button" class="download-btn modal-download-btn" data-id="${escapeAttr(app.id)}" aria-label="Download ${escapeAttr(app.name)} IPA">
                     ⬇️ Download IPA
                 </button>
             </div>
@@ -692,20 +700,30 @@ function closeAppModal() {
 
     AppState.modalOpen = false;
     modal.classList.remove('active');
+
+    // Un-fix body first, then immediately restore scroll position.
+    // Using 'instant' behavior prevents a visible re-scroll animation.
     document.body.classList.remove('modal-open');
+    window.scrollTo({ top: AppState.modalScrollY, behavior: 'instant' });
 
     updateHash(null);
 
-    window.scrollTo(0, AppState.modalScrollY);
+    // FIX: Use the tracked card ID to reliably focus the correct card.
+    // The old selector `.app-card[data-app-id]` matched every card and always
+    // returned the first one in the DOM.
+    const cardToFocus = AppState.lastOpenedCardId
+        ? document.querySelector(`.app-card[data-app-id="${CSS.escape(AppState.lastOpenedCardId)}"]`)
+        : null;
 
-    const lastFocusedCard = document.querySelector('.app-card:focus, .app-card[data-app-id]');
+    // Clear the tracked id before async removal to avoid stale references.
+    AppState.lastOpenedCardId = null;
 
     setTimeout(() => {
         if (modal.parentNode) modal.remove();
     }, 350);
 
-    if (lastFocusedCard) {
-        lastFocusedCard.focus({ preventScroll: true });
+    if (cardToFocus) {
+        cardToFocus.focus({ preventScroll: true });
     }
 }
 
@@ -718,10 +736,26 @@ function escapeHtml(str) {
 
 function escapeAttr(str) {
     if (!str) return '';
-    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
 }
 
 // ========== COLOR UTILITIES ==========
+
+/**
+ * FIX: Validate that a tint color is a proper 6-digit hex value.
+ * Defaults to the repo accent color if missing or malformed.
+ * Called at data-load time so all downstream uses are guaranteed safe.
+ */
+function sanitizeTintColor(color) {
+    if (color && /^#[0-9A-Fa-f]{6}$/.test(color)) return color;
+    return '#a78bfa';
+}
+
 function hexToRgba(hex, alpha) {
     if (!hex || hex.length < 7) return `rgba(167, 139, 250, ${alpha})`;
     const r = parseInt(hex.slice(1, 3), 16);
@@ -787,6 +821,7 @@ function showToast(msg, type = 'info', action = null) {
 
     if (action) {
         const actionBtn = document.createElement('button');
+        actionBtn.type = 'button';
         actionBtn.textContent = action.text;
         actionBtn.addEventListener('click', action.callback);
         toast.appendChild(actionBtn);
@@ -945,11 +980,12 @@ async function handleCopyUrl() {
             }, 2000);
         }
     } catch {
+        // Clipboard API not available (non-secure context) — use execCommand fallback.
         try {
             const textarea = document.createElement('textarea');
             textarea.value = urlText;
             textarea.setAttribute('readonly', '');
-            textarea.style.cssText = 'position:fixed;left:-9999px';
+            textarea.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
             document.body.appendChild(textarea);
             textarea.select();
             document.execCommand('copy');
@@ -991,7 +1027,7 @@ function showLoadingState() {
 
     grid.setAttribute('aria-busy', 'true');
     grid.innerHTML = Array(6).fill(0).map((_, i) => `
-        <div class="skeleton-card fade-in visible stagger-${(i % 3) + 1}">
+        <div class="skeleton-card fade-in visible stagger-${(i % 3) + 1}" aria-hidden="true">
             <div class="skeleton skeleton-icon"></div>
             <div class="skeleton skeleton-text short"></div>
             <div class="skeleton skeleton-text medium"></div>
@@ -1011,7 +1047,7 @@ function showErrorState(msg) {
             <div class="error-emoji">⚠️</div>
             <h3>Something went wrong</h3>
             <p></p>
-            <button class="download-btn action-retry">Retry</button>
+            <button type="button" class="download-btn action-retry">Retry</button>
         </div>
     `;
     grid.querySelector('p').textContent = String(msg);

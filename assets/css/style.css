@@ -104,6 +104,8 @@ body.modal-open {
     overflow: hidden;
     position: fixed;
     width: 100%;
+    /* Preserve the scroll position via top so content doesn't jump.
+       The actual top value is managed by JS (AppState.modalScrollY). */
 }
 
 img {
@@ -894,7 +896,9 @@ img {
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    contain: layout style;
+    /* FIX: Added 'paint' to contain so clipped overflow is not composited,
+       improving scrolling performance with content-visibility: auto. */
+    contain: layout style paint;
     content-visibility: auto;
     contain-intrinsic-size: auto 320px;
     -webkit-tap-highlight-color: transparent;
@@ -1277,14 +1281,25 @@ img {
     opacity: 0.4;
 }
 
+/*
+ * FIX: The original rule used both `position: sticky` and `float: right`,
+ * which is an undefined CSS combination — sticky only applies to elements
+ * in normal flow, but `float` removes the element from normal flow.
+ *
+ * Fix: Remove `float: right`. Use `display: block; width: fit-content;
+ * margin-left: auto` to push the button to the right side while keeping
+ * it in normal flow so `position: sticky` works as intended.
+ */
 .modal-close {
     position: sticky;
     top: var(--space-3);
-    float: right;
-    margin-right: var(--space-3);
-    z-index: 2;
+    display: block;
     width: 34px;
     height: 34px;
+    margin-left: auto;
+    margin-right: var(--space-3);
+    margin-top: var(--space-3);
+    z-index: 2;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.08);

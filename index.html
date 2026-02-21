@@ -4,6 +4,12 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
+        <!--
+            Tells the browser this page is dark-only, enabling native dark-mode
+            scrollbars, form controls, and system UI chrome without any flicker.
+        -->
+        <meta name="color-scheme" content="dark" />
+
         <meta
             http-equiv="Content-Security-Policy"
             content="default-src 'self'; 
@@ -18,6 +24,8 @@
                    upgrade-insecure-requests;"
         />
 
+        <!-- DNS prefetch for GitHub assets served via CDN -->
+        <link rel="dns-prefetch" href="https://objects.githubusercontent.com" />
         <link rel="preconnect" href="https://oofmini.github.io" crossorigin />
         <link rel="preconnect" href="https://github.com" crossorigin />
 
@@ -51,8 +59,12 @@
             content="Curated collection of premium tweaked applications for iOS 15+. Featuring Spotify, YouTube, YouTube Music, and more — sideload via SideStore, TrollApps, or AltStore."
         />
 
+        <!-- Critical resource hints: icon first (LCP candidate), then CSS, then JS -->
         <link rel="preload" as="image" href="apps/repo-icon.png" />
         <link rel="preload" href="assets/css/style.css" as="style" />
+        <!-- Preload the app script so the browser can discover and fetch it early,
+             reducing TTI on repeat visits and slow connections. -->
+        <link rel="preload" href="assets/js/app.js" as="script" />
 
         <link rel="manifest" href="manifest.json" />
         <link rel="icon" href="apps/repo-icon.png" />
@@ -73,10 +85,10 @@
 
         <div class="install-banner" id="installBanner" role="complementary" aria-label="Install app" hidden>
             <span class="install-banner-text"><strong>Mini's Repo</strong> — Install as app</span>
-            <button class="install-btn" id="btn-install" aria-label="Install Mini's Repo as an app">
+            <button type="button" class="install-btn" id="btn-install" aria-label="Install Mini's Repo as an app">
                 ⬇️ Install
             </button>
-            <button class="install-dismiss-btn" id="btn-install-dismiss" aria-label="Dismiss install banner">
+            <button type="button" class="install-dismiss-btn" id="btn-install-dismiss" aria-label="Dismiss install banner">
                 ✕
             </button>
         </div>
@@ -89,6 +101,7 @@
                 class="repo-icon"
                 width="72"
                 height="72"
+                fetchpriority="high"
             />
             <h1 class="animated-gradient">Mini's Repo</h1>
             <p class="hero-subtitle">Premium tweaked apps for iOS 15+</p>
@@ -109,10 +122,10 @@
             </div>
 
             <nav class="cta-buttons" aria-label="Add repository to app manager">
-                <button class="cta-button trollapps" id="btn-trollapps" aria-label="Add to TrollApps">
+                <button type="button" class="cta-button trollapps" id="btn-trollapps" aria-label="Add to TrollApps">
                     <span aria-hidden="true">📱</span> Add to TrollApps
                 </button>
-                <button class="cta-button sidestore" id="btn-sidestore" aria-label="Add to SideStore">
+                <button type="button" class="cta-button sidestore" id="btn-sidestore" aria-label="Add to SideStore">
                     <span aria-hidden="true">⚙️</span> Add to SideStore
                 </button>
             </nav>
@@ -135,7 +148,7 @@
                         </div>
                     </div>
                     <div class="featured-actions">
-                        <button class="download-btn featured-download-btn" id="featuredDownloadBtn" aria-label="Download featured app">
+                        <button type="button" class="download-btn featured-download-btn" id="featuredDownloadBtn" aria-label="Download featured app">
                             ⬇️ Download IPA
                         </button>
                     </div>
@@ -164,32 +177,32 @@
 
                 <!-- Category Filter Pills -->
                 <div class="category-filters" id="categoryFilters" role="tablist" aria-label="Filter apps by category">
-                    <button class="category-pill active" role="tab" aria-selected="true" data-category="all" tabindex="0">
+                    <button type="button" class="category-pill active" role="tab" aria-selected="true" data-category="all" tabindex="0">
                         All
                     </button>
-                    <button class="category-pill" role="tab" aria-selected="false" data-category="Music" tabindex="-1">
+                    <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Music" tabindex="-1">
                         🎵 Music
                     </button>
-                    <button class="category-pill" role="tab" aria-selected="false" data-category="Video" tabindex="-1">
+                    <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Video" tabindex="-1">
                         🎬 Video
                     </button>
-                    <button class="category-pill" role="tab" aria-selected="false" data-category="Social" tabindex="-1">
+                    <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Social" tabindex="-1">
                         💬 Social
                     </button>
-                    <button class="category-pill" role="tab" aria-selected="false" data-category="Creative" tabindex="-1">
+                    <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Creative" tabindex="-1">
                         🎨 Creative
                     </button>
-                    <button class="category-pill" role="tab" aria-selected="false" data-category="Utilities" tabindex="-1">
+                    <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Utilities" tabindex="-1">
                         🔧 Utilities
                     </button>
                 </div>
 
                 <!-- Sort Toggle -->
                 <div class="sort-controls" aria-label="Sort options">
-                    <button class="sort-btn active" id="sortRecent" data-sort="recent" aria-pressed="true">
+                    <button type="button" class="sort-btn active" id="sortRecent" data-sort="recent" aria-pressed="true">
                         🕐 Recent
                     </button>
-                    <button class="sort-btn" id="sortAlpha" data-sort="alpha" aria-pressed="false">
+                    <button type="button" class="sort-btn" id="sortAlpha" data-sort="alpha" aria-pressed="false">
                         🔤 A–Z
                     </button>
                 </div>
@@ -207,7 +220,7 @@
                 <p class="repo-info-desc">Copy the URL below and paste it into your preferred sideloading app manager.</p>
                 <div class="repo-url-card">
                     <code class="repo-url-text" id="repoUrlText">https://OofMini.github.io/Minis-Repo/mini.json</code>
-                    <button class="copy-url-btn" id="btn-copy-url" aria-label="Copy manifest URL to clipboard">
+                    <button type="button" class="copy-url-btn" id="btn-copy-url" aria-label="Copy manifest URL to clipboard">
                         <span class="copy-url-label" id="copyUrlLabel">📋 Copy URL</span>
                     </button>
                 </div>
@@ -244,7 +257,7 @@
                             🐛 Issues
                         </a>
                         <span class="footer-separator" aria-hidden="true">·</span>
-                        <button id="btn-reset" class="footer-reset-btn" aria-label="Clear local cache and data">
+                        <button type="button" id="btn-reset" class="footer-reset-btn" aria-label="Clear local cache and data">
                             🗑️ Clear Cache
                         </button>
                     </div>
@@ -253,7 +266,7 @@
         </footer>
 
         <!-- Scroll-to-top button -->
-        <button class="scroll-top-btn" id="scrollTopBtn" aria-label="Scroll to top" hidden>
+        <button type="button" class="scroll-top-btn" id="scrollTopBtn" aria-label="Scroll to top" hidden>
             <span aria-hidden="true">↑</span>
         </button>
 
