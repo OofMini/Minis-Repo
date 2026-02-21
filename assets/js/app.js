@@ -30,11 +30,11 @@ const AppState = {
     deferredInstallPrompt: null,
     modalOpen: false,
     modalScrollY: 0,
-    // FIX: Track which card opened the modal for correct focus restoration on close.
     lastOpenedCardId: null,
-    // FIX: Track whether the modal pushed a history entry so close() knows
-    // whether to call history.back() or replaceState.
-    modalHistoryPushed: false
+    modalHistoryPushed: false,
+    // FIX: Render generation counter prevents stale requestIdleCallback closures
+    // from writing into a newly-cleared grid when the user types quickly.
+    _renderGen: 0
 };
 
 const AppCardTemplate = document.createElement('template');
@@ -88,12 +88,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         } else {
             updateAppCount(AppState.apps.length);
             setupFeaturedApp();
+            // Update category pills with live counts now that apps are loaded
+            updateCategoryPillCounts();
             const appGrid = document.getElementById('appGrid');
             if (appGrid) appGrid.innerHTML = '';
             AppState.renderedIds.clear();
             filterAndSortApps();
             setupInfiniteScroll();
-
             handleHashRoute();
         }
     } catch (error) {
@@ -139,7 +140,6 @@ async function loadAppData() {
             .map((app, idx) => {
                 const latestVersion = app.versions[0];
                 const category = inferCategory(app.bundleIdentifier ?? '');
-
                 const minimumOS = latestVersion.minOSVersion ?? '15.0';
                 const changelog = latestVersion.localizedDescription ?? '';
                 const permissions = normalizePermissions(app.permissions ?? []);
@@ -158,7 +158,6 @@ async function loadAppData() {
                     size: formatSize(latestVersion.size),
                     sizeBytes: latestVersion.size ?? 0,
                     changelog: changelog,
-                    // FIX: Sanitize tintColor at load time so it's always a valid hex value.
                     tintColor: sanitizeTintColor(app.tintColor),
                     subtitle: app.subtitle ?? '',
                     minimumOS: minimumOS,
@@ -180,16 +179,10 @@ async function loadAppData() {
     }
 }
 
-/**
- * Normalise permissions to always be [{type, usageDescription}] objects.
- * Handles both the old plain-string format and the current SideStore object format.
- */
 function normalizePermissions(perms) {
     if (!Array.isArray(perms)) return [];
     return perms.map(p => {
-        if (typeof p === 'string') {
-            return { type: p, usageDescription: '' };
-        }
+        if (typeof p === 'string') return { type: p, usageDescription: '' };
         if (typeof p === 'object' && p !== null && p.type) {
             return { type: p.type, usageDescription: p.usageDescription ?? '' };
         }
@@ -201,6 +194,34 @@ function normalizePermissions(perms) {
 function updateAppCount(count) {
     const el = document.getElementById('appCountText');
     if (el) el.textContent = `${count} Apps`;
+}
+
+// ========== CATEGORY PILL COUNTS ==========
+/**
+ * Computes per-category app counts and injects them into the filter pills
+ * as small badges. Called once after apps are loaded.
+ */
+function updateCategoryPillCounts() {
+    const counts = { all: AppState.apps.length };
+    AppState.apps.forEach(app => {
+        counts[app.category] = (counts[app.category] || 0) + 1;
+    });
+
+    const pills = document.querySelectorAll('.category-pill');
+    pills.forEach(pill => {
+        const cat = pill.getAttribute('data-category');
+        const count = counts[cat];
+        if (count === undefined) return;
+
+        // Only add badge if not already present
+        if (!pill.querySelector('.category-count')) {
+            const badge = document.createElement('span');
+            badge.className = 'category-count';
+            badge.textContent = count;
+            badge.setAttribute('aria-hidden', 'true');
+            pill.appendChild(badge);
+        }
+    });
 }
 
 // ========== FEATURED APP ==========
@@ -233,9 +254,7 @@ function setupFeaturedApp() {
     section.classList.add('visible');
 
     card.addEventListener('click', (e) => {
-        if (!e.target.closest('button')) {
-            openAppModal(app.id);
-        }
+        if (!e.target.closest('button')) openAppModal(app.id);
     });
     card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -252,6 +271,10 @@ function setupFeaturedApp() {
 
 // ========== FILTERING & SORTING ==========
 function filterAndSortApps() {
+    // FIX: Increment render generation BEFORE clearing the grid so any
+    // pending idle callbacks from the previous filter run will abort.
+    AppState._renderGen++;
+
     AppState.filteredApps = AppState.apps.filter(app => {
         const matchesSearch = !AppState.searchTerm || app.searchString.includes(AppState.searchTerm);
         const matchesCategory = AppState.activeCategory === 'all' || app.category === AppState.activeCategory;
@@ -311,21 +334,23 @@ function updateGrid() {
         return;
     }
 
+    // FIX: Capture the generation at call time. The idle callback checks this
+    // before rendering so stale closures abort silently instead of corrupting
+    // a freshly-cleared grid.
+    const capturedGen = AppState._renderGen;
+
+    const doRender = () => {
+        if (capturedGen !== AppState._renderGen) return; // stale, abort
+        renderBatch(nextBatch, appGrid);
+        if (AppState.renderedIds.size >= AppState.filteredApps.length) {
+            appGrid.removeAttribute('aria-busy');
+        }
+    };
+
     if ('requestIdleCallback' in window) {
-        requestIdleCallback(() => {
-            renderBatch(nextBatch, appGrid);
-            // FIX: Clear aria-busy AFTER the batch is actually rendered, not before.
-            if (AppState.renderedIds.size >= AppState.filteredApps.length) {
-                appGrid.removeAttribute('aria-busy');
-            }
-        });
+        requestIdleCallback(doRender);
     } else {
-        setTimeout(() => {
-            renderBatch(nextBatch, appGrid);
-            if (AppState.renderedIds.size >= AppState.filteredApps.length) {
-                appGrid.removeAttribute('aria-busy');
-            }
-        }, 0);
+        setTimeout(doRender, 0);
     }
 }
 
@@ -378,7 +403,6 @@ function createAppCard(app, index) {
     article.setAttribute('aria-label', `${app.name} — tap to view details`);
     article.classList.add(`stagger-${(index % 3) + 1}`);
 
-    // tintColor is already sanitized at load time via sanitizeTintColor().
     const tint = app.tintColor;
     article.style.setProperty('--tint', tint);
     article.style.setProperty('--tint-surface', hexToRgba(tint, 0.06));
@@ -449,12 +473,12 @@ function setupScrollToTop() {
     scrollTopObserver = new IntersectionObserver(
         entries => {
             const isVisible = entries[0].isIntersecting;
+            // FIX: Only toggle the .visible class — do NOT set the hidden attribute.
+            // Toggling `hidden` forces display:none which kills CSS transitions,
+            // making the hide animation instant while show transitions correctly.
+            // The CSS already handles invisibility via opacity:0 + pointer-events:none.
             btn.classList.toggle('visible', !isVisible);
-            if (isVisible) {
-                btn.setAttribute('hidden', '');
-            } else {
-                btn.removeAttribute('hidden');
-            }
+            btn.setAttribute('aria-hidden', String(isVisible));
         },
         { threshold: 0 }
     );
@@ -467,56 +491,34 @@ function setupScrollToTop() {
 }
 
 // ========== HASH ROUTING ==========
-
-/**
- * FIX: Handle initial page load with a hash URL.
- * If the page was loaded with a hash, opening the modal should NOT pushState
- * since the URL is already correct. We track this via AppState.modalHistoryPushed.
- */
 function handleHashRoute() {
     const hash = window.location.hash;
     if (hash && hash.startsWith('#app-')) {
         const bundleId = decodeURIComponent(hash.substring(5));
         const app = AppState.apps.find(a => a.bundleId === bundleId || a.id === bundleId);
         if (app) {
-            // Use a short delay so the page finishes rendering before modal opens.
-            // Mark that this open is from a URL, not a user click, so we don't pushState.
             setTimeout(() => openAppModal(app.id, true), 100);
         }
     }
 }
 
-/**
- * FIX: Use pushState when opening modals via user interaction so the back
- * button closes the modal instead of navigating away entirely.
- * When opening from a direct URL (hash already present), use replaceState.
- */
 function updateHash(bundleId, fromUrl) {
     if (bundleId) {
         const newHash = `#app-${encodeURIComponent(bundleId)}`;
         if (fromUrl) {
-            // Direct URL navigation — hash is already present or we just replace
             history.replaceState({ appModal: true }, '', newHash);
             AppState.modalHistoryPushed = false;
         } else {
-            // User clicked a card — push so back button can close
             history.pushState({ appModal: true }, '', newHash);
             AppState.modalHistoryPushed = true;
         }
     } else {
-        // Clearing hash — always replaceState (history.back() already popped if needed)
         history.replaceState(null, '', window.location.pathname + window.location.search);
     }
 }
 
-/**
- * FIX: The popstate handler now properly detects back-button navigation
- * and closes the modal without double-manipulating history.
- */
 window.addEventListener('popstate', () => {
     if (AppState.modalOpen && !window.location.hash) {
-        // Back button was pressed while modal was open — close UI only.
-        // History has already been popped by the browser; don't call history.back().
         AppState.modalHistoryPushed = false;
         closeAppModal(true);
     } else if (window.location.hash && window.location.hash.startsWith('#app-')) {
@@ -574,8 +576,6 @@ function handleGridKeydown(e) {
         const idx = cards.indexOf(card);
         if (idx === -1) return;
 
-        // FIX: Compute the number of grid columns dynamically so that
-        // ArrowUp/ArrowDown jump a full row rather than just one card.
         const gridEl = document.getElementById('appGrid');
         let cols = 1;
         if (gridEl) {
@@ -599,46 +599,127 @@ function handleGridKeydown(e) {
 }
 
 // ========== IMAGE PRELOADING ==========
-
 /**
- * ENHANCEMENT: Preload modal images (icon + screenshots) so they appear
- * instantly when the modal opens. Uses <link rel=preload> for priority
- * fetching without blocking the main thread.
+ * Preload modal images (icon + screenshots) using <link rel=preload>.
+ *
+ * FIX: The original querySelector used CSS.escape() on a URL string, which
+ * over-escapes characters like `:` and `/` that are valid in attribute values
+ * but not in CSS identifiers. Instead, we iterate existing preload links by
+ * `as="image"` and compare `.href` directly — no escaping needed.
  */
 function preloadModalImages(app) {
     const urls = [app.icon, ...app.screenshots].filter(Boolean);
+
+    // Build a Set of already-requested hrefs for O(1) lookup
+    const existing = new Set();
+    document.querySelectorAll('link[rel="preload"][as="image"]').forEach(el => {
+        existing.add(el.href);
+    });
+
     urls.forEach(url => {
-        if (!document.querySelector(`link[href="${CSS.escape(url)}"]`)) {
-            const link = document.createElement('link');
-            link.rel = 'preload';
-            link.as = 'image';
-            link.href = url;
-            document.head.appendChild(link);
-            // Clean up after a reasonable time to avoid DOM bloat
-            setTimeout(() => { if (link.parentNode) link.remove(); }, 30000);
+        // Resolve to absolute URL for comparison (same as browser does for link.href)
+        let abs;
+        try {
+            abs = new URL(url, window.location.href).href;
+        } catch {
+            return;
         }
+
+        if (existing.has(abs)) return;
+
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = url;
+        document.head.appendChild(link);
+        // Clean up after 30s to avoid DOM bloat
+        setTimeout(() => { if (link.parentNode) link.remove(); }, 30_000);
     });
 }
 
 // ========== APP DETAIL MODAL ==========
 
 /**
- * @param {string} appId - The app ID to open
- * @param {boolean} fromUrl - True if opened from URL hash (direct link / handleHashRoute)
+ * Build the share/copy-link action row for the modal.
+ * Uses the Web Share API when available, falling back to clipboard copy.
  */
+function buildModalActionRow(app) {
+    const row = document.createElement('div');
+    row.className = 'modal-action-row';
+
+    const appUrl = `${window.location.origin}${window.location.pathname}#app-${encodeURIComponent(app.bundleId)}`;
+
+    // Web Share API button (only rendered if supported)
+    if (navigator.share) {
+        const shareBtn = document.createElement('button');
+        shareBtn.type = 'button';
+        shareBtn.className = 'modal-action-btn modal-share-btn';
+        shareBtn.setAttribute('aria-label', `Share ${app.name}`);
+        shareBtn.innerHTML = '<span aria-hidden="true">↗️</span> Share';
+        shareBtn.addEventListener('click', async () => {
+            try {
+                await navigator.share({
+                    title: `${app.name} — Mini's Repo`,
+                    text: `Get ${app.name} (v${app.version}) from Mini's IPA Repo`,
+                    url: appUrl
+                });
+            } catch (err) {
+                // User cancelled or share failed — don't show an error toast
+                if (err.name !== 'AbortError') {
+                    showToast('⚠️ Share failed', 'warning');
+                }
+            }
+        });
+        row.appendChild(shareBtn);
+    }
+
+    // Copy link button (always rendered)
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'modal-action-btn modal-copy-link-btn';
+    copyBtn.setAttribute('aria-label', `Copy link to ${app.name}`);
+    copyBtn.innerHTML = '<span aria-hidden="true">🔗</span> Copy Link';
+    copyBtn.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(appUrl);
+        } catch {
+            // Clipboard API unavailable — fallback to execCommand
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = appUrl;
+                ta.style.cssText = 'position:fixed;left:-9999px;opacity:0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            } catch {
+                showToast('⚠️ Could not copy link', 'warning');
+                return;
+            }
+        }
+        copyBtn.innerHTML = '<span aria-hidden="true">✅</span> Copied!';
+        copyBtn.classList.add('copied');
+        showToast('🔗 Link copied to clipboard', 'success');
+        setTimeout(() => {
+            copyBtn.innerHTML = '<span aria-hidden="true">🔗</span> Copy Link';
+            copyBtn.classList.remove('copied');
+        }, 2000);
+    });
+    row.appendChild(copyBtn);
+
+    return row;
+}
+
 function openAppModal(appId, fromUrl = false) {
     const app = AppState.apps.find(a => a.id === appId);
     if (!app) return;
 
-    // Guard against double-open
     if (AppState.modalOpen) return;
 
     AppState.modalOpen = true;
     AppState.modalScrollY = window.scrollY;
-    // FIX: Track which app/card opened the modal so we can restore focus correctly on close.
     AppState.lastOpenedCardId = appId;
 
-    // ENHANCEMENT: Preload modal images for instant display
     preloadModalImages(app);
 
     const existing = document.getElementById('appModal');
@@ -653,8 +734,6 @@ function openAppModal(appId, fromUrl = false) {
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-label', `${app.name} details`);
 
-    // FIX: Screenshots now have onerror handling via a data attribute.
-    // The actual handler is attached after innerHTML to avoid CSP issues.
     const screenshotsHtml = app.screenshots.length > 0
         ? `<div class="modal-screenshots" role="region" aria-label="Screenshots">
                ${app.screenshots.map((url, i) =>
@@ -679,9 +758,6 @@ function openAppModal(appId, fromUrl = false) {
            </div>`
         : '';
 
-    // FIX (CSP): The tint glow div no longer uses an inline style attribute.
-    // The background gradient is applied via JS after element creation, which
-    // is not blocked by style-src 'self' in the Content Security Policy.
     modal.innerHTML = `
         <div class="modal-backdrop"></div>
         <div class="modal-content" role="document">
@@ -721,34 +797,33 @@ function openAppModal(appId, fromUrl = false) {
 
     document.body.appendChild(modal);
 
-    // FIX (CSP): Apply tint glow gradient via JS property assignment instead
-    // of inline style attribute. element.style.background is NOT blocked by CSP.
+    // FIX (CSP): Apply tint glow via JS property — not blocked by style-src 'self'
     const tintGlowEl = modal.querySelector('.modal-tint-glow');
     if (tintGlowEl) {
         tintGlowEl.style.background = `linear-gradient(180deg, ${hexToRgba(app.tintColor, 0.12)} 0%, transparent 100%)`;
     }
 
-    // FIX: Modal icon fallback
+    // Inject share/copy-link action row above the download button
+    const modalFooter = modal.querySelector('.modal-footer');
+    if (modalFooter) {
+        const actionRow = buildModalActionRow(app);
+        modalFooter.insertBefore(actionRow, modalFooter.firstChild);
+    }
+
+    // Image error fallbacks
     const modalIcon = modal.querySelector('.modal-icon');
     if (modalIcon) {
         modalIcon.addEventListener('error', () => { modalIcon.src = CONFIG.FALLBACK_ICON; }, { once: true });
     }
 
-    // FIX: Screenshot error handling — hide broken screenshots gracefully
     modal.querySelectorAll('.modal-screenshot').forEach(img => {
-        img.addEventListener('error', () => {
-            img.style.display = 'none';
-        }, { once: true });
+        img.addEventListener('error', () => { img.style.display = 'none'; }, { once: true });
     });
 
-    // CRITICAL FIX: Set body.style.top to preserve scroll position.
-    // The CSS rule `body.modal-open { position: fixed }` removes the body
-    // from flow. Without a negative top offset, the viewport jumps to 0,0.
     document.body.classList.add('modal-open');
     document.body.style.top = `-${AppState.modalScrollY}px`;
 
-    // Force layout to ensure the transition starting state is painted
-    modal.offsetHeight;
+    modal.offsetHeight; // force layout
     modal.classList.add('active');
 
     const closeBtn = modal.querySelector('.modal-close');
@@ -793,48 +868,31 @@ function openAppModal(appId, fromUrl = false) {
     });
 }
 
-/**
- * Close the app detail modal.
- *
- * @param {boolean} viaPopstate - True when called from the popstate handler
- *   (back button). When true, we must NOT call history.back() since the
- *   browser has already popped the history entry.
- */
 function closeAppModal(viaPopstate) {
     const modal = document.getElementById('appModal');
     if (!modal) return;
 
-    // Guard against double-close (e.g., Escape key + backdrop click in quick succession)
     if (!AppState.modalOpen) return;
     AppState.modalOpen = false;
 
     modal.classList.remove('active');
 
-    // CRITICAL FIX: Clear the top offset BEFORE removing modal-open class,
-    // then restore scroll position with instant behavior to prevent flicker.
     document.body.classList.remove('modal-open');
     document.body.style.top = '';
     window.scrollTo({ top: AppState.modalScrollY, behavior: 'instant' });
 
-    // FIX: Properly handle history based on how the modal was opened/closed.
     if (!viaPopstate && AppState.modalHistoryPushed) {
-        // User closed via X button / backdrop / download — pop our history entry.
-        // This triggers popstate, but modalOpen is already false so it's a no-op.
         AppState.modalHistoryPushed = false;
         history.back();
     } else {
-        // Either closed via back button (viaPopstate=true, browser already popped)
-        // or opened from a direct URL (no pushState was done) — just clear the hash.
         AppState.modalHistoryPushed = false;
         updateHash(null, false);
     }
 
-    // FIX: Use the tracked card ID to reliably focus the correct card.
     const cardToFocus = AppState.lastOpenedCardId
         ? document.querySelector(`.app-card[data-app-id="${CSS.escape(AppState.lastOpenedCardId)}"]`)
         : null;
 
-    // Clear the tracked id before async removal to avoid stale references.
     AppState.lastOpenedCardId = null;
 
     setTimeout(() => {
@@ -864,12 +922,6 @@ function escapeAttr(str) {
 }
 
 // ========== COLOR UTILITIES ==========
-
-/**
- * FIX: Validate that a tint color is a proper 6-digit hex value.
- * Defaults to the repo accent color if missing or malformed.
- * Called at data-load time so all downstream uses are guaranteed safe.
- */
 function sanitizeTintColor(color) {
     if (color && /^#[0-9A-Fa-f]{6}$/.test(color)) return color;
     return '#a78bfa';
@@ -970,6 +1022,9 @@ function setupPWA() {
                 }
             });
 
+            // Periodic update checks are handled here in the app, not in the SW,
+            // because setInterval inside a SW is unreliable — the browser may
+            // terminate the SW between ticks, silently dropping the interval.
             swUpdateTimer = setInterval(() => {
                 reg.update().catch(() => {});
             }, CONFIG.SW_UPDATE_INTERVAL);
@@ -1012,11 +1067,7 @@ function showInstallBanner() {
     const banner = document.getElementById('installBanner');
     if (banner) {
         banner.removeAttribute('hidden');
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                banner.classList.add('visible');
-            });
-        });
+        requestAnimationFrame(() => requestAnimationFrame(() => banner.classList.add('visible')));
     }
 }
 
@@ -1031,13 +1082,9 @@ function hideInstallBanner() {
 async function handleInstallClick() {
     const prompt = AppState.deferredInstallPrompt;
     if (!prompt) return;
-
     prompt.prompt();
     const result = await prompt.userChoice;
-
-    if (result.outcome === 'accepted') {
-        console.log('PWA install accepted');
-    }
+    if (result.outcome === 'accepted') console.log('PWA install accepted');
     AppState.deferredInstallPrompt = null;
     hideInstallBanner();
 }
@@ -1055,11 +1102,7 @@ function setupOnlineOfflineDetection() {
                 setTimeout(() => { offlineBar.setAttribute('hidden', ''); }, 350);
             } else {
                 offlineBar.removeAttribute('hidden');
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        offlineBar.classList.add('visible');
-                    });
-                });
+                requestAnimationFrame(() => requestAnimationFrame(() => offlineBar.classList.add('visible')));
             }
         }
 
@@ -1068,7 +1111,6 @@ function setupOnlineOfflineDetection() {
         });
     }
 
-    // FIX: Add { passive: true } for non-cancellable event listeners
     window.addEventListener('online', () => {
         updateOnlineStatus();
         showToast('✅ Back online', 'success');
@@ -1100,7 +1142,6 @@ async function handleCopyUrl() {
             }, 2000);
         }
     } catch {
-        // Clipboard API not available (non-secure context) — use execCommand fallback.
         try {
             const textarea = document.createElement('textarea');
             textarea.value = urlText;
@@ -1270,7 +1311,7 @@ function setupEventListeners() {
                         await Promise.all(keys.map(key => caches.delete(key)));
                     }
                     window.location.reload();
-                } catch (error) {
+                } catch {
                     window.location.reload();
                 }
             }

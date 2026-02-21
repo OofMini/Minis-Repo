@@ -16,7 +16,7 @@
                    img-src 'self' https://oofmini.github.io https://github.com https://raw.githubusercontent.com https://objects.githubusercontent.com data:; 
                    script-src 'self'; 
                    style-src 'self'; 
-                   connect-src 'self' https://github.com https://raw.githubusercontent.com https://api.github.com https://objects.githubusercontent.com;
+                   connect-src 'self' https://github.com https://raw.githubusercontent.com https://api.github.com https://objects.githubusercontent.com https://oofmini.github.io;
                    frame-ancestors 'none';
                    base-uri 'self';
                    object-src 'none';
@@ -24,10 +24,12 @@
                    upgrade-insecure-requests;"
         />
 
-        <!-- DNS prefetch for GitHub assets served via CDN -->
+        <!-- DNS prefetch and preconnect for asset CDNs -->
         <link rel="dns-prefetch" href="https://objects.githubusercontent.com" />
         <link rel="preconnect" href="https://oofmini.github.io" crossorigin />
         <link rel="preconnect" href="https://github.com" crossorigin />
+        <!-- Screenshots and icons can be served from raw.githubusercontent.com -->
+        <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
 
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Mini's IPA Repo — Premium Tweaked iOS Apps" />
@@ -60,10 +62,8 @@
         />
 
         <!-- Critical resource hints: icon first (LCP candidate), then CSS, then JS -->
-        <link rel="preload" as="image" href="apps/repo-icon.png" />
+        <link rel="preload" as="image" href="apps/repo-icon.png" fetchpriority="high" />
         <link rel="preload" href="assets/css/style.css" as="style" />
-        <!-- Preload the app script so the browser can discover and fetch it early,
-             reducing TTI on repeat visits and slow connections. -->
         <link rel="preload" href="assets/js/app.js" as="script" />
 
         <link rel="manifest" href="manifest.json" />
@@ -139,7 +139,7 @@
                     <div class="featured-badge" aria-hidden="true">⭐ Featured</div>
                     <div class="featured-content">
                         <div class="featured-icon-container">
-                            <img class="featured-icon" id="featuredIcon" src="apps/repo-icon.png" alt="" width="72" height="72" loading="eager" />
+                            <img class="featured-icon" id="featuredIcon" src="apps/repo-icon.png" alt="" width="72" height="72" loading="eager" fetchpriority="high" />
                         </div>
                         <div class="featured-info">
                             <h3 class="featured-name" id="featuredName"></h3>
@@ -265,8 +265,17 @@
             </div>
         </footer>
 
-        <!-- Scroll-to-top button -->
-        <button type="button" class="scroll-top-btn" id="scrollTopBtn" aria-label="Scroll to top" hidden>
+        <!--
+            FIX: `hidden` attribute removed from the scroll-to-top button.
+            The original code toggled `hidden` (display:none) alongside the
+            `.visible` class. Adding `hidden` destroys the CSS hide transition
+            instantly (opacity 1→0 is skipped; element just blinks away), while
+            removing `hidden` allows the show transition (opacity 0→1) to work.
+            This asymmetric behavior is eliminated by removing `hidden` entirely
+            and letting the CSS `opacity: 0 + pointer-events: none` on the base
+            rule handle the hidden state — transitions work symmetrically now.
+        -->
+        <button type="button" class="scroll-top-btn" id="scrollTopBtn" aria-label="Scroll to top" aria-hidden="true">
             <span aria-hidden="true">↑</span>
         </button>
 
