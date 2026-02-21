@@ -89,7 +89,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             filterAndSortApps();
             setupInfiniteScroll();
 
-            // Hash routing: auto-open modal if URL has #app-bundleId
             handleHashRoute();
         }
     } catch (error) {
@@ -135,6 +134,19 @@ async function loadAppData() {
             .map((app, idx) => {
                 const latestVersion = app.versions[0];
                 const category = inferCategory(app.bundleIdentifier ?? '');
+
+                // SideStore schema: minOSVersion lives on the version entry, not the app.
+                // Fall back to a sensible default if absent.
+                const minimumOS = latestVersion.minOSVersion ?? '15.0';
+
+                // SideStore schema: version.localizedDescription is the changelog text.
+                // There is no "changeDescription" field in the schema.
+                const changelog = latestVersion.localizedDescription ?? '';
+
+                // SideStore schema: permissions is [{type, usageDescription}] objects.
+                // Normalise to always be an array of objects so rendering is consistent.
+                const permissions = normalizePermissions(app.permissions ?? []);
+
                 return {
                     id: generateId(app.bundleIdentifier, idx),
                     name: app.name ?? 'Unknown App',
@@ -148,11 +160,11 @@ async function loadAppData() {
                     category: category,
                     size: formatSize(latestVersion.size),
                     sizeBytes: latestVersion.size ?? 0,
-                    changeDescription: latestVersion.changeDescription ?? '',
+                    changelog: changelog,
                     tintColor: app.tintColor ?? '#a78bfa',
                     subtitle: app.subtitle ?? '',
-                    minimumOS: app.minimumOSVersion ?? '15.0',
-                    permissions: app.permissions ?? [],
+                    minimumOS: minimumOS,
+                    permissions: permissions,
                     screenshots: app.screenshotURLs ?? [],
                     searchString: `${app.name} ${app.localizedDescription} ${app.developerName} ${category}`.toLowerCase()
                 };
@@ -168,6 +180,24 @@ async function loadAppData() {
         clearTimeout(timeoutId);
         if (appGrid) appGrid.removeAttribute('aria-busy');
     }
+}
+
+/**
+ * Normalise permissions to always be [{type, usageDescription}] objects.
+ * Handles both the old plain-string format and the current SideStore object format.
+ */
+function normalizePermissions(perms) {
+    if (!Array.isArray(perms)) return [];
+    return perms.map(p => {
+        if (typeof p === 'string') {
+            // Legacy plain-string format — wrap into object
+            return { type: p, usageDescription: '' };
+        }
+        if (typeof p === 'object' && p !== null && p.type) {
+            return { type: p.type, usageDescription: p.usageDescription ?? '' };
+        }
+        return null;
+    }).filter(Boolean);
 }
 
 // ========== APP COUNT ==========
@@ -204,7 +234,6 @@ function setupFeaturedApp() {
     section.removeAttribute('hidden');
     section.classList.add('visible');
 
-    // Featured card click opens modal
     card.addEventListener('click', (e) => {
         if (!e.target.closest('button')) {
             openAppModal(app.id);
@@ -217,7 +246,6 @@ function setupFeaturedApp() {
         }
     });
 
-    // Featured download button
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
         trackDownload(app.id);
@@ -232,11 +260,9 @@ function filterAndSortApps() {
         return matchesSearch && matchesCategory;
     });
 
-    // Sort
     if (AppState.sortMode === 'alpha') {
         AppState.filteredApps.sort((a, b) => a.name.localeCompare(b.name));
     } else {
-        // 'recent' — sort by date descending
         AppState.filteredApps.sort((a, b) => {
             if (b.date > a.date) return 1;
             if (b.date < a.date) return -1;
@@ -344,7 +370,6 @@ function createAppCard(app, index) {
     article.setAttribute('aria-label', `${app.name} — tap to view details`);
     article.classList.add(`stagger-${(index % 3) + 1}`);
 
-    // Apply tint color as CSS custom properties
     const tint = app.tintColor;
     article.style.setProperty('--tint', tint);
     article.style.setProperty('--tint-surface', hexToRgba(tint, 0.06));
@@ -368,11 +393,13 @@ function createAppCard(app, index) {
     descEl.appendChild(document.createElement('br'));
     descEl.appendChild(document.createTextNode(app.description));
 
-    if (app.changeDescription) {
+    // SideStore schema: version.localizedDescription is the changelog.
+    // Stored as app.changelog in our processed data.
+    if (app.changelog) {
         const toggleBtn = article.querySelector('.changelog-toggle');
         toggleBtn.style.display = '';
         toggleBtn.setAttribute('data-app-id', app.id);
-        article.querySelector('.changelog-text').textContent = app.changeDescription;
+        article.querySelector('.changelog-text').textContent = app.changelog;
     }
 
     article.querySelector('.app-meta-size').textContent = `Size: ${app.size}`;
@@ -408,7 +435,6 @@ function setupScrollToTop() {
     const btn = document.getElementById('scrollTopBtn');
     if (!btn) return;
 
-    // Use the hero element as sentinel — when hero is not visible, show button
     const heroEl = document.querySelector('.hero');
     if (!heroEl) return;
 
@@ -439,7 +465,6 @@ function handleHashRoute() {
         const bundleId = decodeURIComponent(hash.substring(5));
         const app = AppState.apps.find(a => a.bundleId === bundleId || a.id === bundleId);
         if (app) {
-            // Small delay to ensure DOM is ready
             setTimeout(() => openAppModal(app.id), 100);
         }
     }
@@ -453,7 +478,6 @@ function updateHash(bundleId) {
     }
 }
 
-// Listen for popstate (back/forward)
 window.addEventListener('popstate', () => {
     if (!window.location.hash && AppState.modalOpen) {
         closeAppModal();
@@ -506,7 +530,6 @@ function handleGridKeydown(e) {
         return;
     }
 
-    // Arrow key navigation between cards
     if (card && (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
         e.preventDefault();
         const cards = Array.from(document.querySelectorAll('.app-card'));
@@ -535,7 +558,6 @@ function openAppModal(appId) {
     const existing = document.getElementById('appModal');
     if (existing) existing.remove();
 
-    // Update hash for deep-linking
     updateHash(app.bundleId);
 
     const modal = document.createElement('div');
@@ -555,17 +577,22 @@ function openAppModal(appId) {
            </div>`
         : '';
 
+    // SideStore schema: permissions are {type, usageDescription} objects.
+    // Display type as the tag and usageDescription as tooltip/detail.
     const permissionsHtml = app.permissions.length > 0
         ? `<div class="modal-permissions">
                <span class="modal-permissions-label">Permissions:</span>
-               ${app.permissions.map(p => `<span class="modal-perm-tag">${escapeHtml(p)}</span>`).join('')}
+               ${app.permissions.map(p =>
+                   `<span class="modal-perm-tag" title="${escapeAttr(p.usageDescription)}">${escapeHtml(p.type)}</span>`
+               ).join('')}
            </div>`
         : '';
 
-    const changelogHtml = app.changeDescription
+    // SideStore schema: version.localizedDescription is the changelog.
+    const changelogHtml = app.changelog
         ? `<div class="modal-changelog">
                <strong>What's New</strong>
-               <p>${escapeHtml(app.changeDescription)}</p>
+               <p>${escapeHtml(app.changelog)}</p>
            </div>`
         : '';
 
@@ -609,13 +636,11 @@ function openAppModal(appId) {
     document.body.appendChild(modal);
     document.body.classList.add('modal-open');
 
-    // Programmatic fallback for modal icon (inline onerror blocked by CSP)
     const modalIcon = modal.querySelector('.modal-icon');
     if (modalIcon) {
         modalIcon.addEventListener('error', () => { modalIcon.src = CONFIG.FALLBACK_ICON; }, { once: true });
     }
 
-    // Force reflow then animate
     modal.offsetHeight;
     modal.classList.add('active');
 
@@ -630,7 +655,6 @@ function openAppModal(appId) {
         closeAppModal();
     });
 
-    // Focus trap
     modal.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             e.stopPropagation();
@@ -670,10 +694,8 @@ function closeAppModal() {
     modal.classList.remove('active');
     document.body.classList.remove('modal-open');
 
-    // Clear hash
     updateHash(null);
 
-    // Restore scroll position
     window.scrollTo(0, AppState.modalScrollY);
 
     const lastFocusedCard = document.querySelector('.app-card:focus, .app-card[data-app-id]');
@@ -1009,7 +1031,6 @@ function setupEventListeners() {
         });
     }
 
-    // Keyboard shortcut: "/" to focus search
     document.addEventListener('keydown', (e) => {
         if (e.key === '/' && searchBox) {
             const active = document.activeElement;
@@ -1025,7 +1046,6 @@ function setupEventListeners() {
         }
     });
 
-    // Category filter pills
     const categoryFilters = document.getElementById('categoryFilters');
     if (categoryFilters) {
         categoryFilters.addEventListener('click', (e) => {
@@ -1034,14 +1054,12 @@ function setupEventListeners() {
 
             const category = pill.getAttribute('data-category');
 
-            // If clicking the active category, deselect (show all)
             if (category === AppState.activeCategory && category !== 'all') {
                 AppState.activeCategory = 'all';
             } else {
                 AppState.activeCategory = category;
             }
 
-            // Update pill states
             categoryFilters.querySelectorAll('.category-pill').forEach(p => {
                 const isActive = p.getAttribute('data-category') === AppState.activeCategory;
                 p.classList.toggle('active', isActive);
@@ -1052,7 +1070,6 @@ function setupEventListeners() {
             filterAndSortApps();
         });
 
-        // Arrow key navigation for pills
         categoryFilters.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
                 e.preventDefault();
@@ -1067,7 +1084,6 @@ function setupEventListeners() {
         });
     }
 
-    // Sort buttons
     const sortRecent = document.getElementById('sortRecent');
     const sortAlpha = document.getElementById('sortAlpha');
 
@@ -1087,7 +1103,6 @@ function setupEventListeners() {
     if (sortRecent) sortRecent.addEventListener('click', () => activateSort('recent'));
     if (sortAlpha) sortAlpha.addEventListener('click', () => activateSort('alpha'));
 
-    // Reset button
     const resetBtn = document.getElementById('btn-reset');
     if (resetBtn) {
         resetBtn.addEventListener('click', async () => {
@@ -1106,7 +1121,6 @@ function setupEventListeners() {
         });
     }
 
-    // CTA buttons
     const trollappsBtn = document.getElementById('btn-trollapps');
     if (trollappsBtn) {
         trollappsBtn.addEventListener('click', () => {
@@ -1121,25 +1135,21 @@ function setupEventListeners() {
         });
     }
 
-    // Install button
     const installBtn = document.getElementById('btn-install');
     if (installBtn) installBtn.addEventListener('click', handleInstallClick);
 
     const installDismiss = document.getElementById('btn-install-dismiss');
     if (installDismiss) installDismiss.addEventListener('click', hideInstallBanner);
 
-    // Copy URL
     const copyUrlBtn = document.getElementById('btn-copy-url');
     if (copyUrlBtn) copyUrlBtn.addEventListener('click', handleCopyUrl);
 
-    // Grid events
     const appGrid = document.getElementById('appGrid');
     if (appGrid) {
         appGrid.addEventListener('click', handleGridClick);
         appGrid.addEventListener('keydown', handleGridKeydown);
     }
 
-    // Escape to close modal
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && AppState.modalOpen) {
             closeAppModal();
