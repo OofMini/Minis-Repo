@@ -2,6 +2,7 @@
     "name": "Mini's Repo",
     "identifier": "com.oofmini.repo",
     "sourceURL": "https://OofMini.github.io/Minis-Repo/mini.json",
+    "iconURL": "https://OofMini.github.io/Minis-Repo/apps/repo-icon.png",
     "apps": [
         {
             "name": "EeveeSpotify",
