@@ -731,21 +731,6 @@ img {
 
 /* ================================================================
    APP CARD
-   
-   FIX: Removed `contain: layout style paint`, `content-visibility: auto`,
-   and `contain-intrinsic-size: auto 320px`.
-   
-   These CSS properties were the primary cause of the scroll glitch:
-   - `content-visibility: auto` tells the browser to skip rendering off-screen
-     cards. When scrolling back UP, the browser must recalculate layout for
-     cards re-entering the viewport. If the real height differs from the
-     intrinsic size guess, a layout shift occurs — producing jitter.
-   - `contain: layout style paint` with paint containment creates an isolated
-     stacking context. Combined with the fade-in transform animation, the
-     paint buffer is discarded/recreated as cards scroll in/out, causing
-     visible flicker on iOS/Android.
-   - Both properties are redundant here because IntersectionObserver-based
-     infinite scroll already prevents off-screen DOM bloat.
    ================================================================ */
 .app-card {
     --tint: #a78bfa;
@@ -1437,9 +1422,6 @@ img {
 
 /* ================================================================
    SCROLL ANIMATIONS
-   FIX: Reduced translateY from 16px → 6px and duration from 0.5s → 0.4s.
-   Smaller displacement means less visual "pop" when cards enter the viewport,
-   which was perceived as glitchiness especially when scrolling up.
    ================================================================ */
 .fade-in { opacity: 0; transform: translateY(6px); transition: opacity 0.4s ease, transform 0.4s ease; }
 .fade-in.visible { opacity: 1; transform: translateY(0); }
@@ -1517,4 +1499,76 @@ img {
     .hero h1 { font-size: 1.75em; }
     .hero-stats { gap: var(--space-1); }
     .stat-badge { font-size: 0.72em; padding: 4px 10px; }
+}
+
+/* ================================================================
+   GITHUB DOWNLOAD COUNT BADGES
+   ================================================================ */
+
+/* ── Card badge ─────────────────────────────────────────────── */
+.gh-download-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: var(--space-2);
+    padding: 3px 11px;
+    border-radius: var(--radius-pill);
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    background: rgba(48, 209, 88, 0.08);
+    border: 1px solid rgba(48, 209, 88, 0.15);
+    color: var(--download-color);
+    position: relative;
+    z-index: 1;
+
+    /* Entrance animation — fades in when injected after data loads */
+    animation: ghBadgeFadeIn 0.4s ease both;
+}
+
+@keyframes ghBadgeFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.gh-dl-icon {
+    font-size: 0.85em;
+    line-height: 1;
+    opacity: 0.8;
+}
+
+.gh-dl-count {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.3px;
+}
+
+/* ── Featured card badge ────────────────────────────────────── */
+.gh-download-badge--featured {
+    margin-top: var(--space-1);
+    margin-bottom: var(--space-2);
+    font-size: 0.78em;
+    background: rgba(48, 209, 88, 0.10);
+    border-color: rgba(48, 209, 88, 0.20);
+    padding: 4px 14px;
+}
+
+.gh-download-badge--featured .gh-dl-label {
+    color: rgba(48, 209, 88, 0.7);
+    font-weight: 500;
+}
+
+/* ── Modal meta item ────────────────────────────────────────── */
+.gh-download-badge--modal {
+    color: var(--download-color);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    cursor: default;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .gh-download-badge {
+        animation: none;
+    }
 }
