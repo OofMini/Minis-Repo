@@ -731,6 +731,21 @@ img {
 
 /* ================================================================
    APP CARD
+   
+   FIX: Removed `contain: layout style paint`, `content-visibility: auto`,
+   and `contain-intrinsic-size: auto 320px`.
+   
+   These CSS properties were the primary cause of the scroll glitch:
+   - `content-visibility: auto` tells the browser to skip rendering off-screen
+     cards. When scrolling back UP, the browser must recalculate layout for
+     cards re-entering the viewport. If the real height differs from the
+     intrinsic size guess, a layout shift occurs — producing jitter.
+   - `contain: layout style paint` with paint containment creates an isolated
+     stacking context. Combined with the fade-in transform animation, the
+     paint buffer is discarded/recreated as cards scroll in/out, causing
+     visible flicker on iOS/Android.
+   - Both properties are redundant here because IntersectionObserver-based
+     infinite scroll already prevents off-screen DOM bloat.
    ================================================================ */
 .app-card {
     --tint: #a78bfa;
@@ -747,9 +762,6 @@ img {
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    contain: layout style paint;
-    content-visibility: auto;
-    contain-intrinsic-size: auto 320px;
     -webkit-tap-highlight-color: transparent;
     transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
@@ -1045,12 +1057,6 @@ img {
     opacity: 0.4;
 }
 
-/*
- * FIX: Removed `display: block` which was immediately overridden by `display: flex`
- * below it — the dead declaration is removed to keep the rule clean.
- * `position: sticky` requires the element to be in normal flow, which `display: flex`
- * satisfies (unlike `float: right` which was the original bug).
- */
 .modal-close {
     position: sticky;
     top: var(--space-3);
@@ -1333,10 +1339,6 @@ img {
 
 /* ================================================================
    SCROLL-TO-TOP
-   FIX: The button no longer uses the `hidden` attribute. Toggling `hidden`
-   forces `display: none` which kills the CSS opacity/transform transitions
-   (the hide becomes instant while show transitions correctly — asymmetric).
-   Now only `.visible` class is toggled; CSS handles all visual states.
    ================================================================ */
 .scroll-top-btn {
     position: fixed;
@@ -1362,7 +1364,6 @@ img {
     transform: translateY(16px);
     transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s ease;
     pointer-events: none;
-    /* No `hidden` attribute used — purely class-driven visibility */
 }
 
 .scroll-top-btn.visible {
@@ -1436,13 +1437,16 @@ img {
 
 /* ================================================================
    SCROLL ANIMATIONS
+   FIX: Reduced translateY from 16px → 6px and duration from 0.5s → 0.4s.
+   Smaller displacement means less visual "pop" when cards enter the viewport,
+   which was perceived as glitchiness especially when scrolling up.
    ================================================================ */
-.fade-in { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.fade-in { opacity: 0; transform: translateY(6px); transition: opacity 0.4s ease, transform 0.4s ease; }
 .fade-in.visible { opacity: 1; transform: translateY(0); }
 
-.stagger-1 { transition-delay: 0.05s; }
-.stagger-2 { transition-delay: 0.10s; }
-.stagger-3 { transition-delay: 0.15s; }
+.stagger-1 { transition-delay: 0.04s; }
+.stagger-2 { transition-delay: 0.08s; }
+.stagger-3 { transition-delay: 0.12s; }
 
 /* ================================================================
    RESPONSIVE — TABLET (600px+)

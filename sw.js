@@ -1,6 +1,15 @@
 // Mini's IPA Repo — Service Worker
 // deploy.js dynamically replaces CACHE_NAME with git hash on build.
-const CACHE_NAME = 'minis-repo-cache-2f918c4';
+const CACHE_NAME = 'minis-repo-cache-171f659';
+
+// IMAGE_CACHE persists across deploys (different name, not replaced by deploy.js).
+// App icons and screenshots change rarely, so keeping them across code deploys
+// avoids re-downloading megabytes of image data on every update.
+const IMAGE_CACHE = 'minis-images-v1';
+
+// DATA_CACHE is for mini.json stale-while-revalidate.
+// Kept separate so it can be versioned independently of the app shell.
+const DATA_CACHE = 'minis-data-v1';
 
 const CRITICAL_ASSETS = [
     './',
@@ -12,13 +21,16 @@ const CRITICAL_ASSETS = [
     './apps/repo-icon.png'
 ];
 
-// Assets that should use stale-while-revalidate strategy
-const SWR_PATTERNS = [
-    /\/apps\/.*\.(png|jpg|jpeg|webp|gif|PNG)$/i
+// Patterns for app icons and screenshots — served from image cache.
+const IMAGE_PATTERNS = [
+    /\/apps\/.*\.(png|jpg|jpeg|webp|gif|PNG|JPG|JPEG|WEBP)$/i,
+    /objects\.githubusercontent\.com\//i,
+    /raw\.githubusercontent\.com\/.*\.(png|jpg|jpeg|webp|PNG|JPG|JPEG)$/i
 ];
 
-// Maximum number of entries allowed in the cache.
-const MAX_CACHE_ITEMS = 150;
+// Maximum entries in each cache bucket.
+const MAX_SHELL_ITEMS = 100;
+const MAX_IMAGE_ITEMS = 80;
 
 // --- INSTALL ---
 self.addEventListener('install', (event) => {
@@ -26,12 +38,22 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('[SW] Pre-caching critical assets');
-                return cache.addAll(CRITICAL_ASSETS);
+                // addAll fails if any single asset 404s — use individual adds with
+                // fallback so a missing optional asset doesn't block the whole install.
+                return Promise.allSettled(
+                    CRITICAL_ASSETS.map(url =>
+                        cache.add(url).catch(err => {
+                            console.warn(`[SW] Failed to pre-cache ${url}:`, err.message);
+                        })
+                    )
+                );
             })
             .catch((err) => {
                 console.error('[SW] Install failed:', err);
             })
     );
+    // Take control immediately without waiting for old SW to yield.
+    self.skipWaiting();
 });
 
 // --- ACTIVATE ---
@@ -50,12 +72,6 @@ self.addEventListener('activate', (event) => {
 });
 
 // --- MESSAGE ---
-// Allows the app to trigger skipWaiting after the user confirms the update.
-// NOTE: Periodic update checks are intentionally NOT done with setInterval in
-// the SW. setInterval in a Service Worker is unreliable because the browser
-// can terminate the SW between ticks, silently dropping the interval — this
-// is especially common on mobile. The app.js handles SW update polling via
-// registration.update() on a timer in the page context instead.
 self.addEventListener('message', (event) => {
     if (!event.data) return;
 
@@ -63,7 +79,6 @@ self.addEventListener('message', (event) => {
         self.skipWaiting();
     }
 
-    // Allow the app to request a manual update check
     if (event.data.action === 'checkForUpdate') {
         self.registration.update().catch(() => {});
     }
@@ -83,80 +98,76 @@ async function enableNavigationPreload() {
 
 // --- CACHE CLEANUP ---
 async function cleanOldCaches() {
-    // FIX: In a SW context, `navigator.locks` is the correct feature check.
-    // `typeof navigator !== 'undefined'` is always true in SW scope.
+    const managedCaches = new Set([CACHE_NAME, IMAGE_CACHE, DATA_CACHE]);
+
     if ('locks' in navigator) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
-
         try {
             await navigator.locks.request(
                 'sw-cache-cleanup',
                 { signal: controller.signal },
-                async () => { await deleteOldCaches(); }
+                async () => { await deleteOldCaches(managedCaches); }
             );
         } catch (err) {
             if (err.name === 'AbortError') {
-                console.warn('[SW] Lock acquisition timed out. Falling back to direct cleanup.');
+                console.warn('[SW] Lock timed out, falling back to direct cleanup.');
             } else {
-                console.warn('[SW] Lock request failed, falling back:', err.message);
+                console.warn('[SW] Lock failed, falling back:', err.message);
             }
-            await deleteOldCaches();
+            await deleteOldCaches(managedCaches);
         } finally {
             clearTimeout(timeoutId);
         }
     } else {
-        await deleteOldCaches();
+        await deleteOldCaches(managedCaches);
     }
 }
 
-async function deleteOldCaches() {
+async function deleteOldCaches(managedCaches) {
     const keys = await caches.keys();
     const deletions = keys
-        .filter((key) => key !== CACHE_NAME && key.startsWith('minis-repo-cache'))
-        .map((key) => {
+        .filter(key => !managedCaches.has(key) && key.startsWith('minis-'))
+        .map(key => {
             console.log('[SW] Deleting old cache:', key);
             return caches.delete(key);
         });
     await Promise.all(deletions);
-    console.log(`[SW] Cache cleanup complete. Active: ${CACHE_NAME}`);
+    console.log(`[SW] Cache cleanup complete. Active: ${CACHE_NAME}, ${IMAGE_CACHE}, ${DATA_CACHE}`);
 }
 
 // --- CACHE SIZE MANAGEMENT ---
-async function trimCache() {
+async function trimCache(cacheName, maxItems, skipUrls = new Set()) {
     try {
-        const cache = await caches.open(CACHE_NAME);
+        const cache = await caches.open(cacheName);
         const keys = await cache.keys();
+        if (keys.length <= maxItems) return;
 
-        if (keys.length <= MAX_CACHE_ITEMS) return;
-
-        const excess = keys.length - MAX_CACHE_ITEMS;
+        const excess = keys.length - maxItems;
         let evicted = 0;
-
-        const criticalUrls = new Set(
-            CRITICAL_ASSETS.map(asset => new URL(asset, self.location.origin).href)
-        );
 
         for (const request of keys) {
             if (evicted >= excess) break;
-            if (criticalUrls.has(request.url)) continue;
+            if (skipUrls.has(request.url)) continue;
             await cache.delete(request);
             evicted++;
         }
 
         if (evicted > 0) {
-            console.log(`[SW] Cache trimmed: evicted ${evicted} entries`);
+            console.log(`[SW] ${cacheName}: evicted ${evicted} entries`);
         }
     } catch (err) {
-        console.warn('[SW] Cache trim failed:', err.message);
+        console.warn(`[SW] Cache trim failed (${cacheName}):`, err.message);
     }
 }
 
-async function cachePutAndTrim(request, response) {
+async function cachePut(cacheName, request, response, maxItems) {
     try {
-        const cache = await caches.open(CACHE_NAME);
+        const cache = await caches.open(cacheName);
         await cache.put(request, response);
-        trimCache().catch(() => {});
+        if (maxItems) {
+            trimCache(cacheName, maxItems).catch(() => {});
+        }
     } catch (err) {
         console.warn('[SW] Cache put failed:', err.message);
     }
@@ -168,48 +179,55 @@ self.addEventListener('fetch', (event) => {
 
     if (event.request.method !== 'GET') return;
 
-    // Only handle same-origin requests
-    if (url.origin !== self.location.origin) return;
-
+    // Navigation requests — serve shell with preload support
     if (event.request.mode === 'navigate') {
         event.respondWith(handleNavigation(event));
         return;
     }
 
-    // JSON data — always network-first for freshness
+    // mini.json — stale-while-revalidate for instant loads.
+    // FIX: Previously network-first, which blocked page render on slow connections.
+    // SWR serves the cached manifest instantly while fetching a fresh copy in the
+    // background. On the NEXT load, the updated version is served.
+    if (url.pathname.endsWith('mini.json')) {
+        event.respondWith(staleWhileRevalidateData(event.request));
+        return;
+    }
+
+    // Other JSON / manifest files — network-first for freshness
     if (url.pathname.endsWith('.json')) {
-        event.respondWith(networkFirst(event.request));
+        event.respondWith(networkFirst(event.request, CACHE_NAME));
         return;
     }
 
-    // App icons and images — stale-while-revalidate
-    if (SWR_PATTERNS.some(pattern => pattern.test(url.pathname))) {
-        event.respondWith(staleWhileRevalidate(event.request));
+    // App icons and remote images — dedicated image cache (persists across deploys)
+    if (IMAGE_PATTERNS.some(p => p.test(url.href))) {
+        event.respondWith(staleWhileRevalidateImage(event.request));
         return;
     }
 
-    // CSS, JS, HTML — cache-first
-    event.respondWith(cacheFirst(event.request));
+    // CSS, JS, HTML and other same-origin assets — cache-first
+    if (url.origin === self.location.origin) {
+        event.respondWith(cacheFirst(event.request));
+        return;
+    }
 });
 
 // --- NAVIGATION HANDLER ---
 async function handleNavigation(event) {
     try {
-        // FIX: Clone the preload response BEFORE awaiting it. The preload
-        // response can only be consumed once; cloning before consumption lets
-        // us cache it AND return it to the browser in the same tick.
         let preloadResponse = null;
         if (event.preloadResponse) {
             const preload = await event.preloadResponse;
             if (preload) {
                 preloadResponse = preload.clone();
-                cachePutAndTrim(event.request, preload).catch(() => {});
+                cachePut(CACHE_NAME, event.request, preload, MAX_SHELL_ITEMS).catch(() => {});
             }
         }
 
         if (preloadResponse) return preloadResponse;
 
-        return await networkFirst(event.request);
+        return await networkFirst(event.request, CACHE_NAME);
     } catch (err) {
         const cached = await caches.match('./index.html');
         if (cached) return cached;
@@ -218,11 +236,11 @@ async function handleNavigation(event) {
 }
 
 // --- NETWORK-FIRST ---
-async function networkFirst(request) {
+async function networkFirst(request, cacheName) {
     try {
         const response = await fetch(request);
         if (response.ok) {
-            cachePutAndTrim(request, response.clone()).catch(() => {});
+            cachePut(cacheName, request, response.clone(), MAX_SHELL_ITEMS).catch(() => {});
         }
         return response;
     } catch (err) {
@@ -240,15 +258,47 @@ async function networkFirst(request) {
     }
 }
 
-// --- STALE-WHILE-REVALIDATE ---
-async function staleWhileRevalidate(request) {
-    const cache = await caches.open(CACHE_NAME);
+// --- STALE-WHILE-REVALIDATE (mini.json) ---
+// Serves cached data instantly, then fetches and stores a fresh copy in the
+// background. The updated copy will be used on the next page load.
+async function staleWhileRevalidateData(request) {
+    const cache = await caches.open(DATA_CACHE);
+    const cached = await cache.match(request);
+
+    // Always attempt a background refresh
+    const fetchPromise = fetch(request, { cache: 'no-cache' })
+        .then(response => {
+            if (response.ok) {
+                cache.put(request, response.clone()).catch(() => {});
+            }
+            return response;
+        })
+        .catch(() => null);
+
+    // Serve from cache immediately if available; otherwise wait for network
+    if (cached) {
+        fetchPromise.catch(() => {}); // ensure background fetch runs
+        return cached;
+    }
+
+    const networkResponse = await fetchPromise;
+    if (networkResponse) return networkResponse;
+
+    return new Response(
+        JSON.stringify({ error: 'offline', apps: [] }),
+        { status: 503, headers: { 'Content-Type': 'application/json' } }
+    );
+}
+
+// --- STALE-WHILE-REVALIDATE (images) ---
+async function staleWhileRevalidateImage(request) {
+    const cache = await caches.open(IMAGE_CACHE);
     const cached = await cache.match(request);
 
     const fetchPromise = fetch(request)
-        .then((response) => {
+        .then(response => {
             if (response.ok) {
-                cachePutAndTrim(request, response.clone()).catch(() => {});
+                cachePut(IMAGE_CACHE, request, response.clone(), MAX_IMAGE_ITEMS).catch(() => {});
             }
             return response;
         })
@@ -259,24 +309,7 @@ async function staleWhileRevalidate(request) {
     const networkResponse = await fetchPromise;
     if (networkResponse) return networkResponse;
 
-    // FIX: Return a transparent 1×1 PNG for failed image requests to prevent
-    // broken-image icons in the UI when both cache and network fail.
-    if (/\.(png|jpg|jpeg|webp|gif)$/i.test(request.url)) {
-        const transparentPng = new Uint8Array([
-            0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A,0x00,0x00,0x00,0x0D,
-            0x49,0x48,0x44,0x52,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,
-            0x08,0x06,0x00,0x00,0x00,0x1F,0x15,0xC4,0x89,0x00,0x00,0x00,
-            0x0A,0x49,0x44,0x41,0x54,0x78,0x9C,0x62,0x00,0x00,0x00,0x02,
-            0x00,0x01,0xE5,0x27,0xDE,0xFC,0x00,0x00,0x00,0x00,0x49,0x45,
-            0x4E,0x44,0xAE,0x42,0x60,0x82
-        ]);
-        return new Response(transparentPng.buffer, {
-            status: 200,
-            headers: { 'Content-Type': 'image/png', 'Cache-Control': 'no-store' }
-        });
-    }
-
-    return new Response('', { status: 404 });
+    return transparentPngResponse();
 }
 
 // --- CACHE-FIRST ---
@@ -287,7 +320,7 @@ async function cacheFirst(request) {
     try {
         const response = await fetch(request);
         if (response.ok) {
-            cachePutAndTrim(request, response.clone()).catch(() => {});
+            cachePut(CACHE_NAME, request, response.clone(), MAX_SHELL_ITEMS).catch(() => {});
         }
         return response;
     } catch (err) {
@@ -297,8 +330,29 @@ async function cacheFirst(request) {
             return buildOfflinePage();
         }
 
+        if (/\.(png|jpg|jpeg|webp|gif)$/i.test(request.url)) {
+            return transparentPngResponse();
+        }
+
         return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
     }
+}
+
+// --- HELPERS ---
+function transparentPngResponse() {
+    // 1×1 transparent PNG — prevents broken-image icons in the UI
+    const transparentPng = new Uint8Array([
+        0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A,0x00,0x00,0x00,0x0D,
+        0x49,0x48,0x44,0x52,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,
+        0x08,0x06,0x00,0x00,0x00,0x1F,0x15,0xC4,0x89,0x00,0x00,0x00,
+        0x0A,0x49,0x44,0x41,0x54,0x78,0x9C,0x62,0x00,0x00,0x00,0x02,
+        0x00,0x01,0xE5,0x27,0xDE,0xFC,0x00,0x00,0x00,0x00,0x49,0x45,
+        0x4E,0x44,0xAE,0x42,0x60,0x82
+    ]);
+    return new Response(transparentPng.buffer, {
+        status: 200,
+        headers: { 'Content-Type': 'image/png', 'Cache-Control': 'no-store' }
+    });
 }
 
 // --- OFFLINE PAGE ---
@@ -307,7 +361,7 @@ function buildOfflinePage() {
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <title>Offline — Mini's Repo</title>
 <style>
@@ -332,20 +386,30 @@ function buildOfflinePage() {
     color:#a78bfa;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.15);
     padding:8px 12px;border-radius:8px;word-break:break-all;margin-bottom:24px;display:block;
   }
+  .actions{display:flex;flex-direction:column;gap:10px}
   button{
     background:linear-gradient(135deg,#30d158,#2ac94e);color:#fff;border:none;
     border-radius:12px;padding:12px 28px;font-size:0.9em;font-weight:700;
     font-family:inherit;cursor:pointer;width:100%;
   }
+  .btn-secondary{
+    background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
+    color:#c8c8cc;
+  }
+  .status{font-size:0.75em;color:#636366;margin-top:16px}
 </style>
 </head>
 <body>
 <div class="card">
   <div class="icon">📴</div>
   <h1>You're offline</h1>
-  <p>Mini's Repo needs a connection to load. Or add the source URL directly to your app manager:</p>
+  <p>Mini's Repo needs a connection to load fresh content. Add the source URL directly to your app manager:</p>
   <code class="url">https://OofMini.github.io/Minis-Repo/mini.json</code>
-  <button onclick="window.location.reload()">Try again</button>
+  <div class="actions">
+    <button onclick="window.location.reload()">🔄 Try again</button>
+    <button class="btn-secondary" onclick="window.history.back()">← Go back</button>
+  </div>
+  <p class="status">You may still have cached content available if you visited recently.</p>
 </div>
 </body>
 </html>`;

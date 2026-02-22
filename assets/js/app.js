@@ -12,7 +12,6 @@ const CONFIG = {
             : 'https://OofMini.github.io/Minis-Repo/mini.json',
     FALLBACK_ICON: './apps/repo-icon.png',
     BATCH_SIZE: 12,
-    WILL_CHANGE_CLEANUP_DELAY: 700,
     SW_UPDATE_INTERVAL: 30 * 60 * 1000,
     FEATURED_BUNDLE_ID: 'com.spotify.client'
 };
@@ -32,8 +31,8 @@ const AppState = {
     modalScrollY: 0,
     lastOpenedCardId: null,
     modalHistoryPushed: false,
-    // FIX: Render generation counter prevents stale requestIdleCallback closures
-    // from writing into a newly-cleared grid when the user types quickly.
+    // Render generation counter — prevents stale idle-callback closures from
+    // writing into a freshly-cleared grid when the user types quickly.
     _renderGen: 0
 };
 
@@ -88,7 +87,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         } else {
             updateAppCount(AppState.apps.length);
             setupFeaturedApp();
-            // Update category pills with live counts now that apps are loaded
             updateCategoryPillCounts();
             const appGrid = document.getElementById('appGrid');
             if (appGrid) appGrid.innerHTML = '';
@@ -197,10 +195,6 @@ function updateAppCount(count) {
 }
 
 // ========== CATEGORY PILL COUNTS ==========
-/**
- * Computes per-category app counts and injects them into the filter pills
- * as small badges. Called once after apps are loaded.
- */
 function updateCategoryPillCounts() {
     const counts = { all: AppState.apps.length };
     AppState.apps.forEach(app => {
@@ -213,7 +207,6 @@ function updateCategoryPillCounts() {
         const count = counts[cat];
         if (count === undefined) return;
 
-        // Only add badge if not already present
         if (!pill.querySelector('.category-count')) {
             const badge = document.createElement('span');
             badge.className = 'category-count';
@@ -271,8 +264,8 @@ function setupFeaturedApp() {
 
 // ========== FILTERING & SORTING ==========
 function filterAndSortApps() {
-    // FIX: Increment render generation BEFORE clearing the grid so any
-    // pending idle callbacks from the previous filter run will abort.
+    // Increment render generation BEFORE clearing the grid so any pending
+    // idle callbacks from the previous filter run will abort when they check.
     AppState._renderGen++;
 
     AppState.filteredApps = AppState.apps.filter(app => {
@@ -298,6 +291,18 @@ function filterAndSortApps() {
     }
 
     AppState.renderedIds.clear();
+
+    // Render first batch synchronously to eliminate the flash-of-empty-grid.
+    // Subsequent batches are deferred to idle time via updateGrid().
+    if (AppState.filteredApps.length > 0 && appGrid) {
+        const firstBatch = AppState.filteredApps.slice(0, CONFIG.BATCH_SIZE);
+        renderBatch(firstBatch, appGrid);
+    } else if (appGrid) {
+        handleEmptyState(appGrid);
+        appGrid.removeAttribute('aria-busy');
+    }
+
+    // Schedule any remaining batches and re-arm the infinite scroll observer.
     updateGrid();
     announceResultsCount();
 
@@ -334,13 +339,13 @@ function updateGrid() {
         return;
     }
 
-    // FIX: Capture the generation at call time. The idle callback checks this
-    // before rendering so stale closures abort silently instead of corrupting
-    // a freshly-cleared grid.
+    // Capture the generation at call time. The idle callback checks this before
+    // rendering so stale closures abort silently instead of corrupting a freshly-
+    // cleared grid.
     const capturedGen = AppState._renderGen;
 
     const doRender = () => {
-        if (capturedGen !== AppState._renderGen) return; // stale, abort
+        if (capturedGen !== AppState._renderGen) return; // stale — abort
         renderBatch(nextBatch, appGrid);
         if (AppState.renderedIds.size >= AppState.filteredApps.length) {
             appGrid.removeAttribute('aria-busy');
@@ -348,23 +353,36 @@ function updateGrid() {
     };
 
     if ('requestIdleCallback' in window) {
-        requestIdleCallback(doRender);
+        requestIdleCallback(doRender, { timeout: 300 });
     } else {
         setTimeout(doRender, 0);
     }
 }
 
+// FIX: renderBatch now collects newly created article elements BEFORE appending
+// the fragment to the container, then observes only those new elements.
+//
+// The previous implementation called:
+//   container.querySelectorAll('.fade-in:not(.visible)').forEach(card => observer.observe(card))
+// after each batch append, which rescanned the ENTIRE container every time.
+// As more cards accumulated this became an O(n) DOM scan on every batch —
+// visible as frame-drops during fast scrolling.
 function renderBatch(batch, container) {
     if (!document.contains(container)) return;
 
     const fragment = document.createDocumentFragment();
+    const newArticles = [];
     let addedCount = 0;
 
     batch.forEach(app => {
         if (!AppState.renderedIds.has(app.id)) {
             const actualIndex = AppState.renderedIds.size;
-            const card = createAppCard(app, actualIndex);
-            fragment.appendChild(card);
+            const cardFrag = createAppCard(app, actualIndex);
+            // Capture the article node BEFORE appending the fragment (appending
+            // moves child nodes out of the fragment, making it empty afterwards).
+            const article = cardFrag.querySelector('article');
+            if (article) newArticles.push(article);
+            fragment.appendChild(cardFrag);
             AppState.renderedIds.add(app.id);
             addedCount++;
         }
@@ -372,8 +390,9 @@ function renderBatch(batch, container) {
 
     if (addedCount > 0) {
         container.appendChild(fragment);
+        // Observe only the newly added articles, not the whole container.
         if (observer) {
-            container.querySelectorAll('.fade-in:not(.visible)').forEach(card => observer.observe(card));
+            newArticles.forEach(el => observer.observe(el));
         }
     }
 
@@ -456,7 +475,7 @@ function setupInfiniteScroll() {
         entries => {
             if (entries[0].isIntersecting) updateGrid();
         },
-        { rootMargin: '200px' }
+        { rootMargin: '300px' }
     );
 
     infiniteScrollObserver.observe(sentinel);
@@ -473,10 +492,9 @@ function setupScrollToTop() {
     scrollTopObserver = new IntersectionObserver(
         entries => {
             const isVisible = entries[0].isIntersecting;
-            // FIX: Only toggle the .visible class — do NOT set the hidden attribute.
+            // Only toggle the .visible class — do NOT touch the hidden attribute.
             // Toggling `hidden` forces display:none which kills CSS transitions,
             // making the hide animation instant while show transitions correctly.
-            // The CSS already handles invisibility via opacity:0 + pointer-events:none.
             btn.classList.toggle('visible', !isVisible);
             btn.setAttribute('aria-hidden', String(isVisible));
         },
@@ -599,25 +617,17 @@ function handleGridKeydown(e) {
 }
 
 // ========== IMAGE PRELOADING ==========
-/**
- * Preload modal images (icon + screenshots) using <link rel=preload>.
- *
- * FIX: The original querySelector used CSS.escape() on a URL string, which
- * over-escapes characters like `:` and `/` that are valid in attribute values
- * but not in CSS identifiers. Instead, we iterate existing preload links by
- * `as="image"` and compare `.href` directly — no escaping needed.
- */
+// FIX: Uses el.href (absolute URL) for duplicate detection instead of
+// CSS.escape() on URL strings which over-escapes path characters.
 function preloadModalImages(app) {
     const urls = [app.icon, ...app.screenshots].filter(Boolean);
 
-    // Build a Set of already-requested hrefs for O(1) lookup
     const existing = new Set();
     document.querySelectorAll('link[rel="preload"][as="image"]').forEach(el => {
         existing.add(el.href);
     });
 
     urls.forEach(url => {
-        // Resolve to absolute URL for comparison (same as browser does for link.href)
         let abs;
         try {
             abs = new URL(url, window.location.href).href;
@@ -632,24 +642,17 @@ function preloadModalImages(app) {
         link.as = 'image';
         link.href = url;
         document.head.appendChild(link);
-        // Clean up after 30s to avoid DOM bloat
         setTimeout(() => { if (link.parentNode) link.remove(); }, 30_000);
     });
 }
 
 // ========== APP DETAIL MODAL ==========
-
-/**
- * Build the share/copy-link action row for the modal.
- * Uses the Web Share API when available, falling back to clipboard copy.
- */
 function buildModalActionRow(app) {
     const row = document.createElement('div');
     row.className = 'modal-action-row';
 
     const appUrl = `${window.location.origin}${window.location.pathname}#app-${encodeURIComponent(app.bundleId)}`;
 
-    // Web Share API button (only rendered if supported)
     if (navigator.share) {
         const shareBtn = document.createElement('button');
         shareBtn.type = 'button';
@@ -664,7 +667,6 @@ function buildModalActionRow(app) {
                     url: appUrl
                 });
             } catch (err) {
-                // User cancelled or share failed — don't show an error toast
                 if (err.name !== 'AbortError') {
                     showToast('⚠️ Share failed', 'warning');
                 }
@@ -673,7 +675,6 @@ function buildModalActionRow(app) {
         row.appendChild(shareBtn);
     }
 
-    // Copy link button (always rendered)
     const copyBtn = document.createElement('button');
     copyBtn.type = 'button';
     copyBtn.className = 'modal-action-btn modal-copy-link-btn';
@@ -683,7 +684,6 @@ function buildModalActionRow(app) {
         try {
             await navigator.clipboard.writeText(appUrl);
         } catch {
-            // Clipboard API unavailable — fallback to execCommand
             try {
                 const ta = document.createElement('textarea');
                 ta.value = appUrl;
@@ -797,20 +797,18 @@ function openAppModal(appId, fromUrl = false) {
 
     document.body.appendChild(modal);
 
-    // FIX (CSP): Apply tint glow via JS property — not blocked by style-src 'self'
+    // Apply tint glow via JS style property (avoids CSP style-src 'self' restriction)
     const tintGlowEl = modal.querySelector('.modal-tint-glow');
     if (tintGlowEl) {
         tintGlowEl.style.background = `linear-gradient(180deg, ${hexToRgba(app.tintColor, 0.12)} 0%, transparent 100%)`;
     }
 
-    // Inject share/copy-link action row above the download button
     const modalFooter = modal.querySelector('.modal-footer');
     if (modalFooter) {
         const actionRow = buildModalActionRow(app);
         modalFooter.insertBefore(actionRow, modalFooter.firstChild);
     }
 
-    // Image error fallbacks
     const modalIcon = modal.querySelector('.modal-icon');
     if (modalIcon) {
         modalIcon.addEventListener('error', () => { modalIcon.src = CONFIG.FALLBACK_ICON; }, { once: true });
@@ -823,7 +821,7 @@ function openAppModal(appId, fromUrl = false) {
     document.body.classList.add('modal-open');
     document.body.style.top = `-${AppState.modalScrollY}px`;
 
-    modal.offsetHeight; // force layout
+    modal.offsetHeight; // force reflow before adding .active
     modal.classList.add('active');
 
     const closeBtn = modal.querySelector('.modal-close');
@@ -889,18 +887,23 @@ function closeAppModal(viaPopstate) {
         updateHash(null, false);
     }
 
-    const cardToFocus = AppState.lastOpenedCardId
-        ? document.querySelector(`.app-card[data-app-id="${CSS.escape(AppState.lastOpenedCardId)}"]`)
-        : null;
-
+    // Read lastOpenedCardId before nulling it
+    const cardId = AppState.lastOpenedCardId;
     AppState.lastOpenedCardId = null;
 
     setTimeout(() => {
         if (modal.parentNode) modal.remove();
     }, 350);
 
-    if (cardToFocus) {
-        cardToFocus.focus({ preventScroll: true });
+    if (cardId) {
+        // FIX: Use a proper attribute selector with escaped value.
+        // CSS.escape() is correct here — in attribute selector values inside
+        // double quotes, backslash-escaped dots are interpreted as literal dots,
+        // so the selector matches correctly even for bundle IDs like com.spotify.client.
+        const cardToFocus = document.querySelector(
+            `.app-card[data-app-id="${CSS.escape(cardId)}"]`
+        );
+        if (cardToFocus) cardToFocus.focus({ preventScroll: true });
     }
 }
 
@@ -1022,7 +1025,7 @@ function setupPWA() {
                 }
             });
 
-            // Periodic update checks are handled here in the app, not in the SW,
+            // Periodic update checks are handled in the page, not the SW,
             // because setInterval inside a SW is unreliable — the browser may
             // terminate the SW between ticks, silently dropping the interval.
             swUpdateTimer = setInterval(() => {
@@ -1211,6 +1214,7 @@ function showErrorState(msg) {
             <button type="button" class="download-btn action-retry">Retry</button>
         </div>
     `;
+    // Set error text via textContent to avoid XSS
     grid.querySelector('p').textContent = String(msg);
 }
 
@@ -1364,6 +1368,13 @@ function handleError(error) {
     showToast(error.message ?? 'An error occurred', 'error');
 }
 
+// FIX: Simplified - removed the stale will-change cleanup timer.
+// The previous implementation set `entry.target.style.willChange = 'auto'` after
+// a 700ms delay, but no will-change was ever SET on these elements via JS — only
+// via CSS transitions (which the browser promotes implicitly). The cleanup was a
+// no-op that caused unnecessary style recalculations on every card entrance.
+// Reduced threshold from 0.1 → 0.05 so cards start their entrance animation
+// slightly earlier, avoiding the "snap in" effect when scrolling quickly.
 function initializeScrollAnimations() {
     if ('IntersectionObserver' in window) {
         observer = new IntersectionObserver(entries => {
@@ -1371,12 +1382,9 @@ function initializeScrollAnimations() {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
                     observer.unobserve(entry.target);
-                    setTimeout(() => {
-                        entry.target.style.willChange = 'auto';
-                    }, CONFIG.WILL_CHANGE_CLEANUP_DELAY);
                 }
             });
-        }, { threshold: 0.1 });
+        }, { threshold: 0.05 });
         document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
     } else {
         document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
