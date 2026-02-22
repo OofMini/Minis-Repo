@@ -1,6 +1,6 @@
 // Mini's IPA Repo — Service Worker
 // deploy.js dynamically replaces CACHE_NAME with git hash on build.
-const CACHE_NAME = 'minis-repo-cache-ec12bc8';
+const CACHE_NAME = 'minis-repo-cache-7dc7531';
 
 // IMAGE_CACHE persists across deploys (different name, not replaced by deploy.js).
 // App icons and screenshots change rarely, so keeping them across code deploys
