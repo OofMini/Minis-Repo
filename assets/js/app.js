@@ -955,6 +955,13 @@ function trackDownload(appId) {
     document.body.removeChild(link);
 
     showToast(`✅ Downloading ${app.name}`, 'success');
+
+    // ── LIVE DOWNLOAD TRACKING ────────────────────────────────
+    // Optimistically increment the badge immediately, then re-fetch the real
+    // count from GitHub after 45 s (enough time for their API to update).
+    if (window.GH_DOWNLOADS) {
+        GH_DOWNLOADS.recordDownload(app.bundleId);
+    }
 }
 
 function isValidDownloadUrl(url) {
@@ -1382,4 +1389,9 @@ window.addEventListener('beforeunload', () => {
 
     const searchBox = document.getElementById('searchBox');
     if (searchBox && searchBox._debounceTimer) clearTimeout(searchBox._debounceTimer);
+
+    // Clean up GH_DOWNLOADS timers, observers, and BroadcastChannel
+    if (window.GH_DOWNLOADS?.destroy) {
+        GH_DOWNLOADS.destroy();
+    }
 });
