@@ -30,8 +30,6 @@
         <link rel="preconnect" href="https://github.com" crossorigin />
         <!-- Screenshots and icons can be served from raw.githubusercontent.com -->
         <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
-        <!-- GitHub API for download counts -->
-        <link rel="dns-prefetch" href="https://api.github.com" />
 
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Mini's IPA Repo — Premium Tweaked iOS Apps" />
@@ -150,7 +148,7 @@
                         </div>
                     </div>
                     <div class="featured-actions">
-                        <button type="button" class="download-btn featured-download-btn" id="featuredDownloadBtn" aria-label="Download featured app">
+                        <button type="button" class="download-btn featured-download-btn action-download" id="featuredDownloadBtn" aria-label="Download featured app">
                             ⬇️ Download IPA
                         </button>
                     </div>
@@ -200,7 +198,7 @@
                 </div>
 
                 <!-- Sort Toggle -->
-                <div class="sort-controls" aria-label="Sort options">
+                <div class="sort-controls" role="group" aria-label="Sort options">
                     <button type="button" class="sort-btn active" id="sortRecent" data-sort="recent" aria-pressed="true">
                         🕐 Recent
                     </button>
@@ -267,6 +265,16 @@
             </div>
         </footer>
 
+        <!--
+            FIX: `hidden` attribute removed from the scroll-to-top button.
+            The original code toggled `hidden` (display:none) alongside the
+            `.visible` class. Adding `hidden` destroys the CSS hide transition
+            instantly (opacity 1→0 is skipped; element just blinks away), while
+            removing `hidden` allows the show transition (opacity 0→1) to work.
+            This asymmetric behavior is eliminated by removing `hidden` entirely
+            and letting the CSS `opacity: 0 + pointer-events: none` on the base
+            rule handle the hidden state — transitions work symmetrically now.
+        -->
         <button type="button" class="scroll-top-btn" id="scrollTopBtn" aria-label="Scroll to top" aria-hidden="true">
             <span aria-hidden="true">↑</span>
         </button>
@@ -277,8 +285,6 @@
         <!-- Scroll sentinel for IntersectionObserver -->
         <div id="scroll-sentinel" aria-hidden="true"></div>
 
-        <!-- GitHub download tracking (must load before app.js) -->
-        <script src="assets/js/github-downloads.js"></script>
         <script src="assets/js/app.js"></script>
     </body>
 </html>
