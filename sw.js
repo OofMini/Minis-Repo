@@ -1,25 +1,21 @@
 // Mini's IPA Repo — Service Worker
 // deploy.js dynamically replaces CACHE_NAME with git hash on build.
-const CACHE_NAME = 'minis-repo-cache-7f626d6';
+const CACHE_NAME = 'minis-repo-cache-8a772fa';
 
 // IMAGE_CACHE persists across deploys (different name, not replaced by deploy.js).
 // App icons and screenshots change rarely, so keeping them across code deploys
 // avoids re-downloading megabytes of image data on every update.
 const IMAGE_CACHE = 'minis-images-v1';
 
-// DATA_CACHE is for mini.json and GitHub API stale-while-revalidate.
+// DATA_CACHE is for mini.json stale-while-revalidate.
 // Kept separate so it can be versioned independently of the app shell.
 const DATA_CACHE = 'minis-data-v1';
-
-// GH_CACHE TTL: 30 minutes in seconds (used in Cache-Control header comparison)
-const GH_CACHE_TTL_MS = 30 * 60 * 1000;
 
 const CRITICAL_ASSETS = [
     './',
     './index.html',
     './assets/css/style.css',
     './assets/js/app.js',
-    './assets/js/github-downloads.js',
     './mini.json',
     './manifest.json',
     './apps/repo-icon.png'
@@ -35,7 +31,9 @@ const IMAGE_PATTERNS = [
 // Maximum entries in each cache bucket.
 const MAX_SHELL_ITEMS = 100;
 const MAX_IMAGE_ITEMS = 80;
-const MAX_GH_ITEMS = 20;
+
+// Build absolute URLs for critical assets so trimCache can protect them.
+const CRITICAL_URLS = new Set(CRITICAL_ASSETS.map(a => new URL(a, self.location.href).href));
 
 // --- INSTALL ---
 self.addEventListener('install', (event) => {
@@ -43,6 +41,8 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('[SW] Pre-caching critical assets');
+                // addAll fails if any single asset 404s — use individual adds with
+                // fallback so a missing optional asset doesn't block the whole install.
                 return Promise.allSettled(
                     CRITICAL_ASSETS.map(url =>
                         cache.add(url).catch(err => {
@@ -55,6 +55,7 @@ self.addEventListener('install', (event) => {
                 console.error('[SW] Install failed:', err);
             })
     );
+    // Take control immediately without waiting for old SW to yield.
     self.skipWaiting();
 });
 
@@ -168,7 +169,8 @@ async function cachePut(cacheName, request, response, maxItems) {
         const cache = await caches.open(cacheName);
         await cache.put(request, response);
         if (maxItems) {
-            trimCache(cacheName, maxItems).catch(() => {});
+            const skip = cacheName === CACHE_NAME ? CRITICAL_URLS : undefined;
+            trimCache(cacheName, maxItems, skip).catch(() => {});
         }
     } catch (err) {
         console.warn('[SW] Cache put failed:', err.message);
@@ -187,15 +189,10 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // GitHub API releases endpoint — stale-while-revalidate with TTL guard.
-    // This provides a second caching layer independent of the JS-side
-    // sessionStorage cache, which helps in private browsing and new tabs.
-    if (url.hostname === 'api.github.com' && url.pathname.includes('/releases')) {
-        event.respondWith(staleWhileRevalidateGitHub(event.request));
-        return;
-    }
-
     // mini.json — stale-while-revalidate for instant loads.
+    // FIX: Previously network-first, which blocked page render on slow connections.
+    // SWR serves the cached manifest instantly while fetching a fresh copy in the
+    // background. On the NEXT load, the updated version is served.
     if (url.pathname.endsWith('mini.json')) {
         event.respondWith(staleWhileRevalidateData(event.request));
         return;
@@ -266,10 +263,13 @@ async function networkFirst(request, cacheName) {
 }
 
 // --- STALE-WHILE-REVALIDATE (mini.json) ---
+// Serves cached data instantly, then fetches and stores a fresh copy in the
+// background. The updated copy will be used on the next page load.
 async function staleWhileRevalidateData(request) {
     const cache = await caches.open(DATA_CACHE);
     const cached = await cache.match(request);
 
+    // Always attempt a background refresh
     const fetchPromise = fetch(request, { cache: 'no-cache' })
         .then(response => {
             if (response.ok) {
@@ -279,8 +279,9 @@ async function staleWhileRevalidateData(request) {
         })
         .catch(() => null);
 
+    // Serve from cache immediately if available; otherwise wait for network
     if (cached) {
-        fetchPromise.catch(() => {});
+        fetchPromise.catch(() => {}); // suppress unhandled rejection from background fetch
         return cached;
     }
 
@@ -290,74 +291,6 @@ async function staleWhileRevalidateData(request) {
     return new Response(
         JSON.stringify({ error: 'offline', apps: [] }),
         { status: 503, headers: { 'Content-Type': 'application/json' } }
-    );
-}
-
-// --- STALE-WHILE-REVALIDATE (GitHub API) ---
-// Caches GitHub /releases responses for GH_CACHE_TTL_MS (30 min).
-// Serves stale data immediately if available, refreshes in background.
-// On cache miss (first visit, new tab, private browsing) waits for network.
-// Returns a 503 JSON stub on total failure so the JS side handles it gracefully.
-async function staleWhileRevalidateGitHub(request) {
-    const cache = await caches.open(DATA_CACHE);
-    const cached = await cache.match(request);
-
-    // Check if cached response is still within TTL by reading a stored timestamp
-    // we embed in a custom header when writing to cache.
-    let cachedFresh = false;
-    if (cached) {
-        const ts = cached.headers.get('x-sw-cached-at');
-        if (ts && (Date.now() - parseInt(ts, 10)) < GH_CACHE_TTL_MS) {
-            cachedFresh = true;
-        }
-    }
-
-    const fetchAndCache = async () => {
-        try {
-            const response = await fetch(request, {
-                headers: { Accept: 'application/vnd.github+json' }
-            });
-            if (response.ok) {
-                // Clone and inject our timestamp header before caching
-                const body = await response.clone().arrayBuffer();
-                const headers = new Headers(response.headers);
-                headers.set('x-sw-cached-at', String(Date.now()));
-                const stamped = new Response(body, {
-                    status: response.status,
-                    statusText: response.statusText,
-                    headers
-                });
-                cache.put(request, stamped).catch(() => {});
-            }
-            return response;
-        } catch {
-            return null;
-        }
-    };
-
-    if (cached && cachedFresh) {
-        // Serve from cache immediately; refresh silently in background
-        fetchAndCache().catch(() => {});
-        return cached;
-    }
-
-    if (cached && !cachedFresh) {
-        // Cache exists but stale — serve stale, refresh in background
-        fetchAndCache().catch(() => {});
-        return cached;
-    }
-
-    // No cache at all — must wait for network
-    const networkResponse = await fetchAndCache();
-    if (networkResponse) return networkResponse;
-
-    // Total failure — return empty releases array so JS side degrades gracefully
-    return new Response(
-        JSON.stringify([]),
-        {
-            status: 503,
-            headers: { 'Content-Type': 'application/json' }
-        }
     );
 }
 
@@ -395,12 +328,6 @@ async function cacheFirst(request) {
         }
         return response;
     } catch (err) {
-        if (request.mode === 'navigate') {
-            const fallback = await caches.match('./index.html');
-            if (fallback) return fallback;
-            return buildOfflinePage();
-        }
-
         if (/\.(png|jpg|jpeg|webp|gif)$/i.test(request.url)) {
             return transparentPngResponse();
         }

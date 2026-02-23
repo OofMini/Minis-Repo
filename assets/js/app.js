@@ -94,11 +94,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             filterAndSortApps();
             setupInfiniteScroll();
             handleHashRoute();
-
-            // Kick off GitHub download count fetching (non-blocking)
-            if (window.GH_DOWNLOADS) {
-                GH_DOWNLOADS.init(AppState.apps);
-            }
         }
     } catch (error) {
         console.error('Initialization error:', error);
@@ -166,7 +161,7 @@ async function loadAppData() {
                     minimumOS: minimumOS,
                     permissions: permissions,
                     screenshots: app.screenshotURLs ?? [],
-                    searchString: `${app.name} ${app.localizedDescription} ${app.developerName} ${category}`.toLowerCase()
+                    searchString: `${app.name ?? ''} ${app.subtitle ?? ''} ${app.localizedDescription ?? ''} ${app.developerName ?? ''} ${category}`.toLowerCase()
                 };
             });
 
@@ -186,7 +181,7 @@ function normalizePermissions(perms) {
     if (!Array.isArray(perms)) return [];
     return perms.map(p => {
         if (typeof p === 'string') return { type: p, usageDescription: '' };
-        if (typeof p === 'object' && p !== null && p.type) {
+        if (typeof p === 'object' && p !== null && typeof p.type === 'string' && p.type) {
             return { type: p.type, usageDescription: p.usageDescription ?? '' };
         }
         return null;
@@ -212,7 +207,10 @@ function updateCategoryPillCounts() {
         const count = counts[cat];
         if (count === undefined) return;
 
-        if (!pill.querySelector('.category-count')) {
+        const existing = pill.querySelector('.category-count');
+        if (existing) {
+            existing.textContent = count;
+        } else {
             const badge = document.createElement('span');
             badge.className = 'category-count';
             badge.textContent = count;
@@ -366,6 +364,12 @@ function updateGrid() {
 
 // FIX: renderBatch now collects newly created article elements BEFORE appending
 // the fragment to the container, then observes only those new elements.
+//
+// The previous implementation called:
+//   container.querySelectorAll('.fade-in:not(.visible)').forEach(card => observer.observe(card))
+// after each batch append, which rescanned the ENTIRE container every time.
+// As more cards accumulated this became an O(n) DOM scan on every batch —
+// visible as frame-drops during fast scrolling.
 function renderBatch(batch, container) {
     if (!document.contains(container)) return;
 
@@ -377,6 +381,8 @@ function renderBatch(batch, container) {
         if (!AppState.renderedIds.has(app.id)) {
             const actualIndex = AppState.renderedIds.size;
             const cardFrag = createAppCard(app, actualIndex);
+            // Capture the article node BEFORE appending the fragment (appending
+            // moves child nodes out of the fragment, making it empty afterwards).
             const article = cardFrag.querySelector('article');
             if (article) newArticles.push(article);
             fragment.appendChild(cardFrag);
@@ -387,6 +393,7 @@ function renderBatch(batch, container) {
 
     if (addedCount > 0) {
         container.appendChild(fragment);
+        // Observe only the newly added articles, not the whole container.
         if (observer) {
             newArticles.forEach(el => observer.observe(el));
         }
@@ -488,6 +495,9 @@ function setupScrollToTop() {
     scrollTopObserver = new IntersectionObserver(
         entries => {
             const isVisible = entries[0].isIntersecting;
+            // Only toggle the .visible class — do NOT touch the hidden attribute.
+            // Toggling `hidden` forces display:none which kills CSS transitions,
+            // making the hide animation instant while show transitions correctly.
             btn.classList.toggle('visible', !isVisible);
             btn.setAttribute('aria-hidden', String(isVisible));
         },
@@ -610,6 +620,8 @@ function handleGridKeydown(e) {
 }
 
 // ========== IMAGE PRELOADING ==========
+// FIX: Uses el.href (absolute URL) for duplicate detection instead of
+// CSS.escape() on URL strings which over-escapes path characters.
 function preloadModalImages(app) {
     const urls = [app.icon, ...app.screenshots].filter(Boolean);
 
@@ -788,7 +800,7 @@ function openAppModal(appId, fromUrl = false) {
 
     document.body.appendChild(modal);
 
-    // Apply tint glow via JS style property
+    // Apply tint glow via JS style property (avoids CSP style-src 'self' restriction)
     const tintGlowEl = modal.querySelector('.modal-tint-glow');
     if (tintGlowEl) {
         tintGlowEl.style.background = `linear-gradient(180deg, ${hexToRgba(app.tintColor, 0.12)} 0%, transparent 100%)`;
@@ -814,11 +826,6 @@ function openAppModal(appId, fromUrl = false) {
 
     modal.offsetHeight; // force reflow before adding .active
     modal.classList.add('active');
-
-    // Inject download count into modal meta row if data is already cached
-    if (window.GH_DOWNLOADS && window.__ghDownloadCounts) {
-        GH_DOWNLOADS.injectModalBadge(window.__ghDownloadCounts, app);
-    }
 
     const closeBtn = modal.querySelector('.modal-close');
     closeBtn.focus();
@@ -883,6 +890,7 @@ function closeAppModal(viaPopstate) {
         updateHash(null, false);
     }
 
+    // Read lastOpenedCardId before nulling it
     const cardId = AppState.lastOpenedCardId;
     AppState.lastOpenedCardId = null;
 
@@ -891,6 +899,10 @@ function closeAppModal(viaPopstate) {
     }, 350);
 
     if (cardId) {
+        // FIX: Use a proper attribute selector with escaped value.
+        // CSS.escape() is correct here — in attribute selector values inside
+        // double quotes, backslash-escaped dots are interpreted as literal dots,
+        // so the selector matches correctly even for bundle IDs like com.spotify.client.
         const cardToFocus = document.querySelector(
             `.app-card[data-app-id="${CSS.escape(cardId)}"]`
         );
@@ -955,13 +967,6 @@ function trackDownload(appId) {
     document.body.removeChild(link);
 
     showToast(`✅ Downloading ${app.name}`, 'success');
-
-    // ── LIVE DOWNLOAD TRACKING ────────────────────────────────
-    // Optimistically increment the badge immediately, then re-fetch the real
-    // count from GitHub after 45 s (enough time for their API to update).
-    if (window.GH_DOWNLOADS) {
-        GH_DOWNLOADS.recordDownload(app.bundleId);
-    }
 }
 
 function isValidDownloadUrl(url) {
@@ -1023,6 +1028,9 @@ function setupPWA() {
                 }
             });
 
+            // Periodic update checks are handled in the page, not the SW,
+            // because setInterval inside a SW is unreliable — the browser may
+            // terminate the SW between ticks, silently dropping the interval.
             swUpdateTimer = setInterval(() => {
                 reg.update().catch(() => {});
             }, CONFIG.SW_UPDATE_INTERVAL);
@@ -1031,8 +1039,8 @@ function setupPWA() {
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (refreshing) return;
-            window.location.reload();
             refreshing = true;
+            window.location.reload();
         });
     }
 }
@@ -1176,7 +1184,8 @@ function inferCategory(bundleId) {
 function formatSize(bytes) {
     if (!bytes || typeof bytes !== 'number') return 'Unknown';
     if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(1)} GB`;
-    return `${(bytes / 1048576).toFixed(0)} MB`;
+    const mb = bytes / 1048576;
+    return mb < 10 ? `${mb.toFixed(1)} MB` : `${mb.toFixed(0)} MB`;
 }
 
 // ========== LOADING / ERROR STATES ==========
@@ -1209,6 +1218,7 @@ function showErrorState(msg) {
             <button type="button" class="download-btn action-retry">Retry</button>
         </div>
     `;
+    // Set error text via textContent to avoid XSS
     grid.querySelector('p').textContent = String(msg);
 }
 
@@ -1217,6 +1227,11 @@ function setupEventListeners() {
     const searchBox = document.getElementById('searchBox');
 
     if (searchBox) {
+        // Sync search state with browser-restored input value (e.g. back-navigation)
+        if (searchBox.value.trim()) {
+            AppState.searchTerm = searchBox.value.toLowerCase().trim();
+        }
+
         searchBox.addEventListener('input', e => {
             if (searchBox._debounceTimer) clearTimeout(searchBox._debounceTimer);
             searchBox._debounceTimer = setTimeout(() => {
@@ -1304,7 +1319,6 @@ function setupEventListeners() {
             if (confirm('Reset all local data and cache?')) {
                 try {
                     localStorage.clear();
-                    sessionStorage.clear();
                     if ('caches' in window) {
                         const keys = await caches.keys();
                         await Promise.all(keys.map(key => caches.delete(key)));
@@ -1363,6 +1377,13 @@ function handleError(error) {
     showToast(error.message ?? 'An error occurred', 'error');
 }
 
+// FIX: Simplified - removed the stale will-change cleanup timer.
+// The previous implementation set `entry.target.style.willChange = 'auto'` after
+// a 700ms delay, but no will-change was ever SET on these elements via JS — only
+// via CSS transitions (which the browser promotes implicitly). The cleanup was a
+// no-op that caused unnecessary style recalculations on every card entrance.
+// Reduced threshold from 0.1 → 0.05 so cards start their entrance animation
+// slightly earlier, avoiding the "snap in" effect when scrolling quickly.
 function initializeScrollAnimations() {
     if ('IntersectionObserver' in window) {
         observer = new IntersectionObserver(entries => {
@@ -1389,9 +1410,4 @@ window.addEventListener('beforeunload', () => {
 
     const searchBox = document.getElementById('searchBox');
     if (searchBox && searchBox._debounceTimer) clearTimeout(searchBox._debounceTimer);
-
-    // Clean up GH_DOWNLOADS timers, observers, and BroadcastChannel
-    if (window.GH_DOWNLOADS?.destroy) {
-        GH_DOWNLOADS.destroy();
-    }
 });
