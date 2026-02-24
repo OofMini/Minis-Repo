@@ -3,19 +3,14 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
-        <!--
-            Tells the browser this page is dark-only, enabling native dark-mode
-            scrollbars, form controls, and system UI chrome without any flicker.
-        -->
         <meta name="color-scheme" content="dark" />
 
         <meta
             http-equiv="Content-Security-Policy"
-            content="default-src 'self'; 
-                   img-src 'self' https://oofmini.github.io https://github.com https://raw.githubusercontent.com https://objects.githubusercontent.com data:; 
-                   script-src 'self'; 
-                   style-src 'self'; 
+            content="default-src 'self';
+                   img-src 'self' https://oofmini.github.io https://github.com https://raw.githubusercontent.com https://objects.githubusercontent.com data:;
+                   script-src 'self';
+                   style-src 'self' 'unsafe-inline';
                    connect-src 'self' https://github.com https://raw.githubusercontent.com https://api.github.com https://objects.githubusercontent.com https://oofmini.github.io;
                    frame-ancestors 'none';
                    base-uri 'self';
@@ -28,7 +23,6 @@
         <link rel="dns-prefetch" href="https://objects.githubusercontent.com" />
         <link rel="preconnect" href="https://oofmini.github.io" crossorigin />
         <link rel="preconnect" href="https://github.com" crossorigin />
-        <!-- Screenshots and icons can be served from raw.githubusercontent.com -->
         <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
 
         <meta property="og:type" content="website" />
@@ -51,9 +45,9 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Mini IPA" />
         <meta name="format-detection" content="telephone=no" />
-        <meta name="theme-color" content="#000000" />
-        <link rel="apple-touch-icon" href="apps/repo-icon.png" />
-        <link rel="apple-touch-startup-image" href="apps/repo-icon.png" />
+        <meta name="theme-color" id="themeColor" content="#000000" />
+        <link rel="apple-touch-icon" href="/assets/repo-icon-BmouXbY2.png" />
+        <link rel="apple-touch-startup-image" href="/assets/repo-icon-BmouXbY2.png" />
 
         <title>Mini's IPA Repo — Premium Tweaked iOS Apps</title>
         <meta
@@ -61,16 +55,56 @@
             content="Curated collection of premium tweaked applications for iOS 15+. Featuring Spotify, YouTube, YouTube Music, and more — sideload via SideStore, TrollApps, or AltStore."
         />
 
-        <!-- Critical resource hints: icon first (LCP candidate), then CSS, then JS -->
-        <link rel="preload" as="image" href="apps/repo-icon.png" fetchpriority="high" />
-        <link rel="preload" href="assets/css/style.css" as="style" />
-        <link rel="preload" href="assets/js/app.js" as="script" />
+        <!-- Critical resource hints: icon first (LCP candidate) -->
+        <link rel="preload" as="image" href="/assets/repo-icon-BmouXbY2.png" fetchpriority="high" />
 
-        <link rel="manifest" href="manifest.json" />
-        <link rel="icon" href="apps/repo-icon.png" />
-        <link rel="stylesheet" href="assets/css/style.css" />
+        <link rel="manifest" href="/assets/manifest-Cl54ILWY.json" />
+        <link rel="icon" href="/assets/repo-icon-BmouXbY2.png" />
+
+        <!--
+            Critical CSS: inlined for instant FCP.
+            Covers hero skeleton, skeleton cards, and layout foundation.
+            Non-critical styles are bundled by Vite and loaded via <script>.
+        -->
+        <style>
+            *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+            :root{color-scheme:dark;--bg:#000;--surface:#0a0a0f;--text:#f5f5f7;--text-secondary:#8e8e93;--border:rgba(255,255,255,.08);--radius:16px;--spring-bouncy:cubic-bezier(.175,.885,.32,1.275)}
+            html{background:#000;color:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+            body{background:#000;min-height:100dvh;overflow-x:hidden}
+            .skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);z-index:10000;background:#1d1d1f;color:#f5f5f7;padding:12px 24px;border-radius:8px;font-size:14px;text-decoration:none;transition:top .2s}.skip-link:focus{top:12px}
+            .hero{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px 48px;text-align:center;overflow:hidden;min-height:280px}
+            .hero canvas,.hero-glow{position:absolute;inset:0;width:100%;height:100%}
+            .hero canvas{opacity:0;transition:opacity .6s}.hero canvas.active{opacity:1}
+            .hero-glow{background:conic-gradient(from 220deg at 50% 50%,#1a0533,#0a1628,#0d2818,#1a0533);opacity:.7;z-index:0}
+            .hero>*:not(canvas):not(.hero-glow){position:relative;z-index:1}
+            .repo-icon{width:72px;height:72px;border-radius:16px}
+            .animated-gradient{font-size:clamp(1.75rem,5vw,2.5rem);font-weight:700;letter-spacing:-.02em;margin:12px 0 4px;background:linear-gradient(135deg,#f5f5f7 0%,#a1a1a6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+            .hero-subtitle{color:#8e8e93;font-size:.95rem;margin-bottom:16px}
+            .hero-stats{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
+            .stat-badge{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);font-size:.8rem;color:#8e8e93}
+            .cta-buttons{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+            .cta-button{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.04);color:#f5f5f7;font-size:.85rem;font-weight:500;cursor:pointer;transition:background .2s,border-color .2s}.cta-button:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
+            .container{max-width:960px;margin:0 auto;padding:0 16px}
+            .app-grid{min-height:400px;position:relative}
+            .skeleton-card{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);margin-bottom:12px}
+            .skeleton{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:skeleton-shimmer 1.5s infinite;border-radius:8px}
+            .skeleton-icon{width:52px;height:52px;flex-shrink:0;border-radius:12px}
+            .skeleton-lines{flex:1;display:flex;flex-direction:column;gap:8px}
+            .skeleton-text{height:12px;border-radius:6px}.skeleton-text.short{width:40%}.skeleton-text.medium{width:65%}
+            .skeleton-button{width:60px;height:28px;border-radius:14px;flex-shrink:0}
+            @keyframes skeleton-shimmer{0%{background-position:200% 0}to{background-position:-200% 0}}
+            .stagger-1{animation-delay:0s}.stagger-2{animation-delay:.1s}.stagger-3{animation-delay:.2s}
+            [hidden]{display:none!important}
+            .noscript-fallback{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:40px 24px;text-align:center;color:#f5f5f7}
+            .noscript-fallback h1{font-size:1.5rem;margin-bottom:12px}.noscript-fallback p{color:#8e8e93;margin-bottom:8px;max-width:400px}.noscript-subtle{font-size:.8rem}.noscript-subtle code{background:rgba(255,255,255,.06);padding:4px 8px;border-radius:6px;font-size:.75rem}
+            @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+        </style>
+      <script type="module" crossorigin src="/assets/js/index-BqVZ-XEe.js"></script>
+      <link rel="stylesheet" crossorigin href="/assets/css/style-C4oU0hdD.css">
     </head>
     <body>
+        <a href="#appGrid" class="skip-link">Skip to app list</a>
+
         <noscript>
             <div class="noscript-fallback">
                 <h1>Mini's IPA Repo</h1>
@@ -80,13 +114,13 @@
         </noscript>
 
         <div class="offline-bar" id="offlineBar" role="alert" hidden>
-            📴 You are currently offline — downloads unavailable
+            You are currently offline — downloads unavailable
         </div>
 
         <div class="install-banner" id="installBanner" role="complementary" aria-label="Install app" hidden>
             <span class="install-banner-text"><strong>Mini's Repo</strong> — Install as app</span>
             <button type="button" class="install-btn" id="btn-install" aria-label="Install Mini's Repo as an app">
-                ⬇️ Install
+                Install
             </button>
             <button type="button" class="install-dismiss-btn" id="btn-install-dismiss" aria-label="Dismiss install banner">
                 ✕
@@ -94,9 +128,10 @@
         </div>
 
         <header class="hero" role="banner">
+            <canvas id="heroCanvas" aria-hidden="true"></canvas>
             <div class="hero-glow" aria-hidden="true"></div>
             <img
-                src="apps/repo-icon.png"
+                src="/assets/repo-icon-BmouXbY2.png"
                 alt="Mini's Repo icon"
                 class="repo-icon"
                 width="72"
@@ -136,20 +171,20 @@
             <section class="featured-section fade-in" id="featuredSection" aria-labelledby="featured-title" hidden>
                 <h2 id="featured-title" class="visually-hidden">Featured App</h2>
                 <div class="featured-card" id="featuredCard" role="button" tabindex="0" aria-label="Featured app — tap to view details">
-                    <div class="featured-badge" aria-hidden="true">⭐ Featured</div>
+                    <div class="featured-badge" aria-hidden="true">Featured</div>
                     <div class="featured-content">
                         <div class="featured-icon-container">
-                            <img class="featured-icon" id="featuredIcon" src="apps/repo-icon.png" alt="" width="72" height="72" loading="eager" fetchpriority="high" />
+                            <img class="featured-icon" id="featuredIcon" src="/assets/repo-icon-BmouXbY2.png" alt="" width="72" height="72" loading="eager" fetchpriority="high" />
                         </div>
                         <div class="featured-info">
                             <h3 class="featured-name" id="featuredName"></h3>
-                            <p class="featured-developer" id="featuredDev"></p>
+                            <p class="featured-dev" id="featuredDev"></p>
                             <p class="featured-desc" id="featuredDesc"></p>
                         </div>
                     </div>
                     <div class="featured-actions">
-                        <button type="button" class="download-btn featured-download-btn action-download" id="featuredDownloadBtn" aria-label="Download featured app">
-                            ⬇️ Download IPA
+                        <button type="button" class="featured-get-btn" data-id="" aria-label="Download featured app">
+                            GET
                         </button>
                     </div>
                 </div>
@@ -160,7 +195,7 @@
                 <h2 id="search-title" class="visually-hidden">Search and filter apps</h2>
                 <div class="search-container">
                     <div class="search-input-wrapper">
-                        <span class="search-icon" aria-hidden="true">🔍</span>
+                        <svg class="search-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="m10.5 10.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                         <input
                             type="search"
                             class="search-box"
@@ -169,6 +204,7 @@
                             aria-label="Search apps by name or description — press slash to focus"
                             autocomplete="off"
                             spellcheck="false"
+                            readonly
                         />
                         <kbd class="search-shortcut" aria-hidden="true">/</kbd>
                     </div>
@@ -181,34 +217,34 @@
                         All
                     </button>
                     <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Music" tabindex="-1">
-                        🎵 Music
+                        Music
                     </button>
                     <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Video" tabindex="-1">
-                        🎬 Video
+                        Video
                     </button>
                     <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Social" tabindex="-1">
-                        💬 Social
+                        Social
                     </button>
                     <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Creative" tabindex="-1">
-                        🎨 Creative
+                        Creative
                     </button>
                     <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Utilities" tabindex="-1">
-                        🔧 Utilities
+                        Utilities
                     </button>
                 </div>
 
                 <!-- Sort Toggle -->
                 <div class="sort-controls" role="group" aria-label="Sort options">
                     <button type="button" class="sort-btn active" id="sortRecent" data-sort="recent" aria-pressed="true">
-                        🕐 Recent
+                        Recent
                     </button>
                     <button type="button" class="sort-btn" id="sortAlpha" data-sort="alpha" aria-pressed="false">
-                        🔤 A–Z
+                        A–Z
                     </button>
                 </div>
             </section>
 
-            <!-- App Grid -->
+            <!-- App Grid (virtual scroll container) -->
             <section class="app-grid" id="appGrid" role="region" aria-label="Available apps"></section>
 
             <!-- Repo Info -->
@@ -221,7 +257,7 @@
                 <div class="repo-url-card">
                     <code class="repo-url-text" id="repoUrlText">https://OofMini.github.io/Minis-Repo/mini.json</code>
                     <button type="button" class="copy-url-btn" id="btn-copy-url" aria-label="Copy manifest URL to clipboard">
-                        <span class="copy-url-label" id="copyUrlLabel">📋 Copy URL</span>
+                        <span class="copy-url-label" id="copyUrlLabel">Copy URL</span>
                     </button>
                 </div>
                 <div class="repo-info-badges">
@@ -232,11 +268,33 @@
             </section>
         </main>
 
+        <!-- Search Overlay (iOS Spotlight-style) -->
+        <div class="search-overlay" id="searchOverlay" role="dialog" aria-label="Search apps" aria-modal="true">
+            <div class="search-overlay-inner">
+                <div class="search-overlay-header">
+                    <svg class="search-overlay-icon" aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="m10.5 10.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <input
+                        type="search"
+                        class="search-overlay-input"
+                        id="searchOverlayInput"
+                        placeholder="Apps, developers, categories..."
+                        aria-label="Search all apps"
+                        autocomplete="off"
+                        spellcheck="false"
+                    />
+                    <button type="button" class="search-overlay-close" id="searchOverlayClose" aria-label="Close search">
+                        Cancel
+                    </button>
+                </div>
+                <div class="search-overlay-recents" id="recentSearches" aria-label="Recent searches"></div>
+            </div>
+        </div>
+
         <footer class="site-footer" aria-label="Site footer">
             <div class="container">
                 <div class="footer-content">
                     <p class="footer-copyright">
-                        © 2026 Mini — Tweaked IPAs for iOS 15+
+                        &copy; 2026 Mini — Tweaked IPAs for iOS 15+
                     </p>
                     <div class="footer-links">
                         <a
@@ -245,46 +303,35 @@
                             rel="noopener noreferrer"
                             class="footer-link"
                         >
-                            📦 GitHub
+                            GitHub
                         </a>
-                        <span class="footer-separator" aria-hidden="true">·</span>
+                        <span class="footer-separator" aria-hidden="true">&middot;</span>
                         <a
                             href="https://github.com/OofMini/Minis-Repo/issues"
                             target="_blank"
                             rel="noopener noreferrer"
                             class="footer-link"
                         >
-                            🐛 Issues
+                            Issues
                         </a>
-                        <span class="footer-separator" aria-hidden="true">·</span>
+                        <span class="footer-separator" aria-hidden="true">&middot;</span>
                         <button type="button" id="btn-reset" class="footer-reset-btn" aria-label="Clear local cache and data">
-                            🗑️ Clear Cache
+                            Clear Cache
                         </button>
                     </div>
                 </div>
             </div>
         </footer>
 
-        <!--
-            FIX: `hidden` attribute removed from the scroll-to-top button.
-            The original code toggled `hidden` (display:none) alongside the
-            `.visible` class. Adding `hidden` destroys the CSS hide transition
-            instantly (opacity 1→0 is skipped; element just blinks away), while
-            removing `hidden` allows the show transition (opacity 0→1) to work.
-            This asymmetric behavior is eliminated by removing `hidden` entirely
-            and letting the CSS `opacity: 0 + pointer-events: none` on the base
-            rule handle the hidden state — transitions work symmetrically now.
-        -->
         <button type="button" class="scroll-top-btn" id="scrollTopBtn" aria-label="Scroll to top" aria-hidden="true">
-            <span aria-hidden="true">↑</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 13V3m0 0L3 8m5-5 5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
 
         <!-- Toast notification -->
         <div class="toast" id="toast" aria-live="polite" role="status"></div>
 
-        <!-- Scroll sentinel for IntersectionObserver -->
-        <div id="scroll-sentinel" aria-hidden="true"></div>
+        <!-- App modal container (populated dynamically) -->
+        <div id="appModal"></div>
 
-        <script src="assets/js/app.js"></script>
     </body>
 </html>
