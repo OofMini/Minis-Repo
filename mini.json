@@ -224,12 +224,12 @@
             ],
             "versions": [
                 {
-                    "version": "3.7.0",
-                    "date": "2026-02-19",
+                    "version": "3.7.2",
+                    "date": "2026-02-27",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Live/LiveContainer.ipa",
                     "size": 4194304,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to v3.7.0."
+                    "localizedDescription": "Updated to v3.7.2."
                 }
             ]
         },
