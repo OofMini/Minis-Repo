@@ -210,6 +210,9 @@
                             id="searchBox"
                             placeholder="Search apps..."
                             aria-label="Search apps by name or description — press slash to focus"
+                            aria-haspopup="dialog"
+                            aria-expanded="false"
+                            aria-controls="searchOverlay"
                             autocomplete="off"
                             spellcheck="false"
                             readonly
@@ -224,22 +227,22 @@
 
                 <!-- Category Filter Pills -->
                 <div class="category-filters" id="categoryFilters" role="tablist" aria-label="Filter apps by category">
-                    <button type="button" class="category-pill active" role="tab" aria-selected="true" data-category="all" tabindex="0">
+                    <button type="button" class="category-pill active" role="tab" aria-selected="true" aria-controls="appGrid" id="pill-all" data-category="all" tabindex="0">
                         All
                     </button>
-                    <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Music" tabindex="-1">
+                    <button type="button" class="category-pill" role="tab" aria-selected="false" aria-controls="appGrid" id="pill-Music" data-category="Music" tabindex="-1">
                         Music
                     </button>
-                    <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Video" tabindex="-1">
+                    <button type="button" class="category-pill" role="tab" aria-selected="false" aria-controls="appGrid" id="pill-Video" data-category="Video" tabindex="-1">
                         Video
                     </button>
-                    <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Social" tabindex="-1">
+                    <button type="button" class="category-pill" role="tab" aria-selected="false" aria-controls="appGrid" id="pill-Social" data-category="Social" tabindex="-1">
                         Social
                     </button>
-                    <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Creative" tabindex="-1">
+                    <button type="button" class="category-pill" role="tab" aria-selected="false" aria-controls="appGrid" id="pill-Creative" data-category="Creative" tabindex="-1">
                         Creative
                     </button>
-                    <button type="button" class="category-pill" role="tab" aria-selected="false" data-category="Utilities" tabindex="-1">
+                    <button type="button" class="category-pill" role="tab" aria-selected="false" aria-controls="appGrid" id="pill-Utilities" data-category="Utilities" tabindex="-1">
                         Utilities
                     </button>
                 </div>
@@ -256,7 +259,7 @@
             </section>
 
             <!-- App Grid (virtual scroll container) -->
-            <section class="app-grid" id="appGrid" role="region" aria-label="Available apps"></section>
+            <section class="app-grid" id="appGrid" role="tabpanel" tabindex="0" aria-labelledby="pill-all"></section>
 
             <!-- Repo Info -->
             <section class="repo-info fade-in" aria-labelledby="repo-info-title">
@@ -297,8 +300,8 @@
                         Cancel
                     </button>
                 </div>
-                <div class="search-overlay-recents" id="recentSearches" aria-label="Recent searches"></div>
-                <div class="search-overlay-results" id="searchOverlayResults" role="listbox" aria-label="Search results"></div>
+                <div class="search-overlay-recents" id="recentSearches" role="group" aria-label="Recent searches"></div>
+                <div class="search-overlay-results" id="searchOverlayResults" role="list" aria-label="Search results"></div>
             </div>
         </div>
 
