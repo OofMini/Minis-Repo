@@ -131,7 +131,7 @@
                     "downloadURL": "https://github.com/OofMini/tweak/releases/download/New/NeoFreeBird-sideloaded.ipa",
                     "size": 142816051,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to X 11.65 with NeoFreeBird 5.2. Added video download improvements and reduced memory usage."
+                    "localizedDescription": "Updated to X 11.69 with NeoFreeBird 5.2. Broken NFB toggles are fixed now."
                 }
             ]
         },
