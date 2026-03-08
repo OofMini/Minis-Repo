@@ -8,7 +8,7 @@
         <meta
             http-equiv="Content-Security-Policy"
             content="default-src 'self';
-                   img-src 'self' https://oofmini.github.io https://github.com https://raw.githubusercontent.com https://objects.githubusercontent.com data:;
+                   img-src 'self' https://oofmini.github.io https://github.com https://raw.githubusercontent.com https://objects.githubusercontent.com;
                    script-src 'self';
                    style-src 'self' 'sha256-qQ0ImSbH402EDlSik7kUukr+wXV1zZVBfHTvg5+g5M4=';
                    connect-src 'self' https://github.com https://raw.githubusercontent.com https://api.github.com https://objects.githubusercontent.com https://oofmini.github.io;
@@ -138,6 +138,8 @@
 
         <header class="hero" role="banner">
             <canvas id="heroCanvas" aria-hidden="true"></canvas>
+            <!-- A11y1: live region announces hero animation state to screen readers -->
+            <span id="heroStatus" class="visually-hidden" aria-live="polite" aria-atomic="true"></span>
             <div class="hero-glow" aria-hidden="true"></div>
             <img
                 src="./apps/repo-icon.png"
@@ -250,10 +252,10 @@
 
                 <!-- Sort Toggle -->
                 <div class="sort-controls" role="group" aria-label="Sort options">
-                    <button type="button" class="sort-btn active" id="sortRecent" data-sort="recent" aria-pressed="true">
+                    <button type="button" class="sort-btn active" id="sortRecent" data-sort="recent" aria-pressed="true" aria-label="Sort by most recent">
                         Recent
                     </button>
-                    <button type="button" class="sort-btn" id="sortAlpha" data-sort="alpha" aria-pressed="false">
+                    <button type="button" class="sort-btn" id="sortAlpha" data-sort="alpha" aria-pressed="false" aria-label="Sort alphabetically A to Z">
                         A–Z
                     </button>
                 </div>
