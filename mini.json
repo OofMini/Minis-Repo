@@ -238,7 +238,7 @@
             "bundleIdentifier": "com.neocortext.doublicatapp",
             "developerName": "AppTesters",
             "subtitle": "Face swap and deepfake editor",
-            "localizedDescription": "Reface Premium Unlocked. App v6.1.3.",
+            "localizedDescription": "Reface Premium Unlocked. App v6.2.0.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/refacepro.png",
             "tintColor": "#00C7BE",
             "screenshotURLs": [
@@ -262,12 +262,12 @@
             ],
             "versions": [
                 {
-                    "version": "6.1.3",
-                    "date": "2026-02-09",
+                    "version": "6.2.0",
+                    "date": "2026-03-08",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
                     "size": 106535321,
                     "minOSVersion": "17.0",
-                    "localizedDescription": "Updated to App v6.1.3. All premium templates unlocked and improved face detection accuracy."
+                    "localizedDescription": "Updated to App v6.2.0. All premium templates unlocked and improved face detection accuracy."
                 }
             ]
         }
