@@ -123,7 +123,7 @@
         </noscript>
 
         <div class="offline-bar" id="offlineBar" role="alert" hidden>
-            You are currently offline — downloads unavailable
+            You're offline — previously cached apps are still available
         </div>
 
         <div class="install-banner" id="installBanner" role="complementary" aria-label="Install app" hidden>
@@ -132,7 +132,7 @@
                 Install
             </button>
             <button type="button" class="install-dismiss-btn" id="btn-install-dismiss" aria-label="Dismiss install banner">
-                ✕
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             </button>
         </div>
 
@@ -304,6 +304,8 @@
                     </button>
                 </div>
                 <div class="search-overlay-recents" id="recentSearches" role="group" aria-label="Recent searches"></div>
+                <!-- A11Y-003: live region announces result count to screen readers -->
+                <p id="searchOverlayResultCount" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
                 <ul class="search-overlay-results" id="searchOverlayResults" aria-label="Search results"></ul>
             </div>
         </div>
