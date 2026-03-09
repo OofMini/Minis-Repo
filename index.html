@@ -8,10 +8,10 @@
         <meta
             http-equiv="Content-Security-Policy"
             content="default-src 'self';
-                   img-src 'self' https://oofmini.github.io https://github.com https://raw.githubusercontent.com https://objects.githubusercontent.com;
+                   img-src 'self' https://oofmini.github.io https://raw.githubusercontent.com https://objects.githubusercontent.com https://avatars.githubusercontent.com;
                    script-src 'self';
                    style-src 'self' 'sha256-qQ0ImSbH402EDlSik7kUukr+wXV1zZVBfHTvg5+g5M4=';
-                   connect-src 'self' https://github.com https://raw.githubusercontent.com https://api.github.com https://objects.githubusercontent.com https://oofmini.github.io;
+                   connect-src 'self' https://raw.githubusercontent.com https://api.github.com https://objects.githubusercontent.com https://oofmini.github.io;
                    worker-src 'self';
                    frame-ancestors 'none';
                    base-uri 'self';
@@ -337,6 +337,10 @@
                         <span class="footer-separator" aria-hidden="true">&middot;</span>
                         <button type="button" id="btn-reset" class="footer-reset-btn" aria-label="Clear local cache and data">
                             Clear Cache
+                        </button>
+                        <span class="footer-separator" aria-hidden="true">&middot;</span>
+                        <button type="button" id="btn-shortcuts" class="footer-reset-btn" aria-label="Show keyboard shortcuts (press ? anytime)">
+                            Shortcuts
                         </button>
                     </div>
                 </div>
