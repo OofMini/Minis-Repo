@@ -112,7 +112,7 @@
             "subtitle": "Tweaked Twitter/X",
             "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.69, NeoFreeBird 5.2.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/NeoFreeBird.png",
-            "tintColor": "#1DA1F2",
+            "tintColor": "#000000",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/x-neofreebird-1.png",
                 "https://OofMini.github.io/Minis-Repo/apps/x-neofreebird-2.png",
@@ -142,7 +142,7 @@
             "subtitle": "Unlocked Pro video editor",
             "localizedDescription": "Pro video editor with premium filters, tools, and no watermark. App v1.94.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/Inshot.png",
-            "tintColor": "#FF2D55",
+            "tintColor": "#FF4500",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/inshot-1.png",
                 "https://OofMini.github.io/Minis-Repo/apps/inshot-2.png",
@@ -180,7 +180,7 @@
             "subtitle": "Torrent client",
             "localizedDescription": "Lightweight torrent client for downloading and managing torrent files on-device. App v2.1.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/itorrent.png",
-            "tintColor": "#34C759",
+            "tintColor": "#FF9500",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/itorrent-1.png",
                 "https://OofMini.github.io/Minis-Repo/apps/itorrent-2.png",
@@ -210,7 +210,7 @@
             "subtitle": "Live streaming container",
             "localizedDescription": "Runs live production containers for streaming apps and runtime isolation. App v3.7.2.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/livecontainer.png",
-            "tintColor": "#FF2D55",
+            "tintColor": "#007AFF",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/livecontainer-1.png",
                 "https://OofMini.github.io/Minis-Repo/apps/livecontainer-2.png",
@@ -240,7 +240,7 @@
             "subtitle": "Face swap and deepfake editor",
             "localizedDescription": "Reface Premium Unlocked. App v6.2.0.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/refacepro.png",
-            "tintColor": "#00C7BE",
+            "tintColor": "#000000",
             "screenshotURLs": [
                 "https://OofMini.github.io/Minis-Repo/apps/refacepro-1.png",
                 "https://OofMini.github.io/Minis-Repo/apps/refacepro-2.png",
