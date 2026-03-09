@@ -5,6 +5,21 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
         <meta name="color-scheme" content="dark" />
 
+        <!--
+            020: CSP domain notes:
+            img-src:
+              oofmini.github.io      — repo icon / og:image (same origin alias)
+              raw.githubusercontent.com   — raw file URLs (used in some icon paths)
+              objects.githubusercontent.com — GitHub LFS / release asset downloads (IPA icons, screenshots)
+              avatars.githubusercontent.com — developer avatar images (if used)
+            connect-src:
+              raw.githubusercontent.com   — mini.json manifest fetch
+              api.github.com             — optional GitHub API calls (future)
+              objects.githubusercontent.com — large asset downloads
+              oofmini.github.io          — same-origin fetch alias for CDN deployments
+            Note: raw.githubusercontent.com serves file *content*; objects.githubusercontent.com
+            serves Git LFS objects and release assets. Both are needed for full coverage.
+        -->
         <meta
             http-equiv="Content-Security-Policy"
             content="default-src 'self';
