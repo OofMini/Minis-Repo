@@ -76,7 +76,7 @@
             "bundleIdentifier": "com.google.ios.youtubemusic",
             "developerName": "dayanch96",
             "subtitle": "Tweaked YouTube Music with premium features",
-            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.06.4, YTMusicUltimate 2.3.1.",
+            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. YouTube Music IPA 9.06.4, YTMusicUltimate 2.3.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubeMusic.png",
             "tintColor": "#FF0000",
             "screenshotURLs": [
@@ -101,7 +101,7 @@
                     "downloadURL": "https://github.com/OofMini/YTMusicUltimate/releases/download/New/YTMusicUltimate.ipa",
                     "size": 257425408,
                     "minOSVersion": "16.0",
-                    "localizedDescription": "Updated to Youtube Music IPA 9.06.4, YTMusicUltimate 2.3.1. Added offline playback fixes and improved queue management."
+                    "localizedDescription": "Updated to YouTube Music IPA 9.06.4, YTMusicUltimate 2.3.1. Added offline playback fixes and improved queue management."
                 }
             ]
         },
