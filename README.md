@@ -28,8 +28,8 @@ Copy and paste this link directly into your app manager:
 
 |                                                       Icon                                                        | App Name            | Version  | Description                                                                       |
 | :---------------------------------------------------------------------------------------------------------------: | :------------------ | :------- | :-------------------------------------------------------------------------------- |
-|   <img src="apps/EeveeSpotify.png" width="48" style="border-radius: 22%">    | **EeveeSpotify** | v9.1.12  | Premium Spotify client with lyrics, no ads, and high-quality audio streaming.     |
-| <img src="apps/YouTubePlus_5.2b3.PNG" width="48" style="border-radius: 22%"> | **YTLite** | v20.42.3 | Lightweight YouTube tweak with background playback, ad-blocking, and PiP.         |
+|   <img src="apps/EeveeSpotify.png" width="48" style="border-radius: 22%">    | **EeveeSpotify** | v9.1.28  | Premium Spotify client with lyrics, no ads, and high-quality audio streaming.     |
+| <img src="apps/YouTubePlus_5.2b3.PNG" width="48" style="border-radius: 22%"> | **YTLite** | v21.10.2 | Lightweight YouTube tweak with background playback, ad-blocking, and PiP.         |
 |   <img src="apps/YouTubeMusic.png" width="48" style="border-radius: 22%">    | **YTMusicUltimate** | v9.06.4  | Unlocked YouTube Music experience with background audio and premium features.     |
 |    <img src="apps/NeoFreeBird.png" width="48" style="border-radius: 22%">    | **NeoFreeBird** | v11.69   | Enhanced X (Twitter) client with ad removal and video downloading capabilities.   |
 |      <img src="apps/Inshot.png" width="48" style="border-radius: 22%">       | **InShot Pro** | v1.94.1  | Professional video editor with all filters, effects, and export options unlocked. |

@@ -33,7 +33,7 @@
             "versions": [
                 {
                     "version": "9.1.28",
-                    "date": "2026-03-15",
+                    "date": "2026-03-25",
                     "downloadURL": "https://github.com/OofMini/eeveespotifyreborn/releases/download/New/EeveeSpotify.ipa",
                     "size": 87975526,
                     "minOSVersion": "16.1",
@@ -46,7 +46,7 @@
             "bundleIdentifier": "com.google.ios.youtube",
             "developerName": "dayanch96",
             "subtitle": "Tweaked YouTube with premium features",
-            "localizedDescription": "Tweaked YouTube with background playback, no ads, and picture-in-picture. YouTube IPA 20.42.3, YTLite 5.2b4.",
+            "localizedDescription": "Tweaked YouTube with background playback, no ads, and picture-in-picture. YouTube IPA 21.10.2, YTLite 5.2b5.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubePlus_5.2b3.PNG",
             "tintColor": "#FF0000",
             "screenshotURLs": [
@@ -62,12 +62,12 @@
             ],
             "versions": [
                 {
-                    "version": "20.42.3",
-                    "date": "2026-02-18",
-                    "downloadURL": "https://github.com/OofMini/YTLite/releases/download/New/YouTubePlus_5.2b4.ipa",
+                    "version": "21.10.2",
+                    "date": "2026-03-25",
+                    "downloadURL": "https://github.com/OofMini/YTLite/releases/download/New/YouTubePlus_5.2b5.ipa",
                     "size": 113351065,
                     "minOSVersion": "16.0",
-                    "localizedDescription": "Updated to YouTube IPA 20.42.3, YTLite 5.2b4."
+                    "localizedDescription": "Updated to YouTube IPA 21.10.2, YTLite 5.2b5."
                 }
             ]
         },
