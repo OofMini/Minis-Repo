@@ -140,7 +140,7 @@
             "bundleIdentifier": "com.camerasideas.InstaShot",
             "developerName": "Blatant",
             "subtitle": "Unlocked Pro video editor",
-            "localizedDescription": "Pro video editor with premium filters, tools, and no watermark. App v1.94.1.",
+            "localizedDescription": "Pro video editor with premium filters, tools, and no watermark. App v1.95.0.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/Inshot.png",
             "tintColor": "#FF4500",
             "screenshotURLs": [
@@ -164,12 +164,12 @@
             ],
             "versions": [
                 {
-                    "version": "1.94.1",
-                    "date": "2026-03-03",
+                    "version": "1.95.0",
+                    "date": "2026-03-25",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/New/InShot.ipa",
                     "size": 113665638,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to App v1.94.1. New AI video effects, all premium filters unlocked, watermark completely removed."
+                    "localizedDescription": "Updated to App v1.95.0. New AI video effects, all premium filters unlocked, watermark completely removed."
                 }
             ]
         },
@@ -238,7 +238,7 @@
             "bundleIdentifier": "com.neocortext.doublicatapp",
             "developerName": "AppTesters",
             "subtitle": "Face swap and deepfake editor",
-            "localizedDescription": "Reface Premium Unlocked. App v6.2.0.",
+            "localizedDescription": "Reface Premium Unlocked. App v6.4.0.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/refacepro.png",
             "tintColor": "#000000",
             "screenshotURLs": [
@@ -262,12 +262,12 @@
             ],
             "versions": [
                 {
-                    "version": "6.2.0",
-                    "date": "2026-03-08",
+                    "version": "6.4.0",
+                    "date": "2026-03-25",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
                     "size": 106535321,
                     "minOSVersion": "17.0",
-                    "localizedDescription": "Updated to App v6.2.0. All premium templates unlocked and improved face detection accuracy."
+                    "localizedDescription": "Updated to App v6.4.0. All premium templates unlocked and improved face detection accuracy."
                 }
             ]
         }
