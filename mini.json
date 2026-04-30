@@ -110,7 +110,7 @@
             "bundleIdentifier": "com.atebits.Tweetie2",
             "developerName": "NeoFreeBird",
             "subtitle": "Tweaked Twitter/X",
-            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.69, NeoFreeBird 5.2.",
+            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.86, NeoFreeBird 5.2.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/NeoFreeBird.png",
             "tintColor": "#000000",
             "screenshotURLs": [
@@ -126,6 +126,14 @@
             ],
             "versions": [
                 {
+                    "version": "11.86",
+                    "date": "2026-04-30",
+                    "downloadURL": "https://github.com/OofMini/tweak/releases/download/New/NeoFreeBird-sideloaded.ipa",
+                    "size": 142816051,
+                    "minOSVersion": "15.0",
+                    "localizedDescription": "Updated to X IPA 11.86, NeoFreeBird 5.2."
+                },
+                {
                     "version": "11.69",
                     "date": "2026-03-05",
                     "downloadURL": "https://github.com/OofMini/tweak/releases/download/New/NeoFreeBird-sideloaded.ipa",
@@ -140,7 +148,7 @@
             "bundleIdentifier": "com.camerasideas.InstaShot",
             "developerName": "Blatant",
             "subtitle": "Unlocked Pro video editor",
-            "localizedDescription": "Pro video editor with premium filters, tools, and no watermark. App v1.95.0.",
+            "localizedDescription": "Pro video editor with premium filters, tools, and no watermark. App v1.95.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/Inshot.png",
             "tintColor": "#FF4500",
             "screenshotURLs": [
@@ -163,6 +171,14 @@
                 }
             ],
             "versions": [
+                {
+                    "version": "1.95.1",
+                    "date": "2026-04-30",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/New/InShot.ipa",
+                    "size": 113665638,
+                    "minOSVersion": "15.0",
+                    "localizedDescription": "Updated to App v1.95.1."
+                },
                 {
                     "version": "1.95.0",
                     "date": "2026-03-25",
@@ -238,7 +254,7 @@
             "bundleIdentifier": "com.neocortext.doublicatapp",
             "developerName": "AppTesters",
             "subtitle": "Face swap and deepfake editor",
-            "localizedDescription": "Reface Premium Unlocked. App v6.4.0.",
+            "localizedDescription": "Reface Premium Unlocked. App v6.6.0.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/refacepro.png",
             "tintColor": "#000000",
             "screenshotURLs": [
@@ -261,6 +277,14 @@
                 }
             ],
             "versions": [
+                {
+                    "version": "6.6.0",
+                    "date": "2026-04-30",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
+                    "size": 106535321,
+                    "minOSVersion": "17.0",
+                    "localizedDescription": "Updated to App v6.6.0."
+                },
                 {
                     "version": "6.4.0",
                     "date": "2026-03-25",
