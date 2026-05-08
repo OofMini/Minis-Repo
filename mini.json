@@ -46,7 +46,7 @@
             "bundleIdentifier": "com.google.ios.youtube",
             "developerName": "dayanch96",
             "subtitle": "Tweaked YouTube with premium features",
-            "localizedDescription": "Tweaked YouTube with background playback, no ads, and picture-in-picture. YouTube IPA 21.10.2, YTLite 5.2b5.",
+            "localizedDescription": "Tweaked YouTube with background playback, no ads, and picture-in-picture. YouTube IPA 21.16.2, YTLite 5.2.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubePlus_5.2b3.PNG",
             "tintColor": "#FF0000",
             "screenshotURLs": [
@@ -61,6 +61,14 @@
                 }
             ],
             "versions": [
+                {
+                    "version": "21.16.2",
+                    "date": "2026-05-08",
+                    "downloadURL": "https://github.com/OofMini/YTLite/releases/download/New/YouTubePlus_5.2.1.ipa",
+                    "size": 113351065,
+                    "minOSVersion": "16.0",
+                    "localizedDescription": "Updated to YouTube IPA 21.16.2, YTLite 5.2.1."
+                },
                 {
                     "version": "21.10.2",
                     "date": "2026-03-25",
