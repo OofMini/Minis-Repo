@@ -170,22 +170,6 @@
                     "size": 113665638,
                     "minOSVersion": "15.0",
                     "localizedDescription": "Updated to App v1.96.0."
-                },
-                {
-                    "version": "1.95.1",
-                    "date": "2026-04-30",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/New/InShot.ipa",
-                    "size": 113665638,
-                    "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to App v1.95.1."
-                },
-                {
-                    "version": "1.95.0",
-                    "date": "2026-03-25",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/New/InShot.ipa",
-                    "size": 113665638,
-                    "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to App v1.95.0. New AI video effects, all premium filters unlocked, watermark completely removed."
                 }
             ]
         },
@@ -284,22 +268,6 @@
                     "size": 106535321,
                     "minOSVersion": "17.0",
                     "localizedDescription": "Updated to App v6.7.0."
-                },
-                {
-                    "version": "6.6.0",
-                    "date": "2026-04-30",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
-                    "size": 106535321,
-                    "minOSVersion": "17.0",
-                    "localizedDescription": "Updated to App v6.6.0."
-                },
-                {
-                    "version": "6.4.0",
-                    "date": "2026-03-25",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
-                    "size": 106535321,
-                    "minOSVersion": "17.0",
-                    "localizedDescription": "Updated to App v6.4.0. All premium templates unlocked and improved face detection accuracy."
                 }
             ]
         }
