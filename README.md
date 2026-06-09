@@ -28,14 +28,14 @@ Copy and paste this link directly into your app manager:
 
 |                                                       Icon                                                        | App Name            | Version  | Description                                                                       |
 | :---------------------------------------------------------------------------------------------------------------: | :------------------ | :------- | :-------------------------------------------------------------------------------- |
-|   <img src="apps/EeveeSpotify.png" width="48" style="border-radius: 22%">    | **EeveeSpotify** | v9.1.28  | Premium Spotify client with lyrics, no ads, and high-quality audio streaming.     |
+|   <img src="apps/EeveeSpotify.png" width="48" style="border-radius: 22%">    | **EeveeSpotify** | v9.1.46  | Premium Spotify client with lyrics, no ads, and high-quality audio streaming.     |
 | <img src="apps/YouTubePlus_5.2b3.PNG" width="48" style="border-radius: 22%"> | **YTLite** | v21.16.2 | Lightweight YouTube tweak with background playback, ad-blocking, and PiP.         |
-|   <img src="apps/YouTubeMusic.png" width="48" style="border-radius: 22%">    | **YTMusicUltimate** | v9.06.4  | Unlocked YouTube Music experience with background audio and premium features.     |
-|    <img src="apps/NeoFreeBird.png" width="48" style="border-radius: 22%">    | **NeoFreeBird** | v11.86   | Enhanced X (Twitter) client with ad removal and video downloading capabilities.   |
-|      <img src="apps/Inshot.png" width="48" style="border-radius: 22%">       | **InShot Pro** | v1.96.0  | Professional video editor with all filters, effects, and export options unlocked. |
-|     <img src="apps/refacepro.png" width="48" style="border-radius: 22%">     | **Reface Pro** | v6.7.0   | Advanced AI face-swapping tool with premium templates and features enabled.       |
+|   <img src="apps/YouTubeMusic.png" width="48" style="border-radius: 22%">    | **YTMusicUltimate** | v9.11.2  | Unlocked YouTube Music experience with background audio and premium features.     |
+|    <img src="apps/NeoFreeBird.png" width="48" style="border-radius: 22%">    | **NeoFreeBird** | v11.96.1   | Enhanced X (Twitter) client with ad removal and video downloading capabilities.   |
+|      <img src="apps/Inshot.png" width="48" style="border-radius: 22%">       | **InShot Pro** | v1.97.0  | Professional video editor with all filters, effects, and export options unlocked. |
+|     <img src="apps/refacepro.png" width="48" style="border-radius: 22%">     | **Reface Pro** | v6.9.1   | Advanced AI face-swapping tool with premium templates and features enabled.       |
 |     <img src="apps/itorrent.png" width="48" style="border-radius: 22%">      | **iTorrent** | v2.1.1   | A robust, native BitTorrent client for iOS with background downloading support.   |
-|   <img src="apps/livecontainer.png" width="48" style="border-radius: 22%">   | **LiveContainer** | v3.7.2   | Run JIT-dependent apps without a computer using advanced containerization.        |
+|   <img src="apps/livecontainer.png" width="48" style="border-radius: 22%">   | **LiveContainer** | v3.7.9   | Run JIT-dependent apps without a computer using advanced containerization.        |
 
 ---
 

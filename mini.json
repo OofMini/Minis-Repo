@@ -12,7 +12,7 @@
             "bundleIdentifier": "com.spotify.client",
             "developerName": "whoeevee",
             "subtitle": "Tweaked Spotify client",
-            "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.28, EeveeSpotify 6.6.2.",
+            "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.46, EeveeSpotify 6.6.2.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/EeveeSpotify.png",
             "tintColor": "#1DB954",
             "screenshotURLs": [
@@ -32,12 +32,12 @@
             ],
             "versions": [
                 {
-                    "version": "9.1.28",
-                    "date": "2026-03-25",
+                    "version": "9.1.46",
+                    "date": "2026-06-09",
                     "downloadURL": "https://github.com/OofMini/eeveespotifyreborn/releases/download/New/EeveeSpotify.ipa",
                     "size": 87975526,
                     "minOSVersion": "16.1",
-                    "localizedDescription": "Updated to Spotify IPA 9.1.28, EeveeSpotify 6.6.2. Improved streaming stability and fixed lyrics sync issues."
+                    "localizedDescription": "Updated to Spotify IPA 9.1.46, EeveeSpotify 6.6.2."
                 }
             ]
         },
@@ -76,7 +76,7 @@
             "bundleIdentifier": "com.google.ios.youtubemusic",
             "developerName": "dayanch96",
             "subtitle": "Tweaked YouTube Music with premium features",
-            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. YouTube Music IPA 9.06.4, YTMusicUltimate 2.3.1.",
+            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. YouTube Music IPA 9.06.4, YTMusicUltimate 2.3.1. Youtube Music IPA 9.11.2, YTMusicUltimate 2.3.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubeMusic.png",
             "tintColor": "#FF0000",
             "screenshotURLs": [
@@ -96,12 +96,12 @@
             ],
             "versions": [
                 {
-                    "version": "9.06.4",
-                    "date": "2026-02-14",
+                    "version": "9.11.2",
+                    "date": "2026-06-09",
                     "downloadURL": "https://github.com/OofMini/YTMusicUltimate/releases/download/New/YTMusicUltimate.ipa",
                     "size": 257425408,
                     "minOSVersion": "16.0",
-                    "localizedDescription": "Updated to YouTube Music IPA 9.06.4, YTMusicUltimate 2.3.1. Added offline playback fixes and improved queue management."
+                    "localizedDescription": "Updated to Youtube Music IPA 9.11.2, YTMusicUltimate 2.3.1."
                 }
             ]
         },
@@ -110,7 +110,7 @@
             "bundleIdentifier": "com.atebits.Tweetie2",
             "developerName": "NeoFreeBird",
             "subtitle": "Tweaked Twitter/X",
-            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.86, NeoFreeBird 5.2.",
+            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.96.1, NeoFreeBird 5.2.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/NeoFreeBird.png",
             "tintColor": "#000000",
             "screenshotURLs": [
@@ -126,12 +126,12 @@
             ],
             "versions": [
                 {
-                    "version": "11.86",
-                    "date": "2026-04-30",
+                    "version": "11.96.1",
+                    "date": "2026-06-09",
                     "downloadURL": "https://github.com/OofMini/tweak/releases/download/New/NeoFreeBird-sideloaded.ipa",
                     "size": 142816051,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to X IPA 11.86, NeoFreeBird 5.2."
+                    "localizedDescription": "Updated to X IPA 11.96.1, NeoFreeBird 5.2."
                 }
             ]
         },
@@ -140,7 +140,7 @@
             "bundleIdentifier": "com.camerasideas.InstaShot",
             "developerName": "Blatant",
             "subtitle": "Unlocked Pro video editor",
-            "localizedDescription": "Pro video editor with premium filters, tools, and no watermark. App v1.96.0.",
+            "localizedDescription": "Pro video editor with premium filters, tools, and no watermark. App v1.97.0.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/Inshot.png",
             "tintColor": "#FF4500",
             "screenshotURLs": [
@@ -164,12 +164,12 @@
             ],
             "versions": [
                 {
-                    "version": "1.96.0",
-                    "date": "2026-05-11",
+                    "version": "1.97.0",
+                    "date": "2026-06-09",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/New/InShot.ipa",
                     "size": 113665638,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to App v1.96.0."
+                    "localizedDescription": "Updated to App v1.97.0."
                 }
             ]
         },
@@ -208,7 +208,7 @@
             "bundleIdentifier": "com.kdt.livecontainer",
             "developerName": "hugeBlack",
             "subtitle": "Live streaming container",
-            "localizedDescription": "Runs live production containers for streaming apps and runtime isolation. App v3.7.2.",
+            "localizedDescription": "Runs live production containers for streaming apps and runtime isolation. App v3.7.9.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/livecontainer.png",
             "tintColor": "#007AFF",
             "screenshotURLs": [
@@ -224,12 +224,12 @@
             ],
             "versions": [
                 {
-                    "version": "3.7.2",
-                    "date": "2026-02-27",
+                    "version": "3.7.9",
+                    "date": "2026-06-09",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Live/LiveContainer.ipa",
                     "size": 4194304,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to App v3.7.2."
+                    "localizedDescription": "Updated to App v3.7.9."
                 }
             ]
         },
@@ -238,7 +238,7 @@
             "bundleIdentifier": "com.neocortext.doublicatapp",
             "developerName": "AppTesters",
             "subtitle": "Face swap and deepfake editor",
-            "localizedDescription": "Reface Premium Unlocked. App v6.7.0.",
+            "localizedDescription": "Reface Premium Unlocked. App v6.9.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/refacepro.png",
             "tintColor": "#000000",
             "screenshotURLs": [
@@ -262,12 +262,12 @@
             ],
             "versions": [
                 {
-                    "version": "6.7.0",
-                    "date": "2026-05-11",
+                    "version": "6.9.1",
+                    "date": "2026-06-09",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
                     "size": 106535321,
                     "minOSVersion": "17.0",
-                    "localizedDescription": "Updated to App v6.7.0."
+                    "localizedDescription": "Updated to App v6.9.1."
                 }
             ]
         }
