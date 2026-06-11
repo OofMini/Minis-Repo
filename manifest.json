@@ -103,13 +103,5 @@
             "text": "search",
             "url": "url"
         }
-    },
-    "file_handlers": [
-        {
-            "action": "./",
-            "accept": {
-                "application/octet-stream": [".ipa"]
-            }
-        }
-    ]
+    }
 }

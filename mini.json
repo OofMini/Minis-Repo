@@ -136,7 +136,7 @@
             ]
         },
         {
-            "name": "InshotPro",
+            "name": "InShot Pro",
             "bundleIdentifier": "com.camerasideas.InstaShot",
             "developerName": "Blatant",
             "subtitle": "Unlocked Pro video editor",
@@ -207,8 +207,8 @@
             "name": "LiveContainer",
             "bundleIdentifier": "com.kdt.livecontainer",
             "developerName": "hugeBlack",
-            "subtitle": "Live streaming container",
-            "localizedDescription": "Runs live production containers for streaming apps and runtime isolation. App v3.7.9.",
+            "subtitle": "Run apps without installing",
+            "localizedDescription": "Runs iOS apps inside its own container without installing them — multiple app instances, JIT support, and on-device app management. App v3.7.9.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/livecontainer.png",
             "tintColor": "#007AFF",
             "screenshotURLs": [
@@ -234,11 +234,11 @@
             ]
         },
         {
-            "name": "RefacePro (IOS 17+)",
+            "name": "Reface Pro (iOS 17+)",
             "bundleIdentifier": "com.neocortext.doublicatapp",
             "developerName": "AppTesters",
             "subtitle": "Face swap and deepfake editor",
-            "localizedDescription": "Reface Premium Unlocked. App v6.9.1.",
+            "localizedDescription": "AI face-swap editor with premium templates, watermark removal, and all pro features unlocked. App v6.9.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/refacepro.png",
             "tintColor": "#000000",
             "screenshotURLs": [

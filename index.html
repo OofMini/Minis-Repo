@@ -151,6 +151,21 @@
             </button>
         </div>
 
+        <!-- UX-020: compact sticky header — slides in once the hero scrolls away -->
+        <div class="compact-header" id="compactHeader" aria-hidden="true">
+            <button type="button" class="compact-header-home" id="compactHomeBtn" aria-label="Scroll to top" tabindex="-1">
+                <img src="./apps/repo-icon.png" alt="" class="compact-header-icon" width="26" height="26" />
+                <span class="compact-header-title">Mini's Repo</span>
+            </button>
+            <button type="button" class="compact-header-search" id="compactSearchBtn" aria-label="Search apps" tabindex="-1">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+                    <circle cx="6.5" cy="6.5" r="4.75" stroke="currentColor" stroke-width="1.6"/>
+                    <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+                <span>Search</span>
+            </button>
+        </div>
+
         <header class="hero" role="banner">
             <canvas id="heroCanvas" aria-hidden="true"></canvas>
             <!-- A11y1: live region announces hero animation state to screen readers -->
@@ -175,6 +190,10 @@
                 <span class="stat-badge active-badge" aria-label="Repository status active">
                     <span class="stat-badge-icon" aria-hidden="true"></span>
                     Active
+                </span>
+                <span class="stat-badge updated-badge" id="updatedBadge" hidden>
+                    <span class="stat-badge-icon" aria-hidden="true"></span>
+                    <span id="updatedBadgeText"></span>
                 </span>
                 <span class="stat-badge ios-badge" aria-label="Supports iOS 15 and above">
                     <span class="stat-badge-icon" aria-hidden="true"></span>
