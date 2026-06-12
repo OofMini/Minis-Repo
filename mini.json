@@ -110,7 +110,7 @@
             "bundleIdentifier": "com.atebits.Tweetie2",
             "developerName": "NeoFreeBird",
             "subtitle": "Tweaked Twitter/X",
-            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.96.1, NeoFreeBird 5.2.",
+            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.99, NeoFreeBird 6.0.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/NeoFreeBird.png",
             "tintColor": "#000000",
             "screenshotURLs": [
@@ -126,12 +126,12 @@
             ],
             "versions": [
                 {
-                    "version": "11.96.1",
-                    "date": "2026-06-09",
+                    "version": "11.99",
+                    "date": "2026-06-12",
                     "downloadURL": "https://github.com/OofMini/tweak/releases/download/New/NeoFreeBird-sideloaded.ipa",
                     "size": 142816051,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to X IPA 11.96.1, NeoFreeBird 5.2."
+                    "localizedDescription": "Updated to X IPA 11.99, NeoFreeBird 6.0."
                 }
             ]
         },
