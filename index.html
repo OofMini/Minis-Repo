@@ -151,18 +151,20 @@
             </button>
         </div>
 
-        <!-- UX-020: compact sticky header — slides in once the hero scrolls away -->
-        <div class="compact-header" id="compactHeader" aria-hidden="true">
-            <button type="button" class="compact-header-home" id="compactHomeBtn" aria-label="Scroll to top" tabindex="-1">
+        <!-- UX-024: persistent app bar — always visible; the title fades in once
+             the hero scrolls away. This is the sole search entry point. -->
+        <div class="compact-header" id="compactHeader">
+            <button type="button" class="compact-header-home" id="compactHomeBtn" aria-label="Scroll to top">
                 <img src="./apps/repo-icon.png" alt="" class="compact-header-icon" width="26" height="26" />
                 <span class="compact-header-title">Mini's Repo</span>
             </button>
-            <button type="button" class="compact-header-search" id="compactSearchBtn" aria-label="Search apps" tabindex="-1">
+            <button type="button" class="compact-header-search" id="compactSearchBtn" aria-label="Search apps" aria-haspopup="dialog" aria-controls="searchOverlay">
                 <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
                     <circle cx="6.5" cy="6.5" r="4.75" stroke="currentColor" stroke-width="1.6"/>
                     <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                 </svg>
-                <span>Search</span>
+                <span class="compact-header-search-label">Search apps…</span>
+                <kbd class="compact-header-kbd" aria-hidden="true">/</kbd>
             </button>
         </div>
 
@@ -237,30 +239,9 @@
 
             <!-- Search & Filters -->
             <section class="search-filter-section fade-in" aria-labelledby="search-title">
-                <h2 id="search-title" class="visually-hidden">Search and filter apps</h2>
-                <div class="search-container">
-                    <div class="search-input-wrapper">
-                        <svg class="search-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="m10.5 10.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                        <input
-                            type="search"
-                            class="search-box"
-                            id="searchBox"
-                            placeholder="Search apps..."
-                            aria-label="Search apps by name or description — press slash to focus"
-                            aria-haspopup="dialog"
-                            aria-expanded="false"
-                            aria-controls="searchOverlay"
-                            autocomplete="off"
-                            spellcheck="false"
-                            readonly
-                        />
-                        <button type="button" class="search-clear-btn" id="searchClearBtn" aria-label="Clear search">
-                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                        </button>
-                        <kbd class="search-shortcut" aria-hidden="true">/</kbd>
-                    </div>
-                    <p id="searchResultsCount" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
-                </div>
+                <h2 id="search-title" class="visually-hidden">Filter apps</h2>
+                <!-- Search lives in the always-visible app bar (#compactSearchBtn). -->
+                <p id="searchResultsCount" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
 
                 <!-- Category Filter Pills -->
                 <div class="category-filters" id="categoryFilters" role="tablist" aria-label="Filter apps by category">
