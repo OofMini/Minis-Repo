@@ -35,7 +35,7 @@
                     "version": "9.1.46",
                     "date": "2026-06-09",
                     "downloadURL": "https://github.com/OofMini/eeveespotifyreborn/releases/download/New/EeveeSpotify.ipa",
-                    "size": 87975526,
+                    "size": 115771856,
                     "minOSVersion": "16.1",
                     "localizedDescription": "Updated to Spotify IPA 9.1.46, EeveeSpotify 6.6.2."
                 }
@@ -65,7 +65,7 @@
                     "version": "21.16.2",
                     "date": "2026-05-08",
                     "downloadURL": "https://github.com/OofMini/YTLite/releases/download/New/YouTubePlus_5.2.1.ipa",
-                    "size": 113351065,
+                    "size": 119833556,
                     "minOSVersion": "16.0",
                     "localizedDescription": "Updated to YouTube IPA 21.16.2, YTLite 5.2.1."
                 }
@@ -76,7 +76,7 @@
             "bundleIdentifier": "com.google.ios.youtubemusic",
             "developerName": "dayanch96",
             "subtitle": "Tweaked YouTube Music with premium features",
-            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.11.2, YTMusicUltimate 2.3.1.",
+            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.23, YTMusicUltimate 2.4.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubeMusic.png",
             "tintColor": "#FF0000",
             "screenshotURLs": [
@@ -96,12 +96,12 @@
             ],
             "versions": [
                 {
-                    "version": "9.11.2",
-                    "date": "2026-06-09",
+                    "version": "9.23",
+                    "date": "2026-06-19",
                     "downloadURL": "https://github.com/OofMini/YTMusicUltimate/releases/download/New/YTMusicUltimate.ipa",
-                    "size": 257425408,
+                    "size": 93340497,
                     "minOSVersion": "16.0",
-                    "localizedDescription": "Updated to Youtube Music IPA 9.11.2, YTMusicUltimate 2.3.1."
+                    "localizedDescription": "Updated to Youtube Music IPA 9.23, YTMusicUltimate 2.4.1."
                 }
             ]
         },
@@ -129,7 +129,7 @@
                     "version": "11.99",
                     "date": "2026-06-12",
                     "downloadURL": "https://github.com/OofMini/tweak/releases/download/New/NeoFreeBird-sideloaded.ipa",
-                    "size": 142816051,
+                    "size": 218948347,
                     "minOSVersion": "15.0",
                     "localizedDescription": "Updated to X IPA 11.99, NeoFreeBird 6.0."
                 }
@@ -167,7 +167,7 @@
                     "version": "1.97.0",
                     "date": "2026-06-09",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/New/InShot.ipa",
-                    "size": 113665638,
+                    "size": 152657317,
                     "minOSVersion": "15.0",
                     "localizedDescription": "Updated to App v1.97.0."
                 }
@@ -197,7 +197,7 @@
                     "version": "2.1.1",
                     "date": "2026-02-09",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Torrent/iTorrent.ipa",
-                    "size": 7130316,
+                    "size": 8362011,
                     "minOSVersion": "17.0",
                     "localizedDescription": "Updated to App v2.1.1. Background downloading support and improved peer connectivity."
                 }
@@ -227,7 +227,7 @@
                     "version": "3.7.9",
                     "date": "2026-06-09",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Live/LiveContainer.ipa",
-                    "size": 4194304,
+                    "size": 4610231,
                     "minOSVersion": "15.0",
                     "localizedDescription": "Updated to App v3.7.9."
                 }
@@ -265,7 +265,7 @@
                     "version": "6.9.1",
                     "date": "2026-06-09",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
-                    "size": 106535321,
+                    "size": 110214919,
                     "minOSVersion": "17.0",
                     "localizedDescription": "Updated to App v6.9.1."
                 }
