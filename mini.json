@@ -270,6 +270,66 @@
                     "localizedDescription": "Updated to App v6.9.1."
                 }
             ]
+        },
+        {
+            "name": "X Login",
+            "bundleIdentifier": "com.atebits.Tweetie2.login",
+            "developerName": "NeoFreeBird",
+            "subtitle": "X login fix — install before X",
+            "localizedDescription": "Login fix for tweaked X (Twitter). Install and sign in here first, then install NeoFreeBird over the top so the login carries across. App v9.67.",
+            "iconURL": "https://OofMini.github.io/Minis-Repo/apps/NeoFreeBird.png",
+            "tintColor": "#000000",
+            "screenshotURLs": [
+                "https://OofMini.github.io/Minis-Repo/apps/x-neofreebird-1.png",
+                "https://OofMini.github.io/Minis-Repo/apps/x-neofreebird-2.png",
+                "https://OofMini.github.io/Minis-Repo/apps/x-neofreebird-3.png"
+            ],
+            "permissions": [
+                {
+                    "type": "network",
+                    "usageDescription": "Required to connect to X servers for sign-in."
+                }
+            ],
+            "versions": [
+                {
+                    "version": "9.67",
+                    "date": "2026-06-19",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/X/X9.67NeoFreeBirdLoginFix.ipa",
+                    "size": 117520456,
+                    "minOSVersion": "15.0",
+                    "localizedDescription": "Login fix for tweaked X. Install first, sign in, then install NeoFreeBird over the top. App v9.67."
+                }
+            ]
+        },
+        {
+            "name": "SpotiFLAC",
+            "bundleIdentifier": "com.zarz.spotiflacAndroid",
+            "developerName": "spotiflacapp",
+            "subtitle": "Lossless music downloader",
+            "localizedDescription": "Lossless music downloader — save tracks in FLAC and other high-quality formats straight to your device. Pair it with the Cosmos music player to listen offline. App v4.6.0.",
+            "iconURL": "https://OofMini.github.io/Minis-Repo/apps/SpotiFlac-Icon.PNG",
+            "tintColor": "#1ED760",
+            "screenshotURLs": [
+                "https://OofMini.github.io/Minis-Repo/apps/SpotiFlac-1.PNG",
+                "https://OofMini.github.io/Minis-Repo/apps/SpotiFlac-2.PNG",
+                "https://OofMini.github.io/Minis-Repo/apps/SpotiFlac-3.PNG"
+            ],
+            "permissions": [
+                {
+                    "type": "network",
+                    "usageDescription": "Required to search for and download tracks."
+                }
+            ],
+            "versions": [
+                {
+                    "version": "4.6.0",
+                    "date": "2026-06-19",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Spot/SpotiFLAC-v4.6.0-ios-unsigned.ipa",
+                    "size": 34347687,
+                    "minOSVersion": "14.0",
+                    "localizedDescription": "Lossless FLAC music downloader. App v4.6.0."
+                }
+            ]
         }
     ]
 }

@@ -36,6 +36,8 @@ Copy and paste this link directly into your app manager:
 |     <img src="apps/refacepro.png" width="48" style="border-radius: 22%">     | **Reface Pro** | v6.9.1   | Advanced AI face-swapping tool with premium templates and features enabled.       |
 |     <img src="apps/itorrent.png" width="48" style="border-radius: 22%">      | **iTorrent** | v2.1.1   | A robust, native BitTorrent client for iOS with background downloading support.   |
 |   <img src="apps/livecontainer.png" width="48" style="border-radius: 22%">   | **LiveContainer** | v3.7.9   | Run JIT-dependent apps without a computer using advanced containerization.        |
+|    <img src="apps/NeoFreeBird.png" width="48" style="border-radius: 22%">    | **X Login** | v9.67   | Login fix for tweaked X — install and sign in first, then install X over the top. |
+|   <img src="apps/SpotiFlac-Icon.PNG" width="48" style="border-radius: 22%">  | **SpotiFLAC** | v4.6.0  | Lossless music downloader (FLAC) — pair it with the Cosmos music player.          |
 
 ---
 
