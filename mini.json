@@ -108,7 +108,7 @@
         {
             "name": "NeoFreeBird",
             "bundleIdentifier": "com.atebits.Tweetie2",
-            "developerName": "NeoFreeBird",
+            "developerName": "Moe",
             "subtitle": "Tweaked Twitter/X",
             "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 11.99, NeoFreeBird 6.0.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/NeoFreeBird.png",
@@ -274,7 +274,7 @@
         {
             "name": "X Login",
             "bundleIdentifier": "com.atebits.Tweetie2.login",
-            "developerName": "NeoFreeBird",
+            "developerName": "Moe",
             "subtitle": "X login fix — install before X",
             "localizedDescription": "Login fix for tweaked X (Twitter). Install and sign in here first, then install NeoFreeBird over the top so the login carries across. App v9.67.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/NeoFreeBird.png",
