@@ -12,7 +12,7 @@
             "bundleIdentifier": "com.spotify.client",
             "developerName": "whoeevee",
             "subtitle": "Tweaked Spotify client",
-            "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.46, EeveeSpotify 6.6.2.",
+            "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.56, EeveeSpotify 6.6.5.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/EeveeSpotify.png",
             "tintColor": "#1DB954",
             "screenshotURLs": [
@@ -32,12 +32,12 @@
             ],
             "versions": [
                 {
-                    "version": "9.1.46",
-                    "date": "2026-06-09",
+                    "version": "9.1.56",
+                    "date": "2026-06-19",
                     "downloadURL": "https://github.com/OofMini/eeveespotifyreborn/releases/download/New/EeveeSpotify.ipa",
                     "size": 115771856,
                     "minOSVersion": "16.1",
-                    "localizedDescription": "Updated to Spotify IPA 9.1.46, EeveeSpotify 6.6.2."
+                    "localizedDescription": "Updated to Spotify IPA 9.1.56, EeveeSpotify 6.6.5."
                 }
             ]
         },
