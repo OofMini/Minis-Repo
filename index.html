@@ -25,7 +25,7 @@
             content="default-src 'self';
                    img-src 'self' https://oofmini.github.io https://raw.githubusercontent.com https://objects.githubusercontent.com https://avatars.githubusercontent.com;
                    script-src 'self';
-                   style-src 'self' 'sha256-4ZPvW0uznfFEi52pjcgd+0lQ5Rkkz/OVcz+Z9WyqsqM=';
+                   style-src 'self' 'sha256-PN73ZQp8ORORtiVyRgNRWUMNwIV8+GxONVhc02jSEKM=';
                    connect-src 'self' https://raw.githubusercontent.com https://api.github.com https://objects.githubusercontent.com https://oofmini.github.io;
                    worker-src 'self';
                    frame-ancestors 'none';
@@ -123,13 +123,15 @@
             .noscript-fallback h1{font-size:1.5rem;margin-bottom:12px}.noscript-fallback p{color:#8e8e93;margin-bottom:8px;max-width:400px}.noscript-subtle{font-size:.8rem}.noscript-subtle code{background:rgba(255,255,255,.06);padding:4px 8px;border-radius:6px;font-size:.75rem}
             @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.splash{animation-delay:0s!important}}
             .splash{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#000;animation:splashFade .5s ease 1s forwards}
-            .splash-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px}
-            .splash-glow{position:absolute;top:50%;left:50%;width:280px;height:280px;transform:translate(-50%,-58%);background:radial-gradient(circle,rgba(139,92,246,.45),transparent 70%);opacity:0;animation:splashGlow 1.1s ease forwards;pointer-events:none}
-            .splash-icon{position:relative;z-index:1;width:92px;height:92px;border-radius:22%;box-shadow:0 12px 40px rgba(0,0,0,.5);opacity:0;transform:scale(.82);animation:splashPop .7s cubic-bezier(.175,.885,.32,1.275) both}
-            .splash-title{position:relative;z-index:1;font-size:1.1rem;font-weight:600;letter-spacing:-.01em;color:#f5f5f7;opacity:0;animation:splashTitle .5s ease .3s both}
-            @keyframes splashPop{0%{opacity:0;transform:scale(.82)}60%{opacity:1}to{opacity:1;transform:scale(1)}}
+            .splash-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;animation:splashZoom .5s cubic-bezier(.4,0,.2,1) 1s both}
+            .splash-glow{position:absolute;top:50%;left:50%;width:300px;height:300px;background:radial-gradient(circle,rgba(168,85,247,.5),rgba(139,92,246,.25) 45%,transparent 70%);opacity:0;animation:splashGlow 1.1s ease forwards;pointer-events:none}
+            .splash-icon{position:relative;z-index:1;width:92px;height:92px;border-radius:22%;opacity:0;transform:scale(.7);animation:splashPop .8s cubic-bezier(.34,1.56,.64,1) both,splashHalo 1.5s ease-out .15s both}
+            .splash-title{position:relative;z-index:1;font-size:1.15rem;font-weight:700;letter-spacing:-.01em;background:linear-gradient(135deg,#c084fc 0%,#e9d5ff 45%,#a855f7 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;opacity:0;animation:splashTitle .5s ease .3s both}
+            @keyframes splashPop{0%{opacity:0;transform:scale(.7)}50%{opacity:1;transform:scale(1.12)}70%{transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+            @keyframes splashHalo{0%{box-shadow:0 0 0 rgba(139,92,246,0),0 12px 40px rgba(0,0,0,.5)}45%{box-shadow:0 0 55px rgba(139,92,246,.65),0 12px 40px rgba(0,0,0,.5)}to{box-shadow:0 0 34px rgba(139,92,246,.42),0 12px 40px rgba(0,0,0,.5)}}
             @keyframes splashTitle{0%{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-            @keyframes splashGlow{0%{opacity:0}50%{opacity:1}to{opacity:.7}}
+            @keyframes splashGlow{0%{opacity:0;transform:translate(-50%,-58%) scale(.8)}50%{opacity:1;transform:translate(-50%,-58%) scale(1.05)}to{opacity:.75;transform:translate(-50%,-58%) scale(1)}}
+            @keyframes splashZoom{0%{transform:scale(1)}to{transform:scale(1.12)}}
             @keyframes splashFade{0%{opacity:1;visibility:visible}99%{visibility:visible}to{opacity:0;visibility:hidden;pointer-events:none}}
         </style>
       <script type="module" crossorigin src="./assets/js/app.js"></script>
