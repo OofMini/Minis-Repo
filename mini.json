@@ -330,6 +330,40 @@
                     "localizedDescription": "Lossless FLAC music downloader. App v4.6.0."
                 }
             ]
+        },
+        {
+            "name": "MiniStore",
+            "bundleIdentifier": "com.SideStore.SideStore",
+            "developerName": "The-Big-Mini",
+            "subtitle": "The Alternative App Store",
+            "localizedDescription": "MiniStore is an alternative app store for iOS — install, refresh, and update apps wirelessly from your device, no computer required. A SideStore fork with widget support for tracking app expiry and curated sources to discover new apps. App v0.6.4.",
+            "iconURL": "https://raw.githubusercontent.com/The-Big-Mini/MiniStore/develop/AltStore/Resources/Icons.xcassets/AppIcon.appiconset/MiniStore.png",
+            "tintColor": "#018084",
+            "screenshotURLs": [
+                "https://raw.githubusercontent.com/The-Big-Mini/MiniStore/develop/Screenshots/MiniStore-1.PNG",
+                "https://raw.githubusercontent.com/The-Big-Mini/MiniStore/develop/Screenshots/MiniStore-2.PNG",
+                "https://raw.githubusercontent.com/The-Big-Mini/MiniStore/develop/Screenshots/MiniStore-3.PNG"
+            ],
+            "permissions": [
+                {
+                    "type": "network",
+                    "usageDescription": "Required to communicate with your device over Wi-Fi to install and refresh apps."
+                },
+                {
+                    "type": "background-fetch",
+                    "usageDescription": "Allows MiniStore to check for app updates in the background."
+                }
+            ],
+            "versions": [
+                {
+                    "version": "0.6.4",
+                    "date": "2026-06-11",
+                    "downloadURL": "https://github.com/The-Big-Mini/MiniStore/releases/download/0.6.4/MiniStore.ipa",
+                    "size": 21813133,
+                    "minOSVersion": "17.1",
+                    "localizedDescription": "MiniStore 0.6.4 — continued migration to a faster native SwiftUI interface, restored the LocalDevVPN auto-connect toggle in Refreshing Apps settings, fixed the App IDs list refresh and a stuck pull-to-refresh spinner, plus performance improvements and bug fixes."
+                }
+            ]
         }
     ]
 }
