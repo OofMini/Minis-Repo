@@ -204,11 +204,11 @@
             ]
         },
         {
-            "name": "LiveContainer",
+            "name": "LiveContainer Nightly",
             "bundleIdentifier": "com.kdt.livecontainer",
             "developerName": "hugeBlack",
             "subtitle": "Run apps without installing",
-            "localizedDescription": "Runs iOS apps inside its own container without installing them — multiple app instances, JIT support, and on-device app management. App v3.7.10.",
+            "localizedDescription": "Runs iOS apps inside its own container without installing them — multiple app instances, JIT support, and on-device app management. This is the nightly build. App v3.7.10.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/livecontainer.png",
             "tintColor": "#007AFF",
             "screenshotURLs": [

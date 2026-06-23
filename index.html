@@ -305,6 +305,19 @@
 
             <!-- Repo Info -->
             <section class="repo-info fade-in" aria-labelledby="repo-info-title">
+                <!-- UX-031: spinning circular-text badge — a signature flourish on the
+                     repo's primary action. Tapping it adds the source to SideStore. -->
+                <button type="button" class="source-badge" id="sourceBadge" aria-label="Add this source to SideStore">
+                    <svg class="source-badge-ring" viewBox="0 0 100 100" aria-hidden="true">
+                        <defs>
+                            <path id="sourceBadgeArc" fill="none" d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0" />
+                        </defs>
+                        <text><textPath href="#sourceBadgeArc" startOffset="0">ADD SOURCE&nbsp;&bull;&nbsp;SIDESTORE&nbsp;&bull;&nbsp;TROLLAPPS&nbsp;&bull;&nbsp;ALTSTORE&nbsp;&bull;&nbsp;</textPath></text>
+                    </svg>
+                    <span class="source-badge-center" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0L5 7m3 3 3-3M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                </button>
                 <div class="repo-info-header">
                     <span class="repo-info-icon" aria-hidden="true"></span>
                     <h3 id="repo-info-title">Add This Repository</h3>
