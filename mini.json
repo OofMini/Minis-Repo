@@ -76,7 +76,7 @@
             "bundleIdentifier": "com.google.ios.youtubemusic",
             "developerName": "dayanch96",
             "subtitle": "Tweaked YouTube Music with premium features",
-            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.23, YTMusicUltimate 2.4.1.",
+            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.24.3, YTMusicUltimate 2.4.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubeMusic.png",
             "tintColor": "#FF0000",
             "screenshotURLs": [
@@ -96,12 +96,12 @@
             ],
             "versions": [
                 {
-                    "version": "9.23",
-                    "date": "2026-06-19",
+                    "version": "9.24.3",
+                    "date": "2026-06-23",
                     "downloadURL": "https://github.com/OofMini/YTMusicUltimate/releases/download/New/YTMusicUltimate.ipa",
                     "size": 93340497,
                     "minOSVersion": "16.0",
-                    "localizedDescription": "Updated to Youtube Music IPA 9.23, YTMusicUltimate 2.4.1."
+                    "localizedDescription": "Updated to Youtube Music IPA 9.24.3, YTMusicUltimate 2.4.1."
                 }
             ]
         },
@@ -208,7 +208,7 @@
             "bundleIdentifier": "com.kdt.livecontainer",
             "developerName": "hugeBlack",
             "subtitle": "Run apps without installing",
-            "localizedDescription": "Runs iOS apps inside its own container without installing them — multiple app instances, JIT support, and on-device app management. App v3.7.9.",
+            "localizedDescription": "Runs iOS apps inside its own container without installing them — multiple app instances, JIT support, and on-device app management. App v3.7.10.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/livecontainer.png",
             "tintColor": "#007AFF",
             "screenshotURLs": [
@@ -224,12 +224,12 @@
             ],
             "versions": [
                 {
-                    "version": "3.7.9",
-                    "date": "2026-06-09",
+                    "version": "3.7.10",
+                    "date": "2026-06-23",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Live/LiveContainer.ipa",
                     "size": 4610231,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to App v3.7.9."
+                    "localizedDescription": "Updated to App v3.7.10."
                 }
             ]
         },
