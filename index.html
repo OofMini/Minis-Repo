@@ -310,11 +310,13 @@
                 <button type="button" class="source-badge" id="sourceBadge" aria-label="Add this source to SideStore">
                     <svg class="source-badge-ring" viewBox="0 0 100 100" aria-hidden="true">
                         <defs>
-                            <!-- r=36: the ring circumference (~226u) matches the natural
-                                 length of the text below (~225u), so it fills the ring
-                                 with only a hair of separator gap — and WITHOUT relying on
-                                 textLength, which iOS Safari (WebKit) ignores on a textPath. -->
-                            <path id="sourceBadgeArc" fill="none" d="M50,50 m-36,0 a36,36 0 1,1 72,0 a36,36 0 1,1 -72,0" />
+                            <!-- r=35.6: the ring circumference (~223.7u) is matched to the
+                                 natural length of the text below (~224.6u) so the text fills
+                                 the ring and the wrap separator lands flush with the internal
+                                 " . " separators — no visible seam gap. Done WITHOUT textLength,
+                                 which iOS Safari (WebKit) ignores on a textPath. The slight
+                                 overflow is absorbed by the trailing space, so no overlap. -->
+                            <path id="sourceBadgeArc" fill="none" d="M50,50 m-35.6,0 a35.6,35.6 0 1,1 71.2,0 a35.6,35.6 0 1,1 -71.2,0" />
                         </defs>
                         <text><textPath href="#sourceBadgeArc" startOffset="0">ADD SOURCE&nbsp;&bull;&nbsp;SIDESTORE&nbsp;&bull;&nbsp;MINISTORE&nbsp;&bull;&nbsp;TROLLAPPS&nbsp;&bull;&nbsp;</textPath></text>
                     </svg>
