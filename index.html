@@ -312,15 +312,17 @@
                         <defs>
                             <!-- Cross-platform ring fill. The same text renders ~207u on iOS
                                  SF Pro but ~224u in desktop fonts, so one radius can't fit both
-                                 with plain text. Solution: size the ring to iOS (r=33 →
-                                 circumference ~207u, measured from a real iOS screenshot) so the
-                                 natural text fills it there (iOS ignores textLength on a
-                                 textPath); and set textLength=206 so DESKTOP browsers — which DO
-                                 honor it — compress their wider text to fit instead of
-                                 overflowing/clipping. Both platforms fill the ring, no seam gap. -->
-                            <path id="sourceBadgeArc" fill="none" d="M50,50 m-33,0 a33,33 0 1,1 66,0 a33,33 0 1,1 -66,0" />
+                                 with plain text. Solution: size the ring just above the iOS
+                                 natural text (r=33.3 → circumference ~209u, measured from a real
+                                 iOS screenshot then nudged up a hair so the seam clears instead of
+                                 overlapping) since iOS ignores textLength on a textPath; and set
+                                 textLength=208 so DESKTOP browsers — which DO honor it — compress
+                                 their wider text to nearly fill the same ring instead of
+                                 overflowing/clipping. Both platforms fill the ring, no seam gap or
+                                 overlap. -->
+                            <path id="sourceBadgeArc" fill="none" d="M50,50 m-33.3,0 a33.3,33.3 0 1,1 66.6,0 a33.3,33.3 0 1,1 -66.6,0" />
                         </defs>
-                        <text textLength="206" lengthAdjust="spacingAndGlyphs"><textPath href="#sourceBadgeArc" startOffset="0">ADD SOURCE&nbsp;&bull;&nbsp;SIDESTORE&nbsp;&bull;&nbsp;MINISTORE&nbsp;&bull;&nbsp;TROLLAPPS&nbsp;&bull;&nbsp;</textPath></text>
+                        <text textLength="208" lengthAdjust="spacingAndGlyphs"><textPath href="#sourceBadgeArc" startOffset="0">ADD SOURCE&nbsp;&bull;&nbsp;SIDESTORE&nbsp;&bull;&nbsp;MINISTORE&nbsp;&bull;&nbsp;TROLLAPPS&nbsp;&bull;&nbsp;</textPath></text>
                     </svg>
                     <span class="source-badge-center" aria-hidden="true">
                         <svg width="22" height="22" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0L5 7m3 3 3-3M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
