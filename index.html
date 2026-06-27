@@ -241,7 +241,12 @@
             <!-- Featured App Section -->
             <section class="featured-section fade-in" id="featuredSection" aria-labelledby="featured-title" hidden>
                 <h2 id="featured-title" class="visually-hidden">Featured App</h2>
-                <div class="featured-card" id="featuredCard" role="button" tabindex="0" aria-label="Featured app — tap to view details">
+                <div class="featured-card" id="featuredCard" role="group" aria-labelledby="featuredName">
+                    <!-- Stretched "view details" control: a real <button> that covers
+                         the card as its primary action. It is a SIBLING of the GET
+                         button (not a wrapping role="button"), so there is no nested
+                         interactive-control a11y violation. GET sits above it via z-index. -->
+                    <button type="button" class="featured-view-btn" id="featuredViewBtn" aria-label="View featured app details"></button>
                     <div class="featured-badge" aria-hidden="true">Featured</div>
                     <div class="featured-content">
                         <div class="featured-icon-container">
