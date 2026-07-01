@@ -35,11 +35,15 @@
                    upgrade-insecure-requests;"
         />
 
-        <!-- DNS prefetch and preconnect for asset CDNs -->
+        <!-- DNS prefetch and preconnect for asset CDNs. preconnect is reserved for
+             hosts the page actually fetches images from (oofmini.github.io,
+             raw.githubusercontent.com — confirmed against mini.json); github.com is
+             only ever an outbound <a href> navigation (footer links, download-asset
+             click-through), never a page resource, so it gets the cheaper hint. -->
         <link rel="dns-prefetch" href="https://objects.githubusercontent.com" />
         <link rel="preconnect" href="https://oofmini.github.io" crossorigin />
-        <link rel="preconnect" href="https://github.com" crossorigin />
-        <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
+        <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
+        <link rel="dns-prefetch" href="https://github.com" />
 
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Mini's IPA Repo — Premium Tweaked iOS Apps" />
