@@ -27,7 +27,7 @@
             content="default-src 'self';
                    img-src 'self' https://oofmini.github.io https://raw.githubusercontent.com https://objects.githubusercontent.com https://avatars.githubusercontent.com;
                    script-src 'self';
-                   style-src 'self' 'sha256-IQe+VrFaHi0ZcrcWmkuiUIrTH2iSV5Pupb6JDtNqs/g=';
+                   style-src 'self' 'sha256-lWT8prfYFLGm9oFMSFlMv4Q4h/+GGAiduLmfxRv5du0=';
                    connect-src 'self' https://raw.githubusercontent.com https://api.github.com https://objects.githubusercontent.com https://oofmini.github.io;
                    worker-src 'self';
                    frame-ancestors 'none';
@@ -98,7 +98,7 @@
         <style>
             *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
             :root{color-scheme:dark;--bg:#000;--surface:#0a0a0f;--text:#f5f5f7;--text-secondary:#8e8e93;--border:rgba(255,255,255,.08);--radius:16px;--spring-bouncy:cubic-bezier(.175,.885,.32,1.275)}
-            @media(prefers-color-scheme:light){html:not([data-theme]){color-scheme:light;--bg:#f5f5f7;--surface:#fff;--text:#1c1c1e;--text-secondary:#48484a;--border:rgba(0,0,0,.08)}}
+            @media(prefers-color-scheme:light){html:not([data-theme]){color-scheme:light;--bg:#f5f5f7;--surface:#fff;--text:#1c1c1e;--text-secondary:#48484a;--border:rgba(0,0,0,.08)}html:not([data-theme]) .stat-badge,html:not([data-theme]) .skeleton-card{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08)}html:not([data-theme]) .skeleton{background:linear-gradient(90deg,rgba(0,0,0,.04) 25%,rgba(0,0,0,.08) 50%,rgba(0,0,0,.04) 75%);background-size:200% 100%}html:not([data-theme]) .cta-button:hover{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.18)}html:not([data-theme]) .noscript-subtle code{background:rgba(0,0,0,.06)}}
             html{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
             body{background:var(--bg);min-height:100dvh;overflow-x:hidden}
             .skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);z-index:10000;background:#1d1d1f;color:#f5f5f7;padding:12px 24px;border-radius:8px;font-size:14px;text-decoration:none;transition:top .2s}.skip-link:focus{top:12px}
