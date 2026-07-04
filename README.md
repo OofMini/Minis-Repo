@@ -14,6 +14,8 @@
 
 ---
 
+**Mini's Repo** (also written *Minis Repo*) is a curated IPA source of premium tweaked iOS apps — EeveeSpotify, YTLite, YouTube Music Ultimate, LiveContainer, and more — installable through **SideStore**, **TrollApps**, **AltStore**, or **MiniStore**. Browse the full catalogue in the **[Minis Repo web app](https://OofMini.github.io/Minis-Repo/)**, or add the source URL below to your sideloading app manager.
+
 ## Repository Source
 
 Copy and paste this link directly into your app manager:
