@@ -34,8 +34,8 @@
                 {
                     "version": "9.1.56",
                     "date": "2026-06-19",
-                    "downloadURL": "https://github.com/OofMini/eeveespotifyreborn/releases/download/New/EeveeSpotify.ipa",
-                    "size": 115771856,
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/ES/EeveeSpotify.ipa",
+                    "size": 118396730,
                     "minOSVersion": "16.1",
                     "localizedDescription": "Updated to Spotify IPA 9.1.56, EeveeSpotify 6.6.5."
                 }
@@ -64,7 +64,7 @@
                 {
                     "version": "21.16.2",
                     "date": "2026-05-08",
-                    "downloadURL": "https://github.com/OofMini/YTLite/releases/download/New/YouTubePlus_5.2.1.ipa",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/YTL/YouTubePlus_5.2.1.ipa",
                     "size": 119833556,
                     "minOSVersion": "16.0",
                     "localizedDescription": "Updated to YouTube IPA 21.16.2, YTLite 5.2.1."
@@ -98,8 +98,8 @@
                 {
                     "version": "9.24.3",
                     "date": "2026-06-23",
-                    "downloadURL": "https://github.com/OofMini/YTMusicUltimate/releases/download/New/YTMusicUltimate.ipa",
-                    "size": 93340497,
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/YTM/YTMusicUltimate.ipa",
+                    "size": 97873035,
                     "minOSVersion": "16.0",
                     "localizedDescription": "Updated to Youtube Music IPA 9.24.3, YTMusicUltimate 2.4.1."
                 }
@@ -128,7 +128,7 @@
                 {
                     "version": "11.99",
                     "date": "2026-06-12",
-                    "downloadURL": "https://github.com/OofMini/tweak/releases/download/New/NeoFreeBird-sideloaded.ipa",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/NFB/NeoFreeBird-sideloaded.ipa",
                     "size": 218948347,
                     "minOSVersion": "15.0",
                     "localizedDescription": "Updated to X IPA 11.99, NeoFreeBird 6.0."
@@ -166,7 +166,7 @@
                 {
                     "version": "1.97.0",
                     "date": "2026-06-09",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/New/InShot.ipa",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/IS/InShot.ipa",
                     "size": 152657317,
                     "minOSVersion": "15.0",
                     "localizedDescription": "Updated to App v1.97.0."
@@ -196,7 +196,7 @@
                 {
                     "version": "2.1.1",
                     "date": "2026-02-09",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Torrent/iTorrent.ipa",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/IT/iTorrent.ipa",
                     "size": 8362011,
                     "minOSVersion": "17.0",
                     "localizedDescription": "Updated to App v2.1.1. Background downloading support and improved peer connectivity."
@@ -226,8 +226,8 @@
                 {
                     "version": "3.7.11",
                     "date": "2026-06-28",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Live/LiveContainer.ipa",
-                    "size": 4610231,
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/LCN/LiveContainer.ipa",
+                    "size": 4614750,
                     "minOSVersion": "15.0",
                     "localizedDescription": "Updated to App v3.7.11."
                 }
@@ -264,7 +264,7 @@
                 {
                     "version": "6.9.1",
                     "date": "2026-06-09",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Reface/Reface.ipa",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/RF/Reface.ipa",
                     "size": 110214919,
                     "minOSVersion": "17.0",
                     "localizedDescription": "Updated to App v6.9.1."
@@ -272,7 +272,7 @@
             ]
         },
         {
-            "name": "X Login",
+            "name": "NFB Login",
             "bundleIdentifier": "com.atebits.Tweetie2.login",
             "developerName": "Moe",
             "subtitle": "X login fix — install before X",
@@ -294,7 +294,7 @@
                 {
                     "version": "9.67",
                     "date": "2026-06-19",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/X/X9.67NeoFreeBirdLoginFix.ipa",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/NFBL/X9.67NeoFreeBirdLoginFix.ipa",
                     "size": 117520456,
                     "minOSVersion": "15.0",
                     "localizedDescription": "Login fix for tweaked X. Install first, sign in, then install NeoFreeBird over the top. App v9.67."
@@ -324,7 +324,7 @@
                 {
                     "version": "4.6.0",
                     "date": "2026-06-19",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/Spot/SpotiFLAC-v4.6.0-ios-unsigned.ipa",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/SF/SpotiFLAC-v4.6.0-ios-unsigned.ipa",
                     "size": 34347687,
                     "minOSVersion": "14.0",
                     "localizedDescription": "Lossless FLAC music downloader. App v4.6.0."

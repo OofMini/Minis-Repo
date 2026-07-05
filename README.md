@@ -14,15 +14,11 @@
 
 ---
 
-**Mini's Repo** (also written *Minis Repo*) is a curated IPA source of premium tweaked iOS apps — EeveeSpotify, YTLite, YouTube Music Ultimate, LiveContainer, and more — installable through **SideStore**, **TrollApps**, **AltStore**, or **MiniStore**. Browse the full catalogue in the **[Minis Repo web app](https://OofMini.github.io/Minis-Repo/)**, or add the source URL below to your sideloading app manager.
-
 ## Repository Source
 
 Copy and paste this link directly into your app manager:
 
 `https://OofMini.github.io/Minis-Repo/mini.json`
-
-[![](https://img.shields.io/badge/Launch_Web_App-007AFF?style=for-the-badge&logo=safari&logoColor=white)](https://OofMini.github.io/Minis-Repo/)
 
 ---
 
@@ -38,7 +34,7 @@ Copy and paste this link directly into your app manager:
 |     <img src="apps/refacepro.png" width="48" style="border-radius: 22%">     | **Reface Pro** | v6.9.1   | Advanced AI face-swapping tool with premium templates and features enabled.       |
 |     <img src="apps/itorrent.png" width="48" style="border-radius: 22%">      | **iTorrent** | v2.1.1   | A robust, native BitTorrent client for iOS with background downloading support.   |
 |   <img src="apps/livecontainer.png" width="48" style="border-radius: 22%">   | **LiveContainer Nightly** | v3.7.11   | Run JIT-dependent apps without a computer using advanced containerization (nightly build). |
-|    <img src="apps/NeoFreeBird.png" width="48" style="border-radius: 22%">    | **X Login** | v9.67   | Login fix for tweaked X — install and sign in first, then install X over the top. |
+|    <img src="apps/NeoFreeBird.png" width="48" style="border-radius: 22%">    | **NFB Login** | v9.67   | Login fix for tweaked X — install and sign in first, then install X over the top. |
 |   <img src="apps/SpotiFlac-Icon.PNG" width="48" style="border-radius: 22%">  | **SpotiFLAC** | v4.6.0  | Lossless music downloader (FLAC) — pair it with the Cosmos music player.          |
 | <img src="https://raw.githubusercontent.com/The-Big-Mini/MiniStore/develop/AltStore/Resources/Icons.xcassets/AppIcon.appiconset/MiniStore.png" width="48" style="border-radius: 22%"> | **MiniStore** | v0.6.4  | Alternative app store for iOS — a SideStore fork to install and update apps wirelessly, no computer required. |
 
