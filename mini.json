@@ -76,7 +76,7 @@
             "bundleIdentifier": "com.google.ios.youtubemusic",
             "developerName": "dayanch96",
             "subtitle": "Tweaked YouTube Music with premium features",
-            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.24.3, YTMusicUltimate 2.4.1.",
+            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.26, YTMusicUltimate 2.4.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubeMusic.png",
             "tintColor": "#FF0000",
             "screenshotURLs": [
@@ -96,12 +96,12 @@
             ],
             "versions": [
                 {
-                    "version": "9.24.3",
-                    "date": "2026-06-23",
+                    "version": "9.26",
+                    "date": "2026-07-05",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/YTM/YTMusicUltimate.ipa",
                     "size": 97873035,
                     "minOSVersion": "16.0",
-                    "localizedDescription": "Updated to Youtube Music IPA 9.24.3, YTMusicUltimate 2.4.1."
+                    "localizedDescription": "Updated to Youtube Music IPA 9.26, YTMusicUltimate 2.4.1."
                 }
             ]
         },
@@ -306,7 +306,7 @@
             "bundleIdentifier": "com.zarz.spotiflacAndroid",
             "developerName": "spotiflacapp",
             "subtitle": "Lossless music downloader",
-            "localizedDescription": "Lossless music downloader — save tracks in FLAC and other high-quality formats straight to your device. Pair it with the Cosmos music player to listen offline. App v4.6.0.",
+            "localizedDescription": "Lossless music downloader — save tracks in FLAC and other high-quality formats straight to your device. Pair it with the Cosmos music player to listen offline. App v4.7.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/SpotiFlac-Icon.PNG",
             "tintColor": "#1ED760",
             "screenshotURLs": [
@@ -322,12 +322,12 @@
             ],
             "versions": [
                 {
-                    "version": "4.6.0",
-                    "date": "2026-06-19",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/SF/SpotiFLAC-v4.6.0-ios-unsigned.ipa",
+                    "version": "4.7.1",
+                    "date": "2026-07-05",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/SF/SpotiFLAC-v4.7.1-ios-unsigned.ipa",
                     "size": 34347687,
                     "minOSVersion": "14.0",
-                    "localizedDescription": "Lossless FLAC music downloader. App v4.6.0."
+                    "localizedDescription": "Updated to App v4.7.1."
                 }
             ]
         },

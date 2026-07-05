@@ -28,14 +28,14 @@ Copy and paste this link directly into your app manager:
 | :---------------------------------------------------------------------------------------------------------------: | :------------------ | :------- | :-------------------------------------------------------------------------------- |
 |   <img src="apps/EeveeSpotify.png" width="48" style="border-radius: 22%">    | **EeveeSpotify** | v9.1.56  | Premium Spotify client with lyrics, no ads, and high-quality audio streaming.     |
 | <img src="apps/YouTubePlus_5.2b3.PNG" width="48" style="border-radius: 22%"> | **YTLite** | v21.16.2 | Lightweight YouTube tweak with background playback, ad-blocking, and PiP.         |
-|   <img src="apps/YouTubeMusic.png" width="48" style="border-radius: 22%">    | **YTMusicUltimate** | v9.24.3  | Unlocked YouTube Music experience with background audio and premium features.     |
+|   <img src="apps/YouTubeMusic.png" width="48" style="border-radius: 22%">    | **YTMusicUltimate** | v9.26  | Unlocked YouTube Music experience with background audio and premium features.     |
 |    <img src="apps/NeoFreeBird.png" width="48" style="border-radius: 22%">    | **NeoFreeBird** | v11.99   | Enhanced X (Twitter) client with ad removal and video downloading capabilities.   |
 |      <img src="apps/Inshot.png" width="48" style="border-radius: 22%">       | **InShot Pro** | v1.97.0  | Professional video editor with all filters, effects, and export options unlocked. |
 |     <img src="apps/refacepro.png" width="48" style="border-radius: 22%">     | **Reface Pro** | v6.9.1   | Advanced AI face-swapping tool with premium templates and features enabled.       |
 |     <img src="apps/itorrent.png" width="48" style="border-radius: 22%">      | **iTorrent** | v2.1.1   | A robust, native BitTorrent client for iOS with background downloading support.   |
 |   <img src="apps/livecontainer.png" width="48" style="border-radius: 22%">   | **LiveContainer Nightly** | v3.7.11   | Run JIT-dependent apps without a computer using advanced containerization (nightly build). |
 |    <img src="apps/NeoFreeBird.png" width="48" style="border-radius: 22%">    | **NFB Login** | v9.67   | Login fix for tweaked X — install and sign in first, then install X over the top. |
-|   <img src="apps/SpotiFlac-Icon.PNG" width="48" style="border-radius: 22%">  | **SpotiFLAC** | v4.6.0  | Lossless music downloader (FLAC) — pair it with the Cosmos music player.          |
+|   <img src="apps/SpotiFlac-Icon.PNG" width="48" style="border-radius: 22%">  | **SpotiFLAC** | v4.7.1  | Lossless music downloader (FLAC) — pair it with the Cosmos music player.          |
 | <img src="https://raw.githubusercontent.com/The-Big-Mini/MiniStore/develop/AltStore/Resources/Icons.xcassets/AppIcon.appiconset/MiniStore.png" width="48" style="border-radius: 22%"> | **MiniStore** | v0.6.4  | Alternative app store for iOS — a SideStore fork to install and update apps wirelessly, no computer required. |
 
 ---
