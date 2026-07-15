@@ -12,7 +12,7 @@
             "bundleIdentifier": "com.spotify.client",
             "developerName": "whoeevee",
             "subtitle": "Tweaked Spotify client",
-            "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.56, EeveeSpotify 6.6.5.",
+            "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.60, EeveeSpotify 6.6.6.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/EeveeSpotify.png",
             "tintColor": "#1DB954",
             "screenshotURLs": [
@@ -32,12 +32,12 @@
             ],
             "versions": [
                 {
-                    "version": "9.1.56",
-                    "date": "2026-06-19",
+                    "version": "9.1.60",
+                    "date": "2026-07-15",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/ES/EeveeSpotify.ipa",
                     "size": 118396730,
                     "minOSVersion": "16.1",
-                    "localizedDescription": "Updated to Spotify IPA 9.1.56, EeveeSpotify 6.6.5."
+                    "localizedDescription": "Updated to Spotify IPA 9.1.60, EeveeSpotify 6.6.6."
                 }
             ]
         },
@@ -76,7 +76,7 @@
             "bundleIdentifier": "com.google.ios.youtubemusic",
             "developerName": "dayanch96",
             "subtitle": "Tweaked YouTube Music with premium features",
-            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.26, YTMusicUltimate 2.4.1.",
+            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.28, YTMusicUltimate 2.4.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubeMusic.png",
             "tintColor": "#FF0000",
             "screenshotURLs": [
@@ -96,12 +96,12 @@
             ],
             "versions": [
                 {
-                    "version": "9.26",
-                    "date": "2026-07-05",
+                    "version": "9.28",
+                    "date": "2026-07-15",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/YTM/YTMusicUltimate.ipa",
                     "size": 97873035,
                     "minOSVersion": "16.0",
-                    "localizedDescription": "Updated to Youtube Music IPA 9.26, YTMusicUltimate 2.4.1."
+                    "localizedDescription": "Updated to Youtube Music IPA 9.28, YTMusicUltimate 2.4.1."
                 }
             ]
         },
@@ -110,7 +110,7 @@
             "bundleIdentifier": "com.atebits.Tweetie2",
             "developerName": "Moe",
             "subtitle": "Tweaked Twitter/X",
-            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 12.5, NeoFreeBird 6.1.",
+            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 12.8, NeoFreeBird 6.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/NeoFreeBird.png",
             "tintColor": "#000000",
             "screenshotURLs": [
@@ -126,12 +126,12 @@
             ],
             "versions": [
                 {
-                    "version": "12.5",
-                    "date": "2026-07-08",
+                    "version": "12.8",
+                    "date": "2026-07-15",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/NFB/NeoFreeBird-sideloaded.ipa",
                     "size": 218948347,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to X IPA 12.5, NeoFreeBird 6.1."
+                    "localizedDescription": "Updated to X IPA 12.8, NeoFreeBird 6.1."
                 }
             ]
         },
@@ -208,7 +208,7 @@
             "bundleIdentifier": "com.kdt.livecontainer",
             "developerName": "hugeBlack",
             "subtitle": "Run apps without installing",
-            "localizedDescription": "Runs iOS apps inside its own container without installing them — multiple app instances, JIT support, and on-device app management. This is the nightly build. App v3.7.11.",
+            "localizedDescription": "Runs iOS apps inside its own container without installing them — multiple app instances, JIT support, and on-device app management. This is the nightly build. App v3.7.14.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/livecontainer.png",
             "tintColor": "#007AFF",
             "screenshotURLs": [
@@ -224,12 +224,12 @@
             ],
             "versions": [
                 {
-                    "version": "3.7.11",
-                    "date": "2026-06-28",
+                    "version": "3.7.14",
+                    "date": "2026-07-15",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/LCN/LiveContainer.ipa",
                     "size": 4614750,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to App v3.7.11."
+                    "localizedDescription": "Updated to App v3.7.14."
                 }
             ]
         },
