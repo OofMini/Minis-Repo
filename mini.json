@@ -178,7 +178,7 @@
             "bundleIdentifier": "org.xitrix.iTorrent2",
             "developerName": "XITRIX",
             "subtitle": "Torrent client",
-            "localizedDescription": "Lightweight torrent client for downloading and managing torrent files on-device. App v2.1.1.",
+            "localizedDescription": "Lightweight torrent client for downloading and managing torrent files on-device. App v2.2.0.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/itorrent.png",
             "tintColor": "#FF9500",
             "screenshotURLs": [
@@ -194,12 +194,12 @@
             ],
             "versions": [
                 {
-                    "version": "2.1.1",
-                    "date": "2026-02-09",
+                    "version": "2.2.0",
+                    "date": "2026-07-19",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/IT/iTorrent.ipa",
                     "size": 8362011,
                     "minOSVersion": "17.0",
-                    "localizedDescription": "Updated to App v2.1.1. Background downloading support and improved peer connectivity."
+                    "localizedDescription": "Updated to App v2.2.0."
                 }
             ]
         },
@@ -208,7 +208,7 @@
             "bundleIdentifier": "com.kdt.livecontainer",
             "developerName": "hugeBlack",
             "subtitle": "Run apps without installing",
-            "localizedDescription": "Runs iOS apps inside its own container without installing them — multiple app instances, JIT support, and on-device app management. This is the nightly build. App v3.7.14.",
+            "localizedDescription": "Runs iOS apps inside its own container without installing them — multiple app instances, JIT support, and on-device app management. This is the nightly build. App v3.8.0.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/livecontainer.png",
             "tintColor": "#007AFF",
             "screenshotURLs": [
@@ -224,12 +224,12 @@
             ],
             "versions": [
                 {
-                    "version": "3.7.14",
-                    "date": "2026-07-15",
+                    "version": "3.8.0",
+                    "date": "2026-07-19",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/LCN/LiveContainer.ipa",
                     "size": 4614750,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to App v3.7.14."
+                    "localizedDescription": "Updated to App v3.8.0."
                 }
             ]
         },
