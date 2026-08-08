@@ -1,7 +1,7 @@
 {
     "name": "Mini's IPA Repo",
     "short_name": "MinisRepo",
-    "description": "Premium tweaked iOS applications for iOS 15+. Featuring EeveeSpotify, YTLite, and more.",
+    "description": "Tweaked iOS applications for iOS 15+. Featuring EeveeSpotify, YTLite, and more.",
     "start_url": "./",
     "scope": "./",
     "id": "minis-ipa-repo",
