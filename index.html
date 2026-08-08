@@ -3,31 +3,14 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-        <!-- "light dark" declares support for both — the CSS color-scheme property
-             (set per-theme in :root / html[data-theme]) refines which actually applies. -->
         <meta name="color-scheme" content="light dark" />
 
-        <!--
-            020: CSP domain notes:
-            img-src:
-              oofmini.github.io      — repo icon / og:image (same origin alias)
-              raw.githubusercontent.com   — raw file URLs (used in some icon paths)
-              objects.githubusercontent.com — GitHub LFS / release asset downloads (IPA icons, screenshots)
-              avatars.githubusercontent.com — developer avatar images (if used)
-            connect-src:
-              raw.githubusercontent.com   — mini.json manifest fetch
-              api.github.com             — optional GitHub API calls (future)
-              objects.githubusercontent.com — large asset downloads
-              oofmini.github.io          — same-origin fetch alias for CDN deployments
-            Note: raw.githubusercontent.com serves file *content*; objects.githubusercontent.com
-            serves Git LFS objects and release assets. Both are needed for full coverage.
-        -->
         <meta
             http-equiv="Content-Security-Policy"
             content="default-src 'self';
                    img-src 'self' https://oofmini.github.io https://raw.githubusercontent.com https://objects.githubusercontent.com https://avatars.githubusercontent.com;
                    script-src 'self';
-                   style-src 'self' 'sha256-k2PIBziU1gUZob0KIAIZvzpKhe3nhtab0euSYOtubQA=';
+                   style-src 'self' 'sha256-0ANRJ+q0DWaEgB6gsk+jIs6Fw0pte1dwf74saDENA/A=';
                    connect-src 'self' https://raw.githubusercontent.com https://api.github.com https://objects.githubusercontent.com https://oofmini.github.io;
                    worker-src 'self';
                    frame-ancestors 'none';
@@ -37,11 +20,6 @@
                    upgrade-insecure-requests;"
         />
 
-        <!-- DNS prefetch and preconnect for asset CDNs. preconnect is reserved for
-             hosts the page actually fetches images from (oofmini.github.io,
-             raw.githubusercontent.com — confirmed against mini.json); github.com is
-             only ever an outbound <a href> navigation (footer links, download-asset
-             click-through), never a page resource, so it gets the cheaper hint. -->
         <link rel="dns-prefetch" href="https://objects.githubusercontent.com" />
         <link rel="preconnect" href="https://oofmini.github.io" crossorigin />
         <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
@@ -83,23 +61,14 @@
             name="description"
             content="Minis Repo — curated collection of tweaked applications for iOS 15+. Featuring Spotify, YouTube, YouTube Music, and more — sideload via SideStore, TrollApps, or AltStore."
         />
-        <!-- Canonical: GitHub Pages also serves /index.html and (potentially)
-             other aliases for this document — declare the one true URL so
-             search engines consolidate signals onto it. -->
         <link rel="canonical" href="https://oofmini.github.io/Minis-Repo/" />
         <meta name="application-name" content="Mini's Repo" />
 
-        <!-- Critical resource hints: icon first (LCP candidate) -->
         <link rel="preload" as="image" href="./apps/repo-icon.png" fetchpriority="high" />
 
         <link rel="manifest" href="./manifest.json" />
         <link rel="icon" href="./apps/repo-icon.png" />
 
-        <!--
-            Critical CSS: inlined for instant FCP.
-            Covers hero skeleton, skeleton cards, and layout foundation.
-            Non-critical styles are bundled by Vite and loaded via <script>.
-        -->
         <style>
             *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
             :root{color-scheme:dark;--bg:#000;--surface:#0a0a0f;--text:#f5f5f7;--text-secondary:#8e8e93;--border:rgba(255,255,255,.08);--radius:16px}
@@ -135,7 +104,7 @@
             .noscript-fallback{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:40px 24px;text-align:center;color:var(--text)}
             .noscript-fallback h1{font-size:1.5rem;margin-bottom:12px}.noscript-fallback p{color:var(--text-secondary);margin-bottom:8px;max-width:400px}.noscript-subtle{font-size:.8rem}.noscript-subtle code{background:rgba(255,255,255,.06);padding:4px 8px;border-radius:6px;font-size:.75rem}
             @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.splash{animation-delay:0s!important}}
-            /* Splash intro is a fixed brand treatment, theme-invariant on purpose (like a native app's launch screen) — it never re-themes for light mode. */
+
             .splash{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#000;animation:splashFade .5s ease 1s forwards}
             .splash-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;animation:splashZoom .5s cubic-bezier(.4,0,.2,1) 1s both}
             .splash-glow{position:absolute;top:50%;left:50%;width:300px;height:300px;background:radial-gradient(circle,rgba(158,108,224,.5),rgba(138,114,224,.25) 45%,transparent 70%);opacity:0;animation:splashGlow 1.1s ease forwards;pointer-events:none}
@@ -153,11 +122,6 @@
     <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://oofmini.github.io/Minis-Repo/#website","name":"Mini's Repo","alternateName":["Minis Repo","Mini's IPA Repo","Minis IPA Repo"],"url":"https://oofmini.github.io/Minis-Repo/"},{"@type":"WebApplication","@id":"https://oofmini.github.io/Minis-Repo/#app","name":"Mini's Repo","url":"https://oofmini.github.io/Minis-Repo/","applicationCategory":"UtilitiesApplication","operatingSystem":"iOS","description":"Curated altstore/sidestore-compatible source of tweaked iOS apps — add the repo to SideStore, TrollApps, or AltStore and sideload directly.","image":"https://oofmini.github.io/Minis-Repo/apps/repo-icon.png","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},{"@type":"ItemList","@id":"https://oofmini.github.io/Minis-Repo/#apps","name":"Apps in Mini's Repo","numberOfItems":11,"itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"SoftwareApplication","name":"EeveeSpotify","description":"Tweaked Spotify client","image":"https://OofMini.github.io/Minis-Repo/apps/Spotify.png","softwareVersion":"9.1.68","operatingSystem":"iOS 16.1+","applicationCategory":"MobileApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}},{"@type":"ListItem","position":2,"item":{"@type":"SoftwareApplication","name":"YTLite","description":"Tweaked YouTube with all features unlocked","image":"https://OofMini.github.io/Minis-Repo/apps/YouTube.png","softwareVersion":"21.16.2","operatingSystem":"iOS 16.0+","applicationCategory":"MobileApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}},{"@type":"ListItem","position":3,"item":{"@type":"SoftwareApplication","name":"YTMusicUltimate","description":"Tweaked YouTube Music with all features unlocked","image":"https://OofMini.github.io/Minis-Repo/apps/YouTubeMusic.png","softwareVersion":"9.31","operatingSystem":"iOS 16.0+","applicationCategory":"MobileApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}},{"@type":"ListItem","position":4,"item":{"@type":"SoftwareApplication","name":"NeoFreeBird","description":"Tweaked Twitter/X","image":"https://OofMini.github.io/Minis-Repo/apps/X.png","softwareVersion":"12.15","operatingSystem":"iOS 15.0+","applicationCategory":"MobileApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}},{"@type":"ListItem","position":5,"item":{"@type":"SoftwareApplication","name":"InShot","description":"Unlocked video editor","image":"https://OofMini.github.io/Minis-Repo/apps/Inshot.png","softwareVersion":"1.98.1","operatingSystem":"iOS 15.0+","applicationCategory":"MobileApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}},{"@type":"ListItem","position":6,"item":{"@type":"SoftwareApplication","name":"iTorrent","description":"Torrent client","image":"https://OofMini.github.io/Minis-Repo/apps/itorrent.png","softwareVersion":"2.2.0","operatingSystem":"iOS 17.0+","applicationCategory":"MobileApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}},{"@type":"ListItem","position":7,"item":{"@type":"SoftwareApplication","name":"LiveContainer Nightly","description":"Run apps without installing","image":"https://OofMini.github.io/Minis-Repo/apps/livecontainer.png","softwareVersion":"3.8.3","operatingSystem":"iOS 15.0+","applicationCategory":"MobileApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}},{"@type":"ListItem","position":8,"item":{"@type":"SoftwareApplication","name":"Reface (iOS 17+)","description":"Face swap and deepfake editor","image":"https://OofMini.github.io/Minis-Repo/apps/reface.png","softwareVersion":"6.9.1","operatingSystem":"iOS 17.0+","applicationCategory":"MobileApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}},{"@type":"ListItem","position":9,"item":{"@type":"SoftwareApplication","name":"NFB Login","description":"X login fix — install before X","image":"https://OofMini.github.io/Minis-Repo/apps/X.png","softwareVersion":"9.67","operatingSystem":"iOS 15.0+","applicationCategory":"MobileApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}},{"@type":"ListItem","position":10,"item":{"@type":"SoftwareApplication","name":"SpotiFLAC","description":"Lossless music downloader","image":"https://OofMini.github.io/Minis-Repo/apps/SpotiFlac-Icon.png","softwareVersion":"4.8.5","operatingSystem":"iOS 14.0+","applicationCategory":"MobileApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}},{"@type":"ListItem","position":11,"item":{"@type":"SoftwareApplication","name":"MiniStore","description":"The Alternative App Store","image":"https://raw.githubusercontent.com/The-Big-Mini/MiniStore/develop/AltStore/Resources/Icons.xcassets/AppIcon.appiconset/MiniStore.png","softwareVersion":"0.6.4","operatingSystem":"iOS 17.1+","applicationCategory":"MobileApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}}]}]}</script>
 </head>
     <body>
-        <!-- UX-030: first-paint splash intro. Markup + styles are inlined in the
-             critical CSS above so it covers instantly with no flash. The fade-out
-             is a pure-CSS animation (self-clears even if the JS bundle fails);
-             main.ts removes the node once the fade ends. Decorative — aria-hidden
-             so screen readers skip straight to the live content. -->
         <div class="splash" id="splash" role="presentation" aria-hidden="true">
             <div class="splash-inner">
                 <div class="splash-glow"></div>
@@ -190,13 +154,8 @@
             </button>
         </div>
 
-        <!-- Static (like #searchOverlay below) so #pageSwitcherBtn's aria-controls
-             always resolves to a real element, even before first open — settings-panel.ts
-             fills it in on first use rather than creating it from scratch. -->
         <div class="ctx-menu page-menu" id="pageSwitcherMenu" role="menu" aria-label="Pages"></div>
 
-        <!-- UX-024: persistent app bar — always visible; the title fades in once
-             the hero scrolls away. This is the sole search entry point. -->
         <div class="compact-header" id="compactHeader">
             <button type="button" class="page-switcher-btn" id="pageSwitcherBtn" aria-label="Switch page" aria-haspopup="menu" aria-expanded="false" aria-controls="pageSwitcherMenu">
                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true">
@@ -222,7 +181,6 @@
 
         <header class="hero" role="banner">
             <canvas id="heroCanvas" aria-hidden="true"></canvas>
-            <!-- A11y1: live region announces hero animation state to screen readers -->
             <span id="heroStatus" class="visually-hidden" aria-live="polite" aria-atomic="true"></span>
             <div class="hero-glow" aria-hidden="true"></div>
             <img
@@ -237,7 +195,7 @@
             <p class="hero-subtitle">Tweaked apps for iOS 15+</p>
 
             <div class="hero-stats" role="status" aria-live="polite">
-                <span class="stat-badge app-count-badge" id="appCountBadge" aria-label="App count">
+                <span class="stat-badge app-count-badge" aria-label="App count">
                     <span class="stat-badge-icon" aria-hidden="true"></span>
                     <span id="appCountText">— Apps</span>
                 </span>
@@ -266,24 +224,19 @@
         </header>
 
         <main class="container">
-            <!-- Featured App Section -->
             <section class="featured-section fade-in" id="featuredSection" aria-labelledby="featured-title" hidden>
                 <h2 id="featured-title" class="visually-hidden">Featured App</h2>
                 <div class="featured-card" id="featuredCard" role="group" aria-labelledby="featuredName">
-                    <!-- Stretched "view details" control: a real <button> that covers
-                         the card as its primary action. It is a SIBLING of the GET
-                         button (not a wrapping role="button"), so there is no nested
-                         interactive-control a11y violation. GET sits above it via z-index. -->
-                    <button type="button" class="featured-view-btn" id="featuredViewBtn" aria-label="View featured app details"></button>
+                    <button type="button" class="featured-view-btn" aria-label="View featured app details"></button>
                     <div class="featured-badge" aria-hidden="true">Featured</div>
                     <div class="featured-content">
                         <div class="featured-icon-container">
-                            <img class="featured-icon" id="featuredIcon" src="./apps/repo-icon.png" alt="" width="72" height="72" loading="eager" fetchpriority="high" />
+                            <img class="featured-icon" src="./apps/repo-icon.png" alt="" width="72" height="72" loading="eager" fetchpriority="high" />
                         </div>
                         <div class="featured-info">
                             <h3 class="featured-name" id="featuredName"></h3>
-                            <p class="featured-dev" id="featuredDev"></p>
-                            <p class="featured-desc" id="featuredDesc"></p>
+                            <p class="featured-dev"></p>
+                            <p class="featured-desc"></p>
                         </div>
                     </div>
                     <div class="featured-actions">
@@ -294,13 +247,10 @@
                 </div>
             </section>
 
-            <!-- Search & Filters -->
             <section class="search-filter-section fade-in" aria-labelledby="search-title">
                 <h2 id="search-title" class="visually-hidden">Filter apps</h2>
-                <!-- Search lives in the always-visible app bar (#compactSearchBtn). -->
                 <p id="searchResultsCount" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
 
-                <!-- Category Filter Pills -->
                 <div class="category-filters" id="categoryFilters" role="tablist" aria-label="Filter apps by category">
                     <button type="button" class="category-pill active" role="tab" aria-selected="true" aria-controls="appGrid" id="pill-all" data-category="all" tabindex="0">
                         All
@@ -322,7 +272,6 @@
                     </button>
                 </div>
 
-                <!-- Sort Toggle -->
                 <div class="sort-controls" role="group" aria-label="Sort options">
                     <button type="button" class="sort-btn active" id="sortRecent" data-sort="recent" aria-pressed="true" aria-label="Sort by most recent">
                         Recent
@@ -333,26 +282,12 @@
                 </div>
             </section>
 
-            <!-- App Grid (virtual scroll container) -->
             <section class="app-grid" id="appGrid" role="tabpanel" tabindex="0" aria-labelledby="pill-all"></section>
 
-            <!-- Repo Info -->
             <section class="repo-info fade-in" aria-labelledby="repo-info-title">
-                <!-- UX-031: spinning circular-text badge — a signature flourish on the
-                     repo's primary action. Tapping it adds the source to SideStore. -->
                 <button type="button" class="source-badge" id="sourceBadge" aria-label="Add this source to SideStore">
                     <svg class="source-badge-ring" viewBox="0 0 100 100" aria-hidden="true">
                         <defs>
-                            <!-- Cross-platform ring fill. The same text renders ~207u on iOS
-                                 SF Pro but ~224u in desktop fonts, so one radius can't fit both
-                                 with plain text. Solution: size the ring just above the iOS
-                                 natural text (r=33.3 → circumference ~209u, measured from a real
-                                 iOS screenshot then nudged up a hair so the seam clears instead of
-                                 overlapping) since iOS ignores textLength on a textPath; and set
-                                 textLength=208 so DESKTOP browsers — which DO honor it — compress
-                                 their wider text to nearly fill the same ring instead of
-                                 overflowing/clipping. Both platforms fill the ring, no seam gap or
-                                 overlap. -->
                             <path id="sourceBadgeArc" fill="none" d="M50,50 m-33.3,0 a33.3,33.3 0 1,1 66.6,0 a33.3,33.3 0 1,1 -66.6,0" />
                         </defs>
                         <text textLength="208" lengthAdjust="spacingAndGlyphs"><textPath href="#sourceBadgeArc" startOffset="0">ADD SOURCE&nbsp;&bull;&nbsp;SIDESTORE&nbsp;&bull;&nbsp;MINISTORE&nbsp;&bull;&nbsp;TROLLAPPS&nbsp;&bull;&nbsp;</textPath></text>
@@ -367,7 +302,7 @@
                 </div>
                 <p class="repo-info-desc">Copy the URL below and paste it into your preferred sideloading app manager.</p>
                 <div class="repo-url-card">
-                    <code class="repo-url-text" id="repoUrlText">https://OofMini.github.io/Minis-Repo/mini.json</code>
+                    <code class="repo-url-text">https://OofMini.github.io/Minis-Repo/mini.json</code>
                     <button type="button" class="copy-url-btn" id="btn-copy-url" aria-label="Copy manifest URL to clipboard">
                         <span class="copy-url-label" id="copyUrlLabel">Copy URL</span>
                     </button>
@@ -380,7 +315,6 @@
             </section>
         </main>
 
-        <!-- Search Overlay (iOS Spotlight-style) -->
         <div class="search-overlay" id="searchOverlay" role="dialog" aria-label="Search apps" aria-modal="true">
             <div class="search-overlay-inner">
                 <div class="search-overlay-header">
@@ -399,7 +333,6 @@
                     </button>
                 </div>
                 <div class="search-overlay-recents" id="recentSearches" role="group" aria-label="Recent searches"></div>
-                <!-- A11Y-003: live region announces result count to screen readers -->
                 <p id="searchOverlayResultCount" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
                 <ul class="search-overlay-results" id="searchOverlayResults" aria-label="Search results"></ul>
             </div>
@@ -439,11 +372,6 @@
                             Shortcuts
                         </button>
                     </div>
-                    <!-- Ko-fi is a plain link, not the official widget: the widget
-                         loads storage.ko-fi.com/cdn/widget/Widget_2.js and then calls
-                         kofiwidget2.init() inline, which needs both a third-party
-                         script-src host and 'unsafe-inline'. Neither is worth adding
-                         to the CSP for a donate button, and the link needs no JS. -->
                     <p class="footer-support">
                         <a
                             href="https://ko-fi.com/oofmini"
@@ -463,7 +391,6 @@
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 13V3m0 0L3 8m5-5 5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
 
-        <!-- Toast notification -->
         <div class="toast" id="toast" aria-live="polite" role="status"></div>
 
     </body>
