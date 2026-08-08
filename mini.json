@@ -12,7 +12,7 @@
             "bundleIdentifier": "com.spotify.client",
             "developerName": "whoeevee",
             "subtitle": "Tweaked Spotify client",
-            "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.60, EeveeSpotify 6.6.6.",
+            "localizedDescription": "Tweaked Spotify with premium features unlocked, no ads, and enhanced playback. Spotify IPA 9.1.68, EeveeSpotify 6.6.7.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/EeveeSpotify.png",
             "tintColor": "#1DB954",
             "screenshotURLs": [
@@ -32,12 +32,12 @@
             ],
             "versions": [
                 {
-                    "version": "9.1.60",
-                    "date": "2026-07-15",
+                    "version": "9.1.68",
+                    "date": "2026-08-08",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/ES/EeveeSpotify.ipa",
-                    "size": 118396730,
+                    "size": 125436640,
                     "minOSVersion": "16.1",
-                    "localizedDescription": "Updated to Spotify IPA 9.1.60, EeveeSpotify 6.6.6."
+                    "localizedDescription": "Updated to Spotify IPA 9.1.68, EeveeSpotify 6.6.7."
                 }
             ]
         },
@@ -63,7 +63,7 @@
             "versions": [
                 {
                     "version": "21.16.2",
-                    "date": "2026-05-08",
+                    "date": "2026-07-05",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/YTL/YouTubePlus_5.2.1.ipa",
                     "size": 119833556,
                     "minOSVersion": "16.0",
@@ -76,7 +76,7 @@
             "bundleIdentifier": "com.google.ios.youtubemusic",
             "developerName": "dayanch96",
             "subtitle": "Tweaked YouTube Music with premium features",
-            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.29, YTMusicUltimate 2.4.1.",
+            "localizedDescription": "Tweaked YouTube Music with premium features unlocked, background playback, and no ads. Youtube Music IPA 9.31, YTMusicUltimate 2.4.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/YouTubeMusic.png",
             "tintColor": "#FF0000",
             "screenshotURLs": [
@@ -96,12 +96,12 @@
             ],
             "versions": [
                 {
-                    "version": "9.29",
-                    "date": "2026-07-27",
+                    "version": "9.31",
+                    "date": "2026-08-08",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/YTM/YTMusicUltimate.ipa",
-                    "size": 97873035,
+                    "size": 105565978,
                     "minOSVersion": "16.0",
-                    "localizedDescription": "Updated to Youtube Music IPA 9.29, YTMusicUltimate 2.4.1."
+                    "localizedDescription": "Updated to Youtube Music IPA 9.31, YTMusicUltimate 2.4.1."
                 }
             ]
         },
@@ -110,7 +110,7 @@
             "bundleIdentifier": "com.atebits.Tweetie2",
             "developerName": "Moe",
             "subtitle": "Tweaked Twitter/X",
-            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 12.10, NeoFreeBird 6.3.2.",
+            "localizedDescription": "Tweaked Twitter/X with premium features and more. X IPA 12.15, NeoFreeBird 6.6.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/NeoFreeBird.png",
             "tintColor": "#000000",
             "screenshotURLs": [
@@ -126,12 +126,12 @@
             ],
             "versions": [
                 {
-                    "version": "12.10",
-                    "date": "2026-07-27",
+                    "version": "12.15",
+                    "date": "2026-08-08",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/NFB/NeoFreeBird-sideloaded.ipa",
-                    "size": 218948347,
+                    "size": 209380006,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to X IPA 12.10, NeoFreeBird 6.3.2."
+                    "localizedDescription": "Updated to X IPA 12.15, NeoFreeBird 6.6."
                 }
             ]
         },
@@ -140,7 +140,7 @@
             "bundleIdentifier": "com.camerasideas.InstaShot",
             "developerName": "Blatant",
             "subtitle": "Unlocked Pro video editor",
-            "localizedDescription": "Pro video editor with premium filters, tools, and no watermark. App v1.98.0.",
+            "localizedDescription": "Pro video editor with premium filters, tools, and no watermark. App v1.98.1.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/Inshot.png",
             "tintColor": "#FF4500",
             "screenshotURLs": [
@@ -164,12 +164,12 @@
             ],
             "versions": [
                 {
-                    "version": "1.98.0",
-                    "date": "2026-07-27",
+                    "version": "1.98.1",
+                    "date": "2026-08-08",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/IS/InShot.ipa",
-                    "size": 152657317,
+                    "size": 161438760,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to App v1.98.0."
+                    "localizedDescription": "Updated to App v1.98.1."
                 }
             ]
         },
@@ -197,7 +197,7 @@
                     "version": "2.2.0",
                     "date": "2026-07-19",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/IT/iTorrent.ipa",
-                    "size": 8362011,
+                    "size": 24288935,
                     "minOSVersion": "17.0",
                     "localizedDescription": "Updated to App v2.2.0."
                 }
@@ -208,7 +208,7 @@
             "bundleIdentifier": "com.kdt.livecontainer",
             "developerName": "hugeBlack",
             "subtitle": "Run apps without installing",
-            "localizedDescription": "Runs iOS apps inside its own container without installing them — multiple app instances, JIT support, and on-device app management. This is the nightly build. App v3.8.0.",
+            "localizedDescription": "Runs iOS apps inside its own container without installing them — multiple app instances, JIT support, and on-device app management. This is the nightly build. App v3.8.3.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/livecontainer.png",
             "tintColor": "#007AFF",
             "screenshotURLs": [
@@ -224,12 +224,12 @@
             ],
             "versions": [
                 {
-                    "version": "3.8.0",
-                    "date": "2026-07-19",
+                    "version": "3.8.3",
+                    "date": "2026-08-08",
                     "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/LCN/LiveContainer.ipa",
-                    "size": 4614750,
+                    "size": 4741993,
                     "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to App v3.8.0."
+                    "localizedDescription": "Updated to App v3.8.3."
                 }
             ]
         },
@@ -306,7 +306,7 @@
             "bundleIdentifier": "com.zarz.spotiflacAndroid",
             "developerName": "spotiflacapp",
             "subtitle": "Lossless music downloader",
-            "localizedDescription": "Lossless music downloader — save tracks in FLAC and other high-quality formats straight to your device. Pair it with the Cosmos music player to listen offline. App v4.8.0.",
+            "localizedDescription": "Lossless music downloader — save tracks in FLAC and other high-quality formats straight to your device. Pair it with the Cosmos music player to listen offline. App v4.8.5.",
             "iconURL": "https://OofMini.github.io/Minis-Repo/apps/SpotiFlac-Icon.PNG",
             "tintColor": "#1ED760",
             "screenshotURLs": [
@@ -322,12 +322,12 @@
             ],
             "versions": [
                 {
-                    "version": "4.8.0",
-                    "date": "2026-07-27",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/SF/SpotiFLAC-v4.8.0-ios-unsigned.ipa",
-                    "size": 34347687,
+                    "version": "4.8.5",
+                    "date": "2026-08-08",
+                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/SF/SpotiFLAC-v4.8.5-ios-unsigned.ipa",
+                    "size": 35772910,
                     "minOSVersion": "14.0",
-                    "localizedDescription": "Updated to App v4.8.0."
+                    "localizedDescription": "Updated to App v4.8.5."
                 }
             ]
         },
