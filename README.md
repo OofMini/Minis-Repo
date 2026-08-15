@@ -36,7 +36,6 @@ Copy and paste this link directly into your app manager:
 |   <img src="apps/livecontainer.png" width="48" style="border-radius: 22%">   | **LiveContainer Nightly** | v3.8.3   | Run JIT-dependent apps without a computer using advanced containerization (nightly build). |
 |    <img src="apps/X.png" width="48" style="border-radius: 22%">    | **NFB Login** | v9.67   | Login fix for tweaked X — install and sign in first, then install X over the top. |
 |   <img src="apps/SpotiFlac-Icon.png" width="48" style="border-radius: 22%">  | **SpotiFLAC** | v4.8.5  | Lossless music downloader (FLAC) — pair it with the Cosmos music player.          |
-| <img src="https://raw.githubusercontent.com/The-Big-Mini/MiniStore/develop/AltStore/Resources/Icons.xcassets/AppIcon.appiconset/MiniStore.png" width="48" style="border-radius: 22%"> | **MiniStore** | v0.6.4  | Alternative app store for iOS — a SideStore fork to install and update apps wirelessly, no computer required. |
 
 ---
 
