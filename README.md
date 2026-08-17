@@ -32,10 +32,7 @@ Copy and paste this link directly into your app manager:
 |    <img src="apps/X.png" width="48" style="border-radius: 22%">    | **NeoFreeBird** | v12.15   | Enhanced X (Twitter) client with ad removal and video downloading capabilities.   |
 |      <img src="apps/Inshot.png" width="48" style="border-radius: 22%">       | **InShot** | v1.98.1  | Tweaked video editor with all filters, effects, and export options unlocked. |
 |     <img src="apps/reface.png" width="48" style="border-radius: 22%">     | **Reface** | v6.9.1   | Tweaked AI face-swapping tool with all templates and features enabled.       |
-|     <img src="apps/itorrent.png" width="48" style="border-radius: 22%">      | **iTorrent** | v2.2.0   | A robust, native BitTorrent client for iOS with background downloading support.   |
-|   <img src="apps/livecontainer.png" width="48" style="border-radius: 22%">   | **LiveContainer Nightly** | v3.8.3   | Run JIT-dependent apps without a computer using advanced containerization (nightly build). |
 |    <img src="apps/X.png" width="48" style="border-radius: 22%">    | **NFB Login** | v9.67   | Login fix for tweaked X — install and sign in first, then install X over the top. |
-|   <img src="apps/SpotiFlac-Icon.png" width="48" style="border-radius: 22%">  | **SpotiFLAC** | v4.8.5  | Lossless music downloader (FLAC) — pair it with the Cosmos music player.          |
 
 ---
 

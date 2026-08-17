@@ -174,66 +174,6 @@
             ]
         },
         {
-            "name": "iTorrent",
-            "bundleIdentifier": "org.xitrix.iTorrent2",
-            "developerName": "XITRIX",
-            "subtitle": "Torrent client",
-            "localizedDescription": "Lightweight torrent client for downloading and managing torrent files on-device. App v2.2.0.",
-            "iconURL": "https://OofMini.github.io/Minis-Repo/apps/itorrent.png",
-            "tintColor": "#FF9500",
-            "screenshotURLs": [
-                "https://OofMini.github.io/Minis-Repo/apps/itorrent-1.png",
-                "https://OofMini.github.io/Minis-Repo/apps/itorrent-2.png",
-                "https://OofMini.github.io/Minis-Repo/apps/itorrent-3.png"
-            ],
-            "permissions": [
-                {
-                    "type": "network",
-                    "usageDescription": "Required to connect to torrent peers and download files."
-                }
-            ],
-            "versions": [
-                {
-                    "version": "2.2.0",
-                    "date": "2026-07-19",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/IT/iTorrent.ipa",
-                    "size": 24288935,
-                    "minOSVersion": "17.0",
-                    "localizedDescription": "Updated to App v2.2.0."
-                }
-            ]
-        },
-        {
-            "name": "LiveContainer Nightly",
-            "bundleIdentifier": "com.kdt.livecontainer",
-            "developerName": "hugeBlack",
-            "subtitle": "Run apps without installing",
-            "localizedDescription": "Runs iOS apps inside its own container without installing them — multiple app instances, JIT support, and on-device app management. This is the nightly build. App v3.8.3.",
-            "iconURL": "https://OofMini.github.io/Minis-Repo/apps/livecontainer.png",
-            "tintColor": "#007AFF",
-            "screenshotURLs": [
-                "https://OofMini.github.io/Minis-Repo/apps/livecontainer-1.png",
-                "https://OofMini.github.io/Minis-Repo/apps/livecontainer-2.png",
-                "https://OofMini.github.io/Minis-Repo/apps/livecontainer-3.png"
-            ],
-            "permissions": [
-                {
-                    "type": "network",
-                    "usageDescription": "Required to download and run app containers."
-                }
-            ],
-            "versions": [
-                {
-                    "version": "3.8.3",
-                    "date": "2026-08-08",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/LCN/LiveContainer.ipa",
-                    "size": 4741993,
-                    "minOSVersion": "15.0",
-                    "localizedDescription": "Updated to App v3.8.3."
-                }
-            ]
-        },
-        {
             "name": "Reface (iOS 17+)",
             "bundleIdentifier": "com.neocortext.doublicatapp",
             "developerName": "AppTesters",
@@ -298,36 +238,6 @@
                     "size": 117520456,
                     "minOSVersion": "15.0",
                     "localizedDescription": "Login fix for tweaked X. Install first, sign in, then install NeoFreeBird over the top. App v9.67."
-                }
-            ]
-        },
-        {
-            "name": "SpotiFLAC",
-            "bundleIdentifier": "com.zarz.spotiflacAndroid",
-            "developerName": "spotiflacapp",
-            "subtitle": "Lossless music downloader",
-            "localizedDescription": "Lossless music downloader — save tracks in FLAC and other high-quality formats straight to your device. Pair it with the Cosmos music player to listen offline. App v4.8.5.",
-            "iconURL": "https://OofMini.github.io/Minis-Repo/apps/SpotiFlac-Icon.png",
-            "tintColor": "#1ED760",
-            "screenshotURLs": [
-                "https://OofMini.github.io/Minis-Repo/apps/SpotiFlac-1.png",
-                "https://OofMini.github.io/Minis-Repo/apps/SpotiFlac-2.png",
-                "https://OofMini.github.io/Minis-Repo/apps/SpotiFlac-3.png"
-            ],
-            "permissions": [
-                {
-                    "type": "network",
-                    "usageDescription": "Required to search for and download tracks."
-                }
-            ],
-            "versions": [
-                {
-                    "version": "4.8.5",
-                    "date": "2026-08-08",
-                    "downloadURL": "https://github.com/OofMini/Minis-Heap/releases/download/SF/SpotiFLAC-v4.8.5-ios-unsigned.ipa",
-                    "size": 35772910,
-                    "minOSVersion": "14.0",
-                    "localizedDescription": "Updated to App v4.8.5."
                 }
             ]
         }
