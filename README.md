@@ -28,8 +28,8 @@ Copy and paste this link directly into your app manager:
 | :---------------------------------------------------------------------------------------------------------------: | :------------------ | :------- | :-------------------------------------------------------------------------------- |
 |   <img src="apps/Spotify.png" width="48" style="border-radius: 22%">    | **EeveeSpotify** | v9.1.68  | Tweaked Spotify client with lyrics, no ads, and high-quality audio streaming.     |
 | <img src="apps/YouTube.png" width="48" style="border-radius: 22%"> | **YTLite** | v21.16.2 | Lightweight YouTube tweak with background playback, ad-blocking, and PiP.         |
-|   <img src="apps/YouTubeMusic.png" width="48" style="border-radius: 22%">    | **YTMusicUltimate** | v9.31  | Tweaked YouTube Music experience with background audio and all features unlocked.     |
-|    <img src="apps/X.png" width="48" style="border-radius: 22%">    | **NeoFreeBird** | v12.15   | Enhanced X (Twitter) client with ad removal and video downloading capabilities.   |
+|   <img src="apps/YouTubeMusic.png" width="48" style="border-radius: 22%">    | **YTMusicUltimate** | v9.32.4  | Tweaked YouTube Music experience with background audio and all features unlocked.     |
+|    <img src="apps/X.png" width="48" style="border-radius: 22%">    | **NeoFreeBird** | v12.17   | Enhanced X (Twitter) client with ad removal and video downloading capabilities.   |
 |      <img src="apps/Inshot.png" width="48" style="border-radius: 22%">       | **InShot** | v1.98.1  | Tweaked video editor with all filters, effects, and export options unlocked. |
 |     <img src="apps/reface.png" width="48" style="border-radius: 22%">     | **Reface** | v6.9.1   | Tweaked AI face-swapping tool with all templates and features enabled.       |
 |    <img src="apps/X.png" width="48" style="border-radius: 22%">    | **NFB Login** | v9.67   | Login fix for tweaked X — install and sign in first, then install X over the top. |
